@@ -1,0 +1,70 @@
+<T3DataStructure>
+  <sheets>
+    <sDEF>
+      <ROOT>
+        <TCEforms>
+          <sheetTitle>Mosaic Gallery</sheetTitle>
+        </TCEforms>
+        <el>
+
+          <!-- Выбор папки в fileadmin (современный тип folder) -->
+          <settings.folder>
+            <TCEforms>
+              <label>Image folder (fileadmin/...)</label>
+              <config>
+                <type>folder</type>
+                <size>1</size>
+                <maxitems>1</maxitems>
+              </config>
+            </TCEforms>
+          </settings.folder>
+
+          <settings.columns>
+            <TCEforms>
+              <label>Columns</label>
+              <config>
+                <type>input</type>
+                <eval>int</eval>
+                <size>4</size>
+                <default>3</default>
+              </config>
+            </TCEforms>
+          </settings.columns>
+
+          <settings.gutter>
+            <TCEforms>
+              <label>Gutter (px)</label>
+              <config>
+                <type>input</type>
+                <eval>int</eval>
+                <size>4</size>
+                <default>16</default>
+              </config>
+            </TCEforms>
+          </settings.gutter>
+
+          <settings.showCaptions>
+            <TCEforms>
+              <label>Show captions</label>
+              <config>
+                <type>check</type>
+                <default>1</default>
+              </config>
+            </TCEforms>
+          </settings.showCaptions>
+
+          <settings.openInNewTab>
+            <TCEforms>
+              <label>Open full image in new tab</label>
+              <config>
+                <type>check</type>
+                <default>1</default>
+              </config>
+            </TCEforms>
+          </settings.openInNewTab>
+
+        </el>
+      </ROOT>
+    </sDEF>
+  </sheets>
+</T3DataStructure>

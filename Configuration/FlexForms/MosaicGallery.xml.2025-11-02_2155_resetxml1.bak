@@ -1,0 +1,200 @@
+<T3DataStructure>
+  <sheets>
+    <sDEF>
+      <ROOT>
+        <TCEforms><sheetTitle>Mosaic Gallery</sheetTitle></TCEforms>
+        <el>
+          <settings.source>
+            <label>Source</label>
+            <config>
+              <type>select</type><renderType>selectSingle</renderType>
+              <items>
+                <numIndex index="0"><numIndex index="0">Folder (fileadmin)</numIndex><numIndex index="1">folder</numIndex></numIndex>
+              </items>
+              <default>folder</default>
+            </config>
+          </settings.source>
+
+          <settings.folder>
+            <label>Folder</label>
+            <displayCond>FIELD:settings.source:=:folder</displayCond>
+            <config>
+              <type>group</type><internal_type>folder</internal_type>
+              <allowed>sys_file</allowed><size>1</size><maxitems>1</maxitems>
+              <default>fileadmin/gallery/</default>
+            </config>
+          </settings.folder>
+
+          <settings.recursive>
+            <label>Recursive</label>
+            <config><type>check</type><default>1</default></config>
+          </settings.recursive>
+
+          <settings.sortBy>
+            <label>Sort by</label>
+            <config>
+              <type>select</type><renderType>selectSingle</renderType>
+              <items>
+                <numIndex index="0"><numIndex index="0">Filename</numIndex><numIndex index="1">name</numIndex></numIndex>
+                <numIndex index="1"><numIndex index="0">Modified time</numIndex><numIndex index="1">mtime</numIndex></numIndex>
+                <numIndex index="2"><numIndex index="0">Random</numIndex><numIndex index="1">random</numIndex></numIndex>
+              </items>
+              <default>name</default>
+            </config>
+          </settings.sortBy>
+
+          <settings.sortDir>
+            <label>Sort direction</label>
+            <config>
+              <type>select</type><renderType>selectSingle</renderType>
+              <items>
+                <numIndex index="0"><numIndex index="0">Ascending</numIndex><numIndex index="1">asc</numIndex></numIndex>
+                <numIndex index="1"><numIndex index="0">Descending</numIndex><numIndex index="1">desc</numIndex></numIndex>
+              </items>
+              <default>asc</default>
+            </config>
+          </settings.sortDir>
+
+          <settings.gap>
+            <label>Gutter (px)</label>
+            <config><type>input</type><eval>int</eval><default>12</default></config>
+          </settings.gap>
+
+          <settings.maxWidth>
+            <label>Image max width (px)</label>
+            <config><type>input</type><eval>int</eval><default>1200</default></config>
+          </settings.maxWidth>
+
+          <settings.enableLightbox>
+            <label>Enable lightbox</label>
+            <config><type>check</type><default>1</default></config>
+          </settings.enableLightbox>
+
+          <settings.showCaptions>
+            <label>Show captions</label>
+            <config><type>check</type><default>1</default></config>
+          </settings.showCaptions>
+
+          <settings.useFalCaptions>
+            <label>Use FAL titles/descriptions (multilingual)</label>
+            <config><type>check</type><default>1</default></config>
+          </settings.useFalCaptions>
+
+          <settings.captions>
+            <label>Captions (one line per image, order-based; used if FAL captions disabled)</label>
+            <config><type>text</type><cols>40</cols><rows>6</rows></config>
+          </settings.captions>
+
+          <settings.borderRadius>
+            <label>Border radius (px)</label>
+            <config><type>input</type><eval>int</eval><default>6</default></config>
+          </settings.borderRadius>
+
+          <settings.shadow>
+            <label>Shadow</label>
+            <config><type>check</type><default>0</default></config>
+          </settings.shadow>
+
+          <settings.background>
+            <label>Background CSS (e.g. #fff or rgba(...))</label>
+            <config><type>input</type><default></default></config>
+          </settings.background>
+
+          <settings.enableLoadMore>
+            <label>Enable "Load more"</label>
+            <config><type>check</type><default>1</default></config>
+          </settings.enableLoadMore>
+
+          <settings.itemsPerPage>
+            <label>Items initially</label>
+            <config><type>input</type><eval>int</eval><default>12</default></config>
+          </settings.itemsPerPage>
+
+          <settings.loadStep>
+            <label>Load step</label>
+            <config><type>input</type><eval>int</eval><default>12</default></config>
+          </settings.loadStep>
+
+        </el>
+      </ROOT>
+    </sDEF>
+    <sDESIGN>
+      <ROOT>
+        <TCEforms><sheetTitle>Design</sheetTitle></TCEforms>
+        <el>
+          <settings.frameColor>
+            <TCEforms>
+              <label>Frame color</label>
+              <config>
+                <type>input</type>
+                <renderType>colorpicker</renderType>
+                <size>10</size>
+                <eval>trim</eval>
+                <default>#FFFFFF</default>
+              </config>
+            </TCEforms>
+          </settings.frameColor>
+
+          <settings.frameWidth>
+            <TCEforms>
+              <label>Frame width (px)</label>
+              <config>
+                <type>input</type>
+                <eval>int</eval>
+                <size>4</size>
+                <default>1</default>
+                <range><lower>0</lower><upper>12</upper></range>
+              </config>
+            </TCEforms>
+          </settings.frameWidth>
+
+          <settings.frameStyle>
+            <TCEforms>
+              <label>Frame style</label>
+              <config>
+                <type>select</type>
+                <renderType>selectSingle</renderType>
+                <items>
+                  <numIndex index="0"><numIndex index="0">None</numIndex><numIndex index="1">none</numIndex></numIndex>
+                  <numIndex index="1"><numIndex index="0">Solid</numIndex><numIndex index="1">solid</numIndex></numIndex>
+                  <numIndex index="2"><numIndex index="0">Dashed</numIndex><numIndex index="1">dashed</numIndex></numIndex>
+                  <numIndex index="3"><numIndex index="0">Dotted</numIndex><numIndex index="1">dotted</numIndex></numIndex>
+                </items>
+                <default>solid</default>
+              </config>
+            </TCEforms>
+          </settings.frameStyle>
+
+          <settings.backgroundColor>
+            <TCEforms>
+              <label>Background color</label>
+              <config>
+                <type>input</type>
+                <renderType>colorpicker</renderType>
+                <size>10</size>
+                <eval>trim</eval>
+                <default>#221A28</default>
+              </config>
+            </TCEforms>
+          </settings.backgroundColor>
+
+          <settings.applyTo>
+            <TCEforms>
+              <label>Apply background to</label>
+              <config>
+                <type>select</type>
+                <renderType>selectSingle</renderType>
+                <items>
+                  <numIndex index="0"><numIndex index="0">Container</numIndex><numIndex index="1">container</numIndex></numIndex>
+                  <numIndex index="1"><numIndex index="0">Tiles</numIndex><numIndex index="1">tiles</numIndex></numIndex>
+                  <numIndex index="2"><numIndex index="0">Both</numIndex><numIndex index="1">both</numIndex></numIndex>
+                </items>
+                <default>both</default>
+              </config>
+            </TCEforms>
+          </settings.applyTo>
+        </el>
+      </ROOT>
+    </sDESIGN>
+  </sheets>
+</T3DataStructure>

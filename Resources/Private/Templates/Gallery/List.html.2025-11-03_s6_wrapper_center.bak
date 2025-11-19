@@ -1,0 +1,37 @@
+<div class="mosaic-gallery"
+     style="--gap:{gap}px; --radius:{borderRadius}px;
+            --bg:{settings.backgroundColor};
+            --frame-color:{settings.frameColor};
+            --frame-width:{settings.frameWidth}px;
+            --frame-style:{settings.frameStyle};"
+     data-apply-bg="{settings.applyTo}"
+     data-shadow="{f:if(condition: shadow, then: 1, else: 0)}"
+     data-lightbox="{f:if(condition: enableLightbox, then: 1, else: 0)}"
+     data-group="{galleryGroup}"
+     data-initial="{itemsPerPage}"
+     data-step="{loadStep}">
+  <div class="mosaic-sizer"></div>
+
+  <f:for each="{items}" as="it">
+    <figure class="mosaic-item {f:if(condition: it.hidden, then: is-hidden)}">
+      <a href="{it.file.publicUrl}"
+         class="{f:if(condition: enableLightbox, then: glightbox)}"
+         data-gallery="{galleryGroup}"
+         data-title="{it.caption}" target="_blank" rel="noopener">
+        <img src="{f:uri.image(image: it.file, maxWidth: maxWidth)}"
+             alt="{it.alt}" title="{it.caption}" loading="lazy" />
+      </a>
+      <f:if condition="{showCaptions}">
+        <f:if condition="{it.caption}">
+          <figcaption>{it.caption}</figcaption>
+        </f:if>
+      </f:if>
+    </figure>
+  </f:for>
+
+  <f:if condition="{hasMore}">
+    <div class="mosaic-actions">
+      <button type="button" class="mosaic-load-more" aria-label="Load more">Load more</button>
+    </div>
+  </f:if>
+</div>

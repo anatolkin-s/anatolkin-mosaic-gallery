@@ -1,0 +1,85 @@
+<T3DataStructure>
+  <sheets>
+    <sDEF>
+      <ROOT>
+        <TCEforms>
+          <sheetTitle>Mosaic Gallery</sheetTitle>
+        </TCEforms>
+        <el>
+
+          <folder>
+            <TCEforms>
+              <label>Folder with images (fileadmin/...)</label>
+              <config>
+                <type>group</type>
+                <internal_type>folder</internal_type>
+                <size>1</size>
+                <maxitems>1</maxitems>
+                <minitems>0</minitems>
+                <allowed></allowed>
+                <show_thumbs>1</show_thumbs>
+              </config>
+            </TCEforms>
+          </folder>
+
+          <columns>
+            <TCEforms>
+              <label>Columns</label>
+              <config>
+                <type>input</type>
+                <eval>int</eval>
+                <size>4</size>
+                <default>3</default>
+              </config>
+            </TCEforms>
+          </columns>
+
+          <gutter>
+            <TCEforms>
+              <label>Gutter (px)</label>
+              <config>
+                <type>input</type>
+                <eval>int</eval>
+                <size>4</size>
+                <default>16</default>
+              </config>
+            </TCEforms>
+          </gutter>
+
+          <showCaptions>
+            <TCEforms>
+              <label>Show captions</label>
+              <config>
+                <type>check</type>
+                <default>1</default>
+              </config>
+            </TCEforms>
+          </showCaptions>
+
+          <openInNewTab>
+            <TCEforms>
+              <label>Open original in new tab</label>
+              <config>
+                <type>check</type>
+                <default>1</default>
+              </config>
+            </TCEforms>
+          </openInNewTab>
+
+          <repeat>
+            <TCEforms>
+              <label>Repeat base set (for test)</label>
+              <config>
+                <type>input</type>
+                <eval>int</eval>
+                <size>4</size>
+                <default>4</default>
+              </config>
+            </TCEforms>
+          </repeat>
+
+        </el>
+      </ROOT>
+    </sDEF>
+  </sheets>
+</T3DataStructure>

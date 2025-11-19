@@ -1,0 +1,85 @@
+(function(){
+  document.addEventListener("DOMContentLoaded", function(){
+    var containers = document.querySelectorAll(".mosaic-gallery");
+    if(!containers.length) return;
+
+    // Мини imagesLoaded (если внешний скрипт недоступен)
+    if (typeof window.imagesLoaded === "undefined") {
+      window.imagesLoaded = function(el, cb){
+        try{
+          var imgs = el.querySelectorAll("img"), left = imgs.length;
+          if(!left){ cb(); return; }
+          imgs.forEach(function(img){
+            var done = function(){ if(--left===0) cb(); };
+            if (img.complete) done(); else { img.addEventListener("load", done); img.addEventListener("error", done); }
+          });
+        } catch(e){ cb(); }
+      };
+    }
+
+    containers.forEach(function(container){
+      var gap     = parseInt(container.style.getPropertyValue("--gap") || "12", 10);
+      var initial = parseInt(container.getAttribute("data-initial") || "0", 10);
+      var step    = parseInt(container.getAttribute("data-step") || "0", 10);
+      var enableLightbox = container.getAttribute("data-lightbox") === "1";
+      var group   = container.getAttribute("data-group") || "gallery";
+
+      // Спрятать всё после initial (fallback, если сервер не пометил)
+      if (initial > 0) {
+        var items = container.querySelectorAll(".mosaic-item");
+        items.forEach(function (el, i) { if (i >= initial) el.classList.add("is-hidden"); });
+      }
+
+      // Поднять кнопку, если её нет, но есть скрытые элементы
+      function ensureButton(){
+        var hidden = container.querySelectorAll(".mosaic-item.is-hidden").length;
+        var btn = container.querySelector(".mosaic-load-more");
+        if (hidden && !btn) {
+          var bar = document.createElement("div");
+          bar.className = "mosaic-actions";
+          btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "mosaic-load-more";
+          btn.textContent = "Load more";
+          bar.appendChild(btn);
+          container.appendChild(bar);
+        }
+        if (btn) btn.style.display = hidden ? "inline-block" : "none";
+        return btn;
+      }
+
+      var lightbox = null;
+      if (enableLightbox && window.GLightbox) {
+        lightbox = GLightbox({ selector: a.glightbox[data-gallery=' + group + '] });
+      }
+
+      imagesLoaded(container, function(){
+        var sizer = container.querySelector(".mosaic-sizer") || container.querySelector(".mosaic-item");
+        var msnry = new Masonry(container, {
+          itemSelector: ".mosaic-item",
+          columnWidth:  sizer,
+          percentPosition: true,
+          gutter: gap,
+          fitWidth: false   // контейнер остаётся во всю доступную ширину (фон не сжимается)
+        });
+
+        window.addEventListener("resize", function(){ msnry.layout(); });
+
+        var btn = ensureButton();
+        if (btn) {
+          btn.addEventListener("click", function(){
+            var hidden = container.querySelectorAll(".mosaic-item.is-hidden");
+            if (!hidden.length) { btn.style.display = "none"; return; }
+            var reveal = Array.prototype.slice.call(hidden, 0, step || hidden.length);
+            reveal.forEach(function (el) { el.classList.remove("is-hidden"); });
+            imagesLoaded(container, function(){
+              msnry.layout();
+              if (lightbox && typeof lightbox.reload === "function") lightbox.reload();
+              ensureButton();
+            });
+          });
+        }
+      });
+    });
+  });
+})();

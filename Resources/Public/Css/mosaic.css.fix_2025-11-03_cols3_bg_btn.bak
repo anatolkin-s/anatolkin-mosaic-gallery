@@ -1,0 +1,25 @@
+/* v1.2 clean: Masonry grid + дизайн-переменные */
+.mosaic-gallery{ margin:0 auto; }
+
+.mosaic-sizer, .mosaic-item{ width:33.333%; box-sizing:border-box; }         /* Desktop */
+@media (max-width:1024px){ .mosaic-sizer, .mosaic-item{ width:50%; } }       /* Tablet  */
+@media (max-width:640px){  .mosaic-sizer, .mosaic-item{ width:100%; } }      /* Mobile  */
+
+.mosaic-item{ margin:0 0 var(--gap,12px) 0; }
+.mosaic-item img{
+  display:block; width:100%; height:auto; box-sizing:border-box;
+  border: var(--frame-width,0px) var(--frame-style,solid) var(--frame-color,transparent);
+  border-radius: var(--radius, 6px);
+}
+
+/* фон контейнера и/или плиток из FlexForm */
+.mosaic-gallery[data-apply-bg="container"],
+.mosaic-gallery[data-apply-bg="both"]{ background: var(--bg,transparent); }
+.mosaic-gallery[data-apply-bg="tiles"] .mosaic-item img,
+.mosaic-gallery[data-apply-bg="both"]  .mosaic-item img{ background: var(--bg,transparent); }
+
+.is-hidden{ display:none !important; }
+"EOF"
+
+rm -rf /var/www/typo3/typo3-site/var/cache/*
+echo "OK: mosaic.css rewritten (backup: /var/www/typo3/typo3-site/packages/mosaic_gallery/Resources/Public/Css/mosaic.css.2025-11-03_css_clean.bak)"

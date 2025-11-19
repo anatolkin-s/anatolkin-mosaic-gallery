@@ -1,0 +1,75 @@
+.mosaic-gallery { margin:0 auto; padding: var(--gap, 12px); background: var(--bg, transparent); }
+.mosaic-sizer, .mosaic-item { width: 33.333%; box-sizing: border-box; }        /* Desktop */
+@media (max-width: 1024px) { .mosaic-sizer, .mosaic-item { width: 50%; } }     /* Tablet  */
+@media (max-width: 640px)  { .mosaic-sizer, .mosaic-item { width: 100%; } }    /* Mobile  */
+
+.mosaic-item { margin: 0 0 var(--gap, 12px) 0; }
+.mosaic-item img { display:block; width:100%; height:auto; border-radius: var(--radius, 6px); }
+.mosaic-gallery[data-shadow="1"] .mosaic-item img { box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+.mosaic-item figcaption { font-size:.9rem; opacity:.75; margin-top:.35rem; }
+
+.is-hidden { display:none; }
+
+.mosaic-actions { text-align:center; margin: 8px 0 4px; }
+.mosaic-load-more {
+  display:inline-block; padding: .6rem 1rem; border-radius: .5rem;
+  border: 1px solid rgba(0,0,0,.15); background: #fff; cursor:pointer;
+}
+.mosaic-load-more:hover { background:#f7f7f7; }
+
+/* === v1.2: FlexForm → CSS variables bindings === */
+.mosaic-gallery { margin-left:auto; margin-right:auto; } /* центрирование контейнера */
+.mosaic-item img {
+  box-sizing: border-box;
+  border: var(--frame-width, 0px) var(--frame-style, solid) var(--frame-color, transparent);
+}
+
+/* фон контейнера и/или плиток */
+.mosaic-gallery[data-apply-bg="container"],
+.mosaic-gallery[data-apply-bg="both"] {
+  background: var(--bg, transparent);
+}
+.mosaic-gallery[data-apply-bg="tiles"] .mosaic-item img,
+.mosaic-gallery[data-apply-bg="both"]  .mosaic-item img {
+  background: var(--bg, transparent);
+}
+
+/* S4 center fix */
+.mosaic-gallery{margin-left:auto;margin-right:auto;max-width:100
+/* v1.2 columns + centering */
+.mosaic-gallery{ margin:0 auto; max-width:100%; --cols:3; }
+@media (max-width:1024px){ .mosaic-gallery{ --cols:2; } }
+@media (max-width:640px){  .mosaic-gallery{ --cols:1; } }
+
+.mosaic-sizer,
+.mosaic-item{
+  width: calc( (100% - (var(--cols) - 1) * var(--gap,12px)) / var(--cols) );
+}
+.mosaic-item{ margin: 0 0 var(--gap,12px) 0; }
+.is-hidden{ display:none; } /* страховка */
+
+/* v1.2 grid widths */
+.mosaic-sizer,.mosaic-item{width:33.333%;}
+@media (max-width: 992px){ .mosaic-sizer,.mosaic-item{width:50%;} }
+@media (max-width: 576px){ .mosaic-sizer,.mosaic-item{width:100%;} }
+
+/* ensure hidden really hidden */
+.mosaic-item.is-hidden{display:none !important;}
+/* центрируем контейнер на всякий */
+.mosaic-gallery{margin-left:auto;margin-right:auto;max-width:100%;}
+
+/* === v1.2: Masonry columns (3/2/1) === */
+.mosaic-gallery{ margin-left:auto; margin-right:auto; }
+.mosaic-sizer, .mosaic-item { width:33.333%; }            /* 3 колонки по умолчанию */
+@media (max-width:1024px){ .mosaic-sizer, .mosaic-item { width:50%; } }  /* 2 */
+@media (max-width:640px) { .mosaic-sizer, .mosaic-item { width:100%; } } /* 1 */
+
+.mosaic-item{ margin-bottom:var(--gap,12px); }
+.mosaic-item img{
+  display:block; width:100%; height:auto; box-sizing:border-box;
+  border: var(--frame-width,0px) var(--frame-style,solid) var(--frame-color,transparent);
+}
+.mosaic-gallery[data-apply-bg="container"],
+.mosaic-gallery[data-apply-bg="both"] { background: var(--bg,transparent); }
+.mosaic-gallery[data-apply-bg="tiles"] .mosaic-item img,
+.mosaic-gallery[data-apply-bg="both"]  .mosaic-item img { background: var(--bg,transparent); }

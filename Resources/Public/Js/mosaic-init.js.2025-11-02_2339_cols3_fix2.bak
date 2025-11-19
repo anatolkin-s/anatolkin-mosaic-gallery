@@ -1,0 +1,79 @@
+(function () {
+  document.addEventListener("DOMContentLoaded", function () {
+    var containers = document.querySelectorAll(".mosaic-gallery");
+    if (!containers.length) return;
+
+    containers.forEach(function (container) {
+      var gap     = parseInt(container.style.getPropertyValue("--gap") || "12", 10);
+      var initial = parseInt(container.getAttribute("data-initial") || "0", 10);
+      var step    = parseInt(container.getAttribute("data-step") || "0", 10);
+      var enableLightbox = container.getAttribute("data-lightbox") === "1";
+      var group = container.getAttribute("data-group") || "gallery";
+
+      // Фолбэк: спрятать всё после initial (если сервер не проставил .is-hidden)
+      if (initial > 0) {
+        var all = container.querySelectorAll(".mosaic-item");
+        all.forEach(function (el, i) { if (i >= initial) el.classList.add("is-hidden"); });
+      }
+
+      var lightbox = null;
+      if (enableLightbox && window.GLightbox) {
+        lightbox = GLightbox({ selector: a.glightbox[data-gallery=' + group + '] });
+      }
+
+      imagesLoaded(container, function () {
+        var msnry = new Masonry(container, {
+          itemSelector: ".mosaic-item",
+          columnWidth:  container.querySelector(".mosaic-sizer"),
+          percentPosition: true,
+          gutter: gap,
+          fitWidth: true
+        });
+        window.addEventListener("resize", function(){ msnry.layout(); });
+
+        var btn = container.querySelector(".mosaic-load-more");
+        if (btn) {
+          btn.addEventListener("click", function () {
+            var hidden = container.querySelectorAll(".mosaic-item.is-hidden");
+            if (!hidden.length) { btn.remove(); return; }
+            var reveal = Array.prototype.slice.call(hidden, 0, step || hidden.length);
+            reveal.forEach(function (el) { el.classList.remove("is-hidden"); });
+            imagesLoaded(reveal, function () {
+              msnry.appended(reveal);
+              msnry.layout();
+              if (lightbox && typeof lightbox.reload === "function") lightbox.reload();
+            });
+            if (!container.querySelector(".mosaic-item.is-hidden")) btn.remove();
+          });
+        }
+      });
+    });
+  });
+})();
+"JS"
+
+# CSS: ширины колонок для grid-sizer + базовые стили
+cat >>"/var/www/typo3/typo3-site/packages/mosaic_gallery/Resources/Public/Css/mosaic.css" <<CSS
+
+/* === v1.2: Masonry columns & bindings === */
+.mosaic-gallery{ margin-left:auto; margin-right:auto; }
+.mosaic-sizer, .mosaic-item { width:33.333%; }            /* 3 колонки по умолчанию */
+@media (max-width:1024px){ .mosaic-sizer, .mosaic-item { width:50%; } }  /* 2 */
+@media (max-width:640px) { .mosaic-sizer, .mosaic-item { width:100%; } } /* 1 */
+
+.mosaic-item{ margin-bottom:var(--gap,12px); }
+.mosaic-item img{
+  display:block; width:100%; height:auto; box-sizing:border-box;
+  border: var(--frame-width,0px) var(--frame-style,solid) var(--frame-color,transparent);
+}
+
+/* фон контейнера и/или плиток (из FlexForm) */
+.mosaic-gallery[data-apply-bg="container"],
+.mosaic-gallery[data-apply-bg="both"] { background: var(--bg,transparent); }
+.mosaic-gallery[data-apply-bg="tiles"] .mosaic-item img,
+.mosaic-gallery[data-apply-bg="both"]  .mosaic-item img { background: var(--bg,transparent); }
+"CSS"
+
+# Сброс кэшей TYPO3
+rm -rf /var/www/typo3/typo3-site/var/cache/*
+echo "OK: columns+limit fixed; backups: /var/www/typo3/typo3-site/packages/mosaic_gallery/Resources/Public/Js/mosaic-init.js.2025-11-02_2335_cols3_fix1.bak , /var/www/typo3/typo3-site/packages/mosaic_gallery/Resources/Public/Css/mosaic.css.2025-11-02_2335_cols3_fix1.bak"

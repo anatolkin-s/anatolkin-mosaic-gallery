@@ -1,0 +1,82 @@
+(function(){
+  document.addEventListener("DOMContentLoaded", function(){
+    var containers = document.querySelectorAll(".mosaic-gallery");
+    if(!containers.length) return;
+
+    // Мини-Polyfill imagesLoaded (если нет внешней)
+    if (typeof window.imagesLoaded === "undefined") {
+      window.imagesLoaded = function(el, cb){
+        try{
+          var imgs = el.querySelectorAll("img"); var left = imgs.length;
+          if(!left){ cb(); return; }
+          imgs.forEach(function(img){
+            var done = function(){ if(--left===0) cb(); };
+            if (img.complete) done(); else { img.addEventListener("load", done); img.addEventListener("error", done); }
+          });
+        }catch(e){ cb(); }
+      };
+    }
+
+    containers.forEach(function(container){
+      var grid    = container.querySelector(".mosaic-grid");
+      if (!grid) return;
+
+      var gap     = parseInt(container.style.getPropertyValue("--gap") || "12", 10);
+      var initial = parseInt(container.getAttribute("data-initial") || "0", 10);
+      var step    = parseInt(container.getAttribute("data-step") || "0", 10);
+      var group   = container.getAttribute("data-group") || "gallery";
+      var enableLightbox = container.getAttribute("data-lightbox") === "1";
+
+      // Спрячем всё после initial (клиентский fallback)
+      if (initial > 0) {
+        grid.querySelectorAll(".mosaic-item").forEach(function(el,i){
+          if (i >= initial) el.classList.add("is-hidden");
+        });
+      }
+
+      function ensureButton(){
+        var btn = container.querySelector(".mosaic-load-more");
+        var hasHidden = !!grid.querySelector(".mosaic-item.is-hidden");
+        if (hasHidden && !btn){
+          var wrap = container.querySelector(".mosaic-actions");
+          if (!wrap){ wrap = document.createElement("div"); wrap.className="mosaic-actions"; container.appendChild(wrap); }
+          btn = document.createElement("button");
+          btn.type="button"; btn.className="mosaic-load-more"; btn.textContent="Load more";
+          wrap.appendChild(btn);
+        }
+        if (!hasHidden && btn) btn.remove();
+        return container.querySelector(".mosaic-load-more");
+      }
+
+      var lightbox = null;
+      if (enableLightbox && window.GLightbox) {
+        lightbox = GLightbox({ selector: "a.glightbox[data-gallery=\"" + group + "\"]" });
+      }
+
+      imagesLoaded(grid, function(){
+        var sizer = grid.querySelector(".mosaic-sizer") || grid.querySelector(".mosaic-item");
+        var msnry = new Masonry(grid, {
+          itemSelector: ".mosaic-item",
+          columnWidth:  sizer,
+          percentPosition: true,
+          gutter: gap,
+          fitWidth: true   // сетка центрируется внутри .mosaic-gallery
+        });
+
+        window.addEventListener("resize", function(){ msnry.layout(); });
+
+        var btn = ensureButton();
+        if (btn){
+          btn.addEventListener("click", function(){
+            var hidden = grid.querySelectorAll(".mosaic-item.is-hidden");
+            if (!hidden.length) { btn.remove(); return; }
+            var reveal = Array.prototype.slice.call(hidden, 0, step || hidden.length);
+            reveal.forEach(function(el){ el.classList.remove("is-hidden"); });
+            imagesLoaded(reveal, function(){ msnry.appended(reveal); msnry.layout(); if (lightbox && lightbox.reload) lightbox.reload(); });
+            if (!grid.querySelector(".mosaic-item.is-hidden")) btn.remove();
+          });
+        }
+      });
+    });
+  });
+})();

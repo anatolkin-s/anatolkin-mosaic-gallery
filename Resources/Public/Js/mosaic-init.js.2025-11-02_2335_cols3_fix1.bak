@@ -1,0 +1,51 @@
+(function(){
+  document.addEventListener("DOMContentLoaded",function(){
+    var containers=document.querySelectorAll(".mosaic-gallery");
+    if(!containers.length) return;
+
+    containers.forEach(function(container){
+      var css = getComputedStyle(container);
+      var gap = parseInt(css.getPropertyValue("--gap") || "12",10);
+      var initial = parseInt(container.getAttribute("data-initial")||"0",10);
+      var step = parseInt(container.getAttribute("data-step")||"0",10);
+      var enableLightbox = container.getAttribute("data-lightbox")==="1";
+
+      // начально спрячем всё после initial
+      if(initial>0){
+        var all=container.querySelectorAll(".mosaic-item");
+        all.forEach(function(el,i){ if(i>=initial) el.classList.add("is-hidden"); });
+      }
+
+      var lightbox=null;
+      if(enableLightbox && window.GLightbox){
+        lightbox = GLightbox({selector:a.glightbox[data-gallery='+container.getAttribute(data-group)+']});
+      }
+
+      imagesLoaded(container,function(){
+        var msnry=new Masonry(container,{
+          itemSelector: ".mosaic-item",
+          columnWidth: container.querySelector(".mosaic-sizer"),
+          percentPosition: true,
+          gutter: gap,
+          fitWidth: true
+        });
+        window.addEventListener("resize",function(){ msnry.layout(); });
+
+        var btn=container.querySelector(".mosaic-load-more");
+        if(btn){
+          btn.addEventListener("click",function(){
+            var hidden=container.querySelectorAll(".mosaic-item.is-hidden");
+            if(!hidden.length) return;
+            var reveal=Array.prototype.slice.call(hidden,0, step||hidden.length);
+            reveal.forEach(function(el){ el.classList.remove("is-hidden"); });
+            imagesLoaded(reveal,function(){
+              msnry.appended(reveal); msnry.layout();
+              if(lightbox && typeof lightbox.reload==="function") lightbox.reload();
+            });
+            if(!container.querySelector(".mosaic-item.is-hidden")) btn.remove();
+          });
+        }
+      });
+    });
+  });
+})();

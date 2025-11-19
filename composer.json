@@ -1,0 +1,26 @@
+{
+  "name": "anatolkin/mosaic-gallery",
+  "description": "Masonry/FAL image gallery with lightbox for TYPO3 CMS.",
+  "type": "typo3-cms-extension",
+  "license": "MIT",
+  "keywords": ["typo3", "gallery", "masonry", "lightbox", "fal", "images"],
+  "require": {
+    "php": "^8.1 || ^8.2 || ^8.3",
+    "typo3/cms-core": "^13.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "Anatolkin\\MosaicGallery\\": "Classes/"
+    }
+  },
+  "extra": {
+    "typo3/cms": {
+      "extension-key": "mosaic_gallery"
+    }
+  },
+  "support": {
+    "issues": "https://github.com/anatolkin/typo3-mosaic-gallery/issues",
+    "source": "https://github.com/anatolkin/typo3-mosaic-gallery"
+  }
+}
+

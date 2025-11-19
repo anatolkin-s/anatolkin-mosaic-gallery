@@ -1,0 +1,72 @@
+(function () {
+  document.addEventListener("DOMContentLoaded", function () {
+    var containers = document.querySelectorAll(".mosaic-gallery");
+    if (!containers.length) return;
+
+    containers.forEach(function (container) {
+      var gap = parseInt(container.style.getPropertyValue("--gap") || "12", 10);
+      var initial = parseInt(container.getAttribute("data-initial") || "0", 10);
+      var step = parseInt(container.getAttribute("data-step") || "0", 10);
+      var enableLightbox = container.getAttribute("data-lightbox") === "1";
+
+      // Fallback: спрятать всё после initial, даже если сервер не поставил .is-hidden
+      if (initial > 0) {
+        var allItems = container.querySelectorAll(".mosaic-item");
+        allItems.forEach(function (el, idx) { if (idx >= initial) el.classList.add("is-hidden"); });
+      }
+
+      var lightbox = null;
+      if (enableLightbox && window.GLightbox) {
+        lightbox = GLightbox({ selector: "a.glightbox[data-gallery=\"" + container.getAttribute("data-group") + "\"]" });
+      }
+
+      imagesLoaded(container, function () {
+        var msnry = new Masonry(container, {
+          itemSelector: ".mosaic-item",
+          columnWidth: container.querySelector(".mosaic-sizer") || ".mosaic-item",
+          percentPosition: true,
+          gutter: gap,
+          fitWidth: true
+        });
+        window.addEventListener("resize", function () { msnry.layout(); });
+
+        var btn = container.querySelector(".mosaic-load-more");
+        if (btn) {
+          btn.addEventListener("click", function () {
+            var hidden = container.querySelectorAll(".mosaic-item.is-hidden");
+            if (!hidden.length) return;
+            var reveal = Array.prototype.slice.call(hidden, 0, step || hidden.length);
+            reveal.forEach(function (el) { el.classList.remove("is-hidden"); });
+            imagesLoaded(reveal, function () {
+              msnry.appended(reveal);
+              msnry.layout();
+              if (lightbox && typeof lightbox.reload === "function") lightbox.reload();
+            });
+            if (!container.querySelector(".mosaic-item.is-hidden")) btn.remove();
+          });
+        }
+      });
+    });
+  });
+})();
+\JS
+
+# CSS: ширина колонок с учётом gap + центрирование
+cat >>"/var/www/typo3/typo3-site/packages/mosaic_gallery/Resources/Public/Css/mosaic.css" <<CSS
+
+/* v1.2 S5: calc-ширины с учётом gap (3/2/1 колонки) + центрирование */
+.mosaic-gallery { margin-left:auto; margin-right:auto; }
+@media (min-width:1024px){
+  .mosaic-sizer,.mosaic-item{ width: calc((100% - 2*var(--gap,12px)) / 3); }
+}
+@media (min-width:640px) and (max-width:1023.98px){
+  .mosaic-sizer,.mosaic-item{ width: calc((100% - var(--gap,12px)) / 2); }
+}
+@media (max-width:639.98px){
+  .mosaic-sizer,.mosaic-item{ width: 100%; }
+}
+\CSS
+
+# очистка кэшей TYPO3 файлово
+cd /var/www/typo3/typo3-site && rm -rf var/cache/*
+echo "OK: S5 applied. Backups: /var/www/typo3/typo3-site/packages/mosaic_gallery/Resources/Public/Js/mosaic-init.js.2025-11-02_2315_s5_cols_limit1.bak , /var/www/typo3/typo3-site/packages/mosaic_gallery/Resources/Public/Css/mosaic.css.2025-11-02_2315_s5_cols_limit1.bak"
