@@ -1,14 +1,14 @@
 mod.wizards.newContentElement.wizardItems.plugins {
   elements {
-    mosaicgallery {
-      iconIdentifier = content-plugin
+    mosaicgallery_pi1 {
+      iconIdentifier = mosaic-gallery-plugin
       title = Mosaic Gallery
-      description = Simple mosaic gallery demo
+      description = Masonry image gallery (GLightbox, Masonry)
       tt_content_defValues {
         CType = list
         list_type = mosaicgallery_pi1
       }
     }
   }
-  show := addToList(plugins.mosaicgallery)
+  show := addToList(mosaicgallery_pi1)
 }

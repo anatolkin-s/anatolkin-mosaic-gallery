@@ -6,18 +6,21 @@ use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
 (static function () {
     $extKey = 'mosaic_gallery';
-    $pluginSignature = str_replace('_', '', $extKey) . '_pi1'; // mosaicgallery_pi1
+    $pluginSignature = 'mosaicgallery_pi1';
 
+    // Use our icon in the plugins list
     ExtensionManagementUtility::addPlugin(
-        ['Mosaic Gallery', $pluginSignature, 'content-image'],
+        ['Mosaic Gallery', $pluginSignature, 'mosaic-gallery-plugin'],
         'list_type',
         $extKey
     );
 
+    // FlexForm hookup
     ExtensionManagementUtility::addPiFlexFormValue(
         $pluginSignature,
         'FILE:EXT:' . $extKey . '/Configuration/FlexForms/MosaicGallery.xml'
     );
 
-    $GLOBALS['TCA']['tt_content']['types']['list']['subtypes_addlist'][$pluginSignature] = 'pi_flexform';
+    // Row icon in tt_content for this list_type
+    $GLOBALS['TCA']['tt_content']['ctrl']['typeicon_classes']['list-' . $pluginSignature] = 'mosaic-gallery-plugin';
 })();
