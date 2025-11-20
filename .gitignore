@@ -1,0 +1,13 @@
+# Editor/backup artifacts
+*.bak
+*.swp
+*.tmp
+
+# Archives
+*.zip
+*.tar.gz
+
+# Node/Composer (если появятся)
+node_modules/
+vendor/
+composer.lock
