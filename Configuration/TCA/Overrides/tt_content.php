@@ -36,6 +36,6 @@ use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
     ExtensionManagementUtility::addPiFlexFormValue(
         $pluginSignature,
-        'FILE:EXT:mosaic_gallery/Configuration/FlexForms/MosaicGallery.xml'
+        'FILE:EXT:anatolkin_mosaic_gallery/Configuration/FlexForms/MosaicGallery.xml'
     );
 })();
