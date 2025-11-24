@@ -31,3 +31,8 @@ composer.lock
 npm-debug.log*
 yarn.lock
 package-lock.json
+
+# Editor swap/backup files
+*.swp
+*.swo
+*~
