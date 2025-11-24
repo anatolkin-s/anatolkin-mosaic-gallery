@@ -1,8 +1,8 @@
 plugin.tx_mosaicgallery_pi1 {
   view {
-    templateRootPaths.10 = EXT:anatolkin_mosaic_gallery/Resources/Private/Templates/
-    partialRootPaths.10  = EXT:anatolkin_mosaic_gallery/Resources/Private/Partials/
-    layoutRootPaths.10   = EXT:anatolkin_mosaic_gallery/Resources/Private/Layouts/
+    templateRootPaths.10 = EXT:mosaic_gallery/Resources/Private/Templates/
+    partialRootPaths.10  = EXT:mosaic_gallery/Resources/Private/Partials/
+    layoutRootPaths.10   = EXT:mosaic_gallery/Resources/Private/Layouts/
   }
   settings {
     source = folder

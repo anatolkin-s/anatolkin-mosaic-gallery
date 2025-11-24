@@ -30,7 +30,7 @@
   },
   "extra": {
     "typo3/cms": {
-      "extension-key": "anatolkin_mosaic_gallery"
+      "extension-key": "mosaic_gallery"
     }
   },
   "support": {

@@ -9,7 +9,7 @@ use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
     // Register static TypoScript include for Anatolkin Mosaic Gallery
     ExtensionManagementUtility::addStaticFile(
-        'anatolkin_mosaic_gallery',                    // Extension key
+        'mosaic_gallery',                    // Extension key
         'Configuration/TypoScript',         // Path to TypoScript directory
         'Anatolkin Mosaic Gallery (Assets & Masonry)' // Label in "Include TypoScript sets"
     );
