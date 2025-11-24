@@ -1,0 +1,79 @@
+/* v1.3 – Masonry grid + design controlled via FlexForm */
+.mosaic-gallery{
+  margin:0 auto;
+  padding: var(--gap,12px);
+  background: var(--bg,transparent);
+}
+.mosaic-grid{ margin: 0 auto; }
+
+/* 3 / 2 / 1 columns layout with gutter = gap */
+.mosaic-grid .mosaic-sizer,
+.mosaic-grid .mosaic-item{
+  width: calc((100% - 2*var(--gap,12px)) / 3);
+  box-sizing:border-box;
+}
+@media (max-width:1024px){
+  .mosaic-grid .mosaic-sizer,
+  .mosaic-grid .mosaic-item{
+    width: calc((100% - 1*var(--gap,12px)) / 2);
+  }
+}
+@media (max-width:640px){
+  .mosaic-grid .mosaic-sizer,
+  .mosaic-grid .mosaic-item{
+    width: 100%;
+  }
+}
+
+.mosaic-item{
+  margin: 0 0 var(--gap,12px) 0;
+}
+.mosaic-item img{
+  display:block;
+  width:100%;
+  height:auto;
+  box-sizing:border-box;
+  border: var(--frame-width,0px) var(--frame-style,solid) var(--frame-color,transparent);
+  border-radius: var(--radius,6px);
+}
+
+/* Shadow & background (case-insensitive attribute selectors) */
+.mosaic-gallery[data-shadow="1"] .mosaic-item img{
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+}
+
+.mosaic-gallery[data-apply-bg="container" i],
+.mosaic-gallery[data-apply-bg="both" i]{
+  background: var(--bg,transparent);
+}
+.mosaic-gallery[data-apply-bg="tiles" i] .mosaic-item img,
+.mosaic-gallery[data-apply-bg="both"  i] .mosaic-item img{
+  background: var(--bg,transparent);
+}
+
+/* "Load more" button */
+.mosaic-actions{
+  text-align:center;
+  margin: 8px 0 4px;
+}
+.mosaic-load-more{
+  display:inline-block;
+  padding:.6rem 1rem;
+  border-radius:.5rem;
+  border:1px solid rgba(0,0,0,.15);
+  background:#fff;
+  cursor:pointer;
+}
+.mosaic-load-more:hover{
+  background:#f7f7f7;
+}
+
+.is-hidden{
+  display:none !important;
+}
+
+/* v1.2.1: iOS scroll anchoring fix */
+.mosaic-gallery,
+.mosaic-grid {
+  overflow-anchor: none;
+}

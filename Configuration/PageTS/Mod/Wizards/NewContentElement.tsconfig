@@ -1,0 +1,14 @@
+mod.wizards.newContentElement.wizardItems.plugins {
+  elements {
+    mosaicgallery {
+      iconIdentifier = content-plugin
+      title = Mosaic Gallery
+      description = Simple mosaic gallery demo
+      tt_content_defValues {
+        CType = list
+        list_type = mosaicgallery_pi1
+      }
+    }
+  }
+  show := addToList(plugins.mosaicgallery)
+}

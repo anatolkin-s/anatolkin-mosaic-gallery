@@ -1,0 +1,35 @@
+mod {
+  wizards {
+    newContentElement {
+      wizardItems {
+
+        gallery {
+          # Title of the group in the left column of the new content element wizard
+          header = Gallery
+
+          # Place this group after the built-in "Plugins" group
+          position = after:plugins
+
+          elements {
+
+            anatolkin_mosaic_gallery {
+              iconIdentifier = mosaic-gallery-plugin
+              title = Anatolkin Mosaic Gallery
+              description = Masonry-like image gallery using FAL with optional lightbox
+
+              tt_content_defValues {
+                CType = list
+                list_type = mosaicgallery_pi1
+              }
+            }
+
+          }
+
+          # Show our element inside this "Gallery" group
+          show := addToList(anatolkin_mosaic_gallery)
+        }
+
+      }
+    }
+  }
+}
