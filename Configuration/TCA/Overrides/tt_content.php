@@ -7,7 +7,7 @@ use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
 (static function (): void {
     // Extension key of this plugin
-    $extensionKey = 'mosaic_gallery';
+    $extensionKey = 'anatolkin_mosaic_gallery';
 
     // Plugin name as defined in registerPlugin()
     $pluginName = 'Pi1';

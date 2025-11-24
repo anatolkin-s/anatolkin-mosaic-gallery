@@ -19,15 +19,15 @@ final class GalleryController extends ActionController
     public function listAction(): ResponseInterface
     {
         $assets = GeneralUtility::makeInstance(AssetCollector::class);
-        $assets->addStyleSheet('mosaic-css', 'EXT:mosaic_gallery/Resources/Public/Css/mosaic.css');
-        $assets->addJavaScript('imagesloaded', 'EXT:mosaic_gallery/Resources/Public/Js/imagesloaded.pkgd.min.js', ['defer' => true]);
-        $assets->addJavaScript('masonry', 'EXT:mosaic_gallery/Resources/Public/Js/masonry.pkgd.min.js', ['defer' => true]);
-        $assets->addJavaScript('mosaic-init', 'EXT:mosaic_gallery/Resources/Public/Js/mosaic-init.js', ['defer' => true]);
+        $assets->addStyleSheet('mosaic-css', 'EXT:anatolkin_mosaic_gallery/Resources/Public/Css/mosaic.css');
+        $assets->addJavaScript('imagesloaded', 'EXT:anatolkin_mosaic_gallery/Resources/Public/Js/imagesloaded.pkgd.min.js', ['defer' => true]);
+        $assets->addJavaScript('masonry', 'EXT:anatolkin_mosaic_gallery/Resources/Public/Js/masonry.pkgd.min.js', ['defer' => true]);
+        $assets->addJavaScript('mosaic-init', 'EXT:anatolkin_mosaic_gallery/Resources/Public/Js/mosaic-init.js', ['defer' => true]);
 
         $enableLightbox = (bool)($this->settings['enableLightbox'] ?? true);
         if ($enableLightbox) {
-            $assets->addStyleSheet('glightbox-css', 'EXT:mosaic_gallery/Resources/Public/Css/glightbox.min.css');
-            $assets->addJavaScript('glightbox-js', 'EXT:mosaic_gallery/Resources/Public/Js/glightbox.min.js', ['defer' => true]);
+            $assets->addStyleSheet('glightbox-css', 'EXT:anatolkin_mosaic_gallery/Resources/Public/Css/glightbox.min.css');
+            $assets->addJavaScript('glightbox-js', 'EXT:anatolkin_mosaic_gallery/Resources/Public/Js/glightbox.min.js', ['defer' => true]);
         }
 
         // settings
