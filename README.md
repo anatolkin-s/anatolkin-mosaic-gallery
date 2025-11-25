@@ -11,7 +11,7 @@ The extension reads images from a FAL folder and displays them in a masonry grid
 - ✅ Simple design options (gap, columns, captions, frame / background)  
 - ✅ Works with any TYPO3 frontend (Bootstrap Package or your own sitepackage)  
 
-Current version: **0.1.6**
+Current version: **0.1.8**
 
 ---
 
@@ -215,4 +215,5 @@ To flush caches:
 
 Released under the **MIT License**.  
 See the `LICENSE` file for details.
+
 
