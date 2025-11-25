@@ -11,7 +11,9 @@ The extension reads images from a FAL folder and displays them in a masonry grid
 - ✅ Simple design options (gap, columns, captions, frame / background)  
 - ✅ Works with any TYPO3 frontend (Bootstrap Package or your own sitepackage)  
 
-Current version: **0.1.8**
+Current version: **0.1.8**  
+Extension key: **`mosaic_gallery`**  
+Composer package: **`anatolkin/anatolkin-mosaic-gallery`**
 
 ---
 
@@ -29,28 +31,36 @@ Current version: **0.1.8**
 
 If the package is available on Packagist, installation will be as simple as:
 
-    composer require anatolkin/anatolkin-mosaic-gallery:^0.1
+```bash
+composer require anatolkin/anatolkin-mosaic-gallery:^0.1
+```
 
 If you want to use the extension directly from GitHub as a VCS repository,
 add this to your project’s `composer.json` first (in the root TYPO3 project):
 
+```json
+{
+  "repositories": [
     {
-      "repositories": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/anatolkin-s/anatolkin-mosaic_gallery.git"
-        }
-      ]
+      "type": "vcs",
+      "url": "https://github.com/anatolkin-s/anatolkin-mosaic-gallery.git"
     }
+  ]
+}
+```
 
 Then run:
 
-    composer require anatolkin/anatolkin-mosaic-gallery:^0.1.8
+```bash
+composer require anatolkin/anatolkin-mosaic-gallery:^0.1.8
+```
 
 After that, if needed:
 
-    composer install
-    composer dump-autoload
+```bash
+composer install
+composer dump-autoload
+```
 
 ---
 
@@ -58,7 +68,7 @@ After that, if needed:
 
 1. Log in to the TYPO3 backend.  
 2. Open **Admin Tools → Extensions**.  
-3. Search for **“Anatolkin Mosaic Gallery”** (`anatolkin_mosaic_gallery`).  
+3. Search for **“Mosaic Gallery”** (`mosaic_gallery`).  
 4. Click the **Activate** icon if it is not already active.  
 
 ---
@@ -79,13 +89,15 @@ Include it once on your **site root**:
 4. Open the **“Includes”** tab.  
 5. In **“Include static (from extensions)”** add:
 
-       Anatolkin Mosaic Gallery (EXT:anatolkin_mosaic_gallery)
+   > **Anatolkin Mosaic Gallery (Assets & Masonry) (mosaic_gallery)**
 
 6. Save the template.  
 
 If you use a custom **sitepackage**, you can instead import the TypoScript there:
 
-    @import 'EXT:anatolkin_mosaic_gallery/Configuration/TypoScript/setup.typoscript'
+```typoscript
+@import 'EXT:mosaic_gallery/ext_typoscript_setup.typoscript'
+```
 
 ---
 
@@ -97,8 +109,10 @@ extension’s own `Resources/Public` assets.
 If you prefer to load GLightbox from a CDN instead, you can override this
 in your TypoScript Setup, for example:
 
-    page.includeCSS.mg_glightbox = https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css
-    page.includeJSFooterlibs.mg_glightbox = https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js
+```typoscript
+page.includeCSS.mg_glightbox = https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css
+page.includeJSFooterlibs.mg_glightbox = https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js
+```
 
 Where to put it:
 
@@ -110,7 +124,9 @@ After changing TypoScript, clear caches.
 
 Example (CLI, adjust path for your project):
 
-    sudo -u webuser -H /usr/bin/php /var/www/typo3/typo3-site/vendor/bin/typo3 cache:flush
+```bash
+sudo -u webuser -H /usr/bin/php /var/www/typo3/typo3-site/vendor/bin/typo3 cache:flush
+```
 
 ---
 
@@ -119,7 +135,7 @@ Example (CLI, adjust path for your project):
 1. Go to the **Page** module.  
 2. Choose the page where you want to show the gallery.  
 3. Click **“Create new content element”**.  
-4. On the **“Plugins”** tab choose **“Anatolkin Mosaic Gallery”**.  
+4. On the **“Plugins”** tab choose **“Mosaic Gallery”**.  
 5. In the plugin settings (**Plugin** tab):
 
    - **Image folder** – select a folder under `fileadmin/` that contains your images.  
@@ -146,27 +162,31 @@ Example (CLI, adjust path for your project):
 
 ## Styling and advanced options
 
-The gallery uses a few CSS variables on the root `.anatolkin-mosaic-gallery` element:
+The gallery uses a few CSS variables on the root `.mosaic-gallery` element:
 
-    .mosaic-gallery {
-      --gap: 12px;              /* space between tiles */
-      --radius: 6px;            /* border-radius for images */
-      --frame-width: 0px;       /* border width */
-      --frame-style: solid;     /* border style */
-      --frame-color: #000;      /* border color */
-      --bg: transparent;        /* background color (container/tiles) */
-    }
+```css
+.mosaic-gallery {
+  --gap: 12px;              /* space between tiles */
+  --radius: 6px;            /* border-radius for images */
+  --frame-width: 0px;       /* border width */
+  --frame-style: solid;     /* border style */
+  --frame-color: #000;      /* border color */
+  --bg: transparent;        /* background color (container/tiles) */
+}
+```
 
 You can override them in your sitepackage CSS, for example:
 
-    .mosaic-gallery.mg-portfolio {
-      --gap: 24px;
-      --radius: 12px;
-      --frame-width: 1px;
-      --frame-style: solid;
-      --frame-color: #dddddd;
-      --bg: #f7f7f7;
-    }
+```css
+.mosaic-gallery.mg-portfolio {
+  --gap: 24px;
+  --radius: 12px;
+  --frame-width: 1px;
+  --frame-style: solid;
+  --frame-color: #dddddd;
+  --bg: #f7f7f7;
+}
+```
 
 Then assign the extra class to the content element (e.g. `mg-portfolio`).
 
@@ -190,11 +210,15 @@ Then assign the extra class to the content element (e.g. `mg-portfolio`).
 
 Run TYPO3 CLI commands as the web user. Example:
 
-    sudo -u webuser -H bash -lc 'cd /var/www/typo3/typo3-site && composer show anatolkin/anatolkin-mosaic-gallery | head -8'
+```bash
+sudo -u webuser -H bash -lc 'cd /var/www/typo3/typo3-site && composer show anatolkin/anatolkin-mosaic-gallery | head -8'
+```
 
 To flush caches:
 
-    sudo -u webuser -H /usr/bin/php /var/www/typo3/typo3-site/vendor/bin/typo3 cache:flush
+```bash
+sudo -u webuser -H /usr/bin/php /var/www/typo3/typo3-site/vendor/bin/typo3 cache:flush
+```
 
 (Replace `/var/www/typo3/typo3-site` with your project path if it differs.)
 
@@ -215,7 +239,3 @@ To flush caches:
 
 Released under the **MIT License**.  
 See the `LICENSE` file for details.
-
-
-
-
