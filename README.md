@@ -29,7 +29,7 @@ Current version: **0.1.8**
 
 If the package is available on Packagist, installation will be as simple as:
 
-    composer require anatolkin/mosaic-gallery:^0.1
+    composer require anatolkin/anatolkin-mosaic-gallery:^0.1
 
 If you want to use the extension directly from GitHub as a VCS repository,
 add this to your project’s `composer.json` first (in the root TYPO3 project):
@@ -38,14 +38,14 @@ add this to your project’s `composer.json` first (in the root TYPO3 project):
       "repositories": [
         {
           "type": "vcs",
-          "url": "https://github.com/anatolkin-s/mosaic_gallery.git"
+          "url": "https://github.com/anatolkin-s/anatolkin-mosaic_gallery.git"
         }
       ]
     }
 
 Then run:
 
-    composer require anatolkin/mosaic-gallery:^0.1
+    composer require anatolkin/anatolkin-mosaic-gallery:^0.1.8
 
 After that, if needed:
 
@@ -58,7 +58,7 @@ After that, if needed:
 
 1. Log in to the TYPO3 backend.  
 2. Open **Admin Tools → Extensions**.  
-3. Search for **“Mosaic Gallery”** (`mosaic_gallery`).  
+3. Search for **“Anatolkin Mosaic Gallery”** (`anatolkin_mosaic_gallery`).  
 4. Click the **Activate** icon if it is not already active.  
 
 ---
@@ -79,19 +79,19 @@ Include it once on your **site root**:
 4. Open the **“Includes”** tab.  
 5. In **“Include static (from extensions)”** add:
 
-       Mosaic Gallery (EXT:mosaic_gallery)
+       Anatolkin Mosaic Gallery (EXT:anatolkin_mosaic_gallery)
 
 6. Save the template.  
 
 If you use a custom **sitepackage**, you can instead import the TypoScript there:
 
-    @import 'EXT:mosaic_gallery/Configuration/TypoScript/setup.typoscript'
+    @import 'EXT:anatolkin_mosaic_gallery/Configuration/TypoScript/setup.typoscript'
 
 ---
 
 ### 4. (Optional) GLightbox from CDN
 
-By default, Mosaic Gallery loads GLightbox, Masonry and imagesLoaded from the
+By default, Anatolkin Mosaic Gallery loads GLightbox, Masonry and imagesLoaded from the
 extension’s own `Resources/Public` assets.
 
 If you prefer to load GLightbox from a CDN instead, you can override this
@@ -119,7 +119,7 @@ Example (CLI, adjust path for your project):
 1. Go to the **Page** module.  
 2. Choose the page where you want to show the gallery.  
 3. Click **“Create new content element”**.  
-4. On the **“Plugins”** tab choose **“Mosaic Gallery”**.  
+4. On the **“Plugins”** tab choose **“Anatolkin Mosaic Gallery”**.  
 5. In the plugin settings (**Plugin** tab):
 
    - **Image folder** – select a folder under `fileadmin/` that contains your images.  
@@ -146,7 +146,7 @@ Example (CLI, adjust path for your project):
 
 ## Styling and advanced options
 
-The gallery uses a few CSS variables on the root `.mosaic-gallery` element:
+The gallery uses a few CSS variables on the root `.anatolkin-mosaic-gallery` element:
 
     .mosaic-gallery {
       --gap: 12px;              /* space between tiles */
@@ -190,7 +190,7 @@ Then assign the extra class to the content element (e.g. `mg-portfolio`).
 
 Run TYPO3 CLI commands as the web user. Example:
 
-    sudo -u webuser -H bash -lc 'cd /var/www/typo3/typo3-site && composer show anatolkin/mosaic-gallery | head -8'
+    sudo -u webuser -H bash -lc 'cd /var/www/typo3/typo3-site && composer show anatolkin/anatolkin-mosaic-gallery | head -8'
 
 To flush caches:
 
@@ -204,7 +204,7 @@ To flush caches:
 
 ### v0.1.8
 
-- First public GitHub release of **Mosaic Gallery for TYPO3 v13**.  
+- First public GitHub release of **Anatolkin Mosaic Gallery for TYPO3 v13**.  
 - Bundled JS/CSS for Masonry, imagesLoaded and GLightbox.  
 - Fluid template for masonry gallery with optional lightbox.  
 - Basic README with installation and usage instructions.  
@@ -215,6 +215,7 @@ To flush caches:
 
 Released under the **MIT License**.  
 See the `LICENSE` file for details.
+
 
 
 
