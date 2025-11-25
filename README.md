@@ -202,7 +202,7 @@ To flush caches:
 
 ## Changelog (short)
 
-### v0.1.6
+### v0.1.8
 
 - First public GitHub release of **Mosaic Gallery for TYPO3 v13**.  
 - Bundled JS/CSS for Masonry, imagesLoaded and GLightbox.  
@@ -215,5 +215,6 @@ To flush caches:
 
 Released under the **MIT License**.  
 See the `LICENSE` file for details.
+
 
 
