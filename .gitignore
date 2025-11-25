@@ -1,38 +1,8 @@
-# IDE / editor config
-.idea/
-.vscode/
-nbproject/
-*.iml
-
-# OS junk
-.DS_Store
-Thumbs.db
-
-# Node / frontend stuff (на будущее, если появятся)
-node_modules/
-bower_components/
-dist/
-build/
-
-# Archives / temporary exports
-*.zip
-*.tar
-*.tar.gz
-*.tgz
-
-# Logs
-*.log
-
-# PHP / composer (если когда-нибудь добавим локальный composer в экстеншн)
-vendor/
-composer.lock
-
-# Misc package manager files
-npm-debug.log*
-yarn.lock
-package-lock.json
-
-# Editor swap/backup files
-*.swp
-*.swo
-*~
+/vendor/
+/.DS_Store
+/.idea/
+/.vscode/
+/nbproject/
+/composer.lock
+/var/
+/node_modules/
