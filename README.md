@@ -1,4 +1,4 @@
-# Mosaic Gallery for TYPO3
+# Anatolkin Mosaic Gallery for TYPO3
 
 Responsive masonry-style image gallery for **TYPO3 v13 LTS**.
 
@@ -12,7 +12,7 @@ The extension reads images from a FAL folder and displays them in a masonry grid
 - ✅ Works with any TYPO3 frontend (Bootstrap Package or your own sitepackage)  
 
 Current version: **0.1.8**  
-Extension key: **`mosaic_gallery`**  
+Extension key: **`anatolkin_mosaic_gallery`**  
 Composer package: **`anatolkin/anatolkin-mosaic-gallery`**
 
 ---
@@ -68,7 +68,7 @@ composer dump-autoload
 
 1. Log in to the TYPO3 backend.  
 2. Open **Admin Tools → Extensions**.  
-3. Search for **“Mosaic Gallery”** (`mosaic_gallery`).  
+3. Search for **“Anatolkin Mosaic Gallery”** (`anatolkin_mosaic_gallery`).  
 4. Click the **Activate** icon if it is not already active.  
 
 ---
@@ -89,14 +89,14 @@ Include it once on your **site root**:
 4. Open the **“Includes”** tab.  
 5. In **“Include static (from extensions)”** add:
 
-   > **Anatolkin Mosaic Gallery (Assets & Masonry) (mosaic_gallery)**
+   > **Anatolkin Mosaic Gallery (Assets & Masonry) (anatolkin_mosaic_gallery)**
 
 6. Save the template.  
 
 If you use a custom **sitepackage**, you can instead import the TypoScript there:
 
 ```typoscript
-@import 'EXT:mosaic_gallery/ext_typoscript_setup.typoscript'
+@import 'EXT:anatolkin_mosaic_gallery/ext_typoscript_setup.typoscript'
 ```
 
 ---
@@ -135,7 +135,7 @@ sudo -u webuser -H /usr/bin/php /var/www/typo3/typo3-site/vendor/bin/typo3 cache
 1. Go to the **Page** module.  
 2. Choose the page where you want to show the gallery.  
 3. Click **“Create new content element”**.  
-4. On the **“Plugins”** tab choose **“Mosaic Gallery”**.  
+4. On the **“Plugins”** tab choose **“Anatolkin Mosaic Gallery”**.  
 5. In the plugin settings (**Plugin** tab):
 
    - **Image folder** – select a folder under `fileadmin/` that contains your images.  
