@@ -28,6 +28,7 @@
     containers.forEach(function (container) {
       var gap      = parseInt(container.style.getPropertyValue("--gap") || "12", 10);
       var step     = parseInt(container.getAttribute("data-step") || "0", 10);
+      var initial  = parseInt(container.getAttribute("data-initial") || "0", 10);
       var enable   = container.getAttribute("data-lightbox") === "1";
       var group    = container.getAttribute("data-group") || "gallery";
       var grid     = container.querySelector(".mosaic-grid") || container;
@@ -53,7 +54,16 @@
       }
 
       imagesLoaded(grid, function () {
-        var sizer = grid.querySelector(".mosaic-sizer") || grid.querySelector(".mosaic-item");
+        var sizer    = grid.querySelector(".mosaic-sizer") || grid.querySelector(".mosaic-item");
+        var allItems = grid.querySelectorAll(".mosaic-item");
+
+        // Сначала показываем всё, затем режем по initial, чтобы не было «дыры»
+        if (initial > 0 && allItems.length > initial) {
+          for (var i = initial; i < allItems.length; i++) {
+            allItems[i].classList.add("is-hidden");
+          }
+        }
+
         var msnry = new Masonry(grid, {
           itemSelector: ".mosaic-item",
           columnWidth:  sizer,
@@ -75,13 +85,14 @@
               return;
             }
 
-            var reveal = Array.prototype.slice.call(hidden, 0, step || hidden.length);
+            var revealCount = (step && step > 0) ? step : hidden.length;
+            var reveal = Array.prototype.slice.call(hidden, 0, revealCount);
+
             reveal.forEach(function (el) {
               el.classList.remove("is-hidden");
             });
 
-            imagesLoaded(reveal, function () {
-              msnry.appended(reveal);
+            imagesLoaded(grid, function () {
               msnry.layout();
               if (enable && lightbox && typeof lightbox.reload === "function") {
                 lightbox.reload();
@@ -98,7 +109,7 @@
   });
 })();
 
-/* === mosaic_gallery v1.3.1 � Lightbox theme + frame copied from gallery tiles === */
+/* === mosaic_gallery v1.3.1 ▒ Lightbox theme + frame copied from gallery tiles === */
 (function(){
   function hexToRgb(hex){
     if (!hex) return {r:0,g:0,b:0};
@@ -164,7 +175,6 @@
         var tileBg  = (bgApply === "tiles" || bgApply === "both") ? bgColor : "transparent";
 
         var css =
-          // Overlay and colors for navigation / close button / captions
           ".goverlay{background:" +
             toRgba(ds.lbOverlay || "#000000", ds.lbOverlayAlpha || "0.92") +
             "!important;}" +
@@ -180,8 +190,6 @@
           ".glightbox-clean .gslide-description{background:" +
             (ds.lbCaptionBg || "rgba(0,0,0,0.75)") +
             "!important;}" +
-
-          // Frame and border-radius on the image inside the lightbox (same as tiles)
           ".glightbox-container .gslide-image img{" +
             "border:" + frameWidth + " " + frameStyle + " " + frameColor + " !important;" +
             "border-radius:" + radius + " !important;" +
