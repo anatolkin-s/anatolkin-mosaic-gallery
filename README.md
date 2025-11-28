@@ -1,26 +1,13 @@
 # Anatolkin Mosaic Gallery
 
-**Anatolkin Mosaic Gallery** is a masonry-like image gallery extension for TYPO3 CMS 13.  
-It uses TYPO3 FAL (File Abstraction Layer) as the image source and can optionally integrate with GLightbox for a modern lightbox experience.
+Anatolkin Mosaic Gallery is a masonry-like image gallery extension for TYPO3 CMS 13 that uses the TYPO3 File Abstraction Layer (FAL) and an optional GLightbox-based lightbox.
 
-The extension is designed to:
+It is designed to be:
 
-- provide a clean masonry-style gallery layout,
-- be easy to use for editors (simple “folder as source” configuration),
-- integrate nicely into TYPO3’s backend (icons, wizard, Page TSconfig),
-- behave predictably on real-world TYPO3 13 installations (Composer & classic).
-
----
-
-## Features
-
-- Masonry-like image gallery using FAL
-- Optional integration with GLightbox
-- Uses a **folder** (and optionally subfolders) as a source of images
-- “Load more” behaviour for large galleries (progressive loading)
-- Separate plugin for galleries (list_type: `mosaicgallery_pi1`)
-- TYPO3 13-compatible TCA, TypoScript and TSconfig wiring
-- Backwards compatible with older content elements using the legacy list_type
+- **Simple to install** – ship everything via Composer and one static TypoScript include.
+- **Safe for editors** – everything is configured through a single content element.
+- **Nice by default** – sensible defaults for spacing, frames, captions and lightbox theme.
+- **Flexible** – supports folders, categories and fine‑tuning of the visual style.
 
 ---
 
@@ -29,318 +16,223 @@ The extension is designed to:
 - TYPO3: **13.4.0 – 13.99.99**
 - PHP: **8.1 – 8.3**
 
-As declared in:
-
-- `ext_emconf.php`
-- `composer.json`
+(As declared in `composer.json` and `ext_emconf.php`.)
 
 ---
 
 ## Installation
 
-### 1. Composer-based installations (recommended)
-
-In your TYPO3 project root, run:
+### 1. Install via Composer
 
 ```bash
-composer require anatolkin/anatolkin-mosaic-gallery:^0.1.10
+composer require anatolkin/anatolkin-mosaic-gallery:^0.1.11
 ```
 
-Then run TYPO3 extension setup and clear caches:
+Run TYPO3 extension setup and clear the caches:
 
 ```bash
 php vendor/bin/typo3 extension:setup
 php vendor/bin/typo3 cache:flush
 ```
 
-The extension key is:
+### 2. Include the static TypoScript set
 
-```text
-anatolkin_mosaic_gallery
-```
+In the TYPO3 backend:
 
-### 2. Classic / non-Composer installation
+1. Go to **Web → TypoScript** (or **Site Configuration / Templates**, depending on your setup).
+2. Open your main site template record.
+3. In **Includes → Include TypoScript sets**, add:
 
-If you are using a non-Composer TYPO3 installation:
+   > **Anatolkin Mosaic Gallery (Assets & Masonry)**  
+   > (`anatolkin_mosaic_gallery`)
 
-1. Download the extension from the TYPO3 Extension Repository (TER) as a `.zip`.
-2. Extract it into your `typo3conf/ext/` directory so that you have:
+4. Save the record and clear caches.
 
-   ```text
-   typo3conf/ext/anatolkin_mosaic_gallery/
-   ```
+This will register:
 
-3. Go to **Admin Tools → Extensions** and activate **Anatolkin Mosaic Gallery**.
-4. In *Install Tool* or via the Extension Manager, run the database and cache update if required.
+- the main gallery TypoScript setup,
+- CSS + JS assets (Masonry, imagesLoaded, GLightbox and the gallery theme),
+- a small amount of configuration for the content element.
 
----
+### 3. Place the content element
 
-## Static TypoScript
+The extension adds a dedicated entry to the **New Content Element Wizard**:
 
-To make the gallery work, you need to include the static TypoScript set.
+- Group: **Gallery**
+- Element: **Anatolkin Mosaic Gallery**
+- Icon: mosaic tile with the letter “A”
 
-1. Go to the **Template** module in the TYPO3 backend.
-2. Select your main site root.
-3. Click on **“Edit the whole template record”**.
-4. In the **Includes** (static templates) section, add:
+Editors can:
 
-   > **Anatolkin Mosaic Gallery (Assets & Masonry)**
-
-This static include is registered via:
-
-```php
-ExtensionManagementUtility::addStaticFile(
-    'anatolkin_mosaic_gallery',
-    'Configuration/TypoScript',
-    'Anatolkin Mosaic Gallery (Assets & Masonry)'
-);
-```
+1. Choose **Folder (fileadmin)** or **Categories** as the source.
+2. Select a folder or categories.
+3. Configure layout options on the **Plugin** tab.
 
 ---
 
-## Page TSconfig and New Content Element Wizard
+## Features
 
-The extension automatically registers its Page TSconfig to appear in the “New Content Element” wizard.
+### Masonry layout
 
-- `ext_localconf.php` imports:
+- Uses **Masonry** + **imagesLoaded** to create a responsive grid.
+- Supports variable image heights and different aspect ratios.
+- Keeps gaps minimal and automatically reflows on resize.
 
-  ```php
-  ExtensionManagementUtility::addPageTSConfig(
-      "@import 'EXT:anatolkin_mosaic_gallery/Configuration/TsConfig/Page/NewContentElementWizard.typoscript'"
-  );
+### “Load more” pagination
+
+Version **0.1.11** refines the “Load more” behaviour:
+
+- You can define:
+  - **Items per page** – how many tiles are shown initially.
+  - **Load step** – how many additional tiles are revealed on each click.
+- Only the first N items are visible on first load; the rest are rendered with the `is-hidden` class.
+- Clicking **Load more** reveals the next batch and triggers a proper Masonry relayout:
+  - no large empty gaps between “old” and “new” tiles;
+  - the button is removed automatically when there is nothing left to load.
+
+This behaviour is controlled by:
+
+- Server-side logic (marking items as hidden or visible) and
+- Client-side JS (`Resources/Public/Js/mosaic-init.js`).
+
+### Optional lightbox (GLightbox)
+
+- Uses **GLightbox** for a modern, responsive lightbox.
+- Can be enabled/disabled per content element.
+- The lightbox theme automatically mirrors:
+  - frame color and width,
+  - border‑radius,
+  - (optionally) tile background color.
+- Additional color options for:
+  - overlay,
+  - navigation arrows,
+  - close button,
+  - caption text and background.
+
+### Visual customization
+
+Per content element, you can configure:
+
+- **Gutter (gap)** between tiles.
+- **Corner radius**.
+- **Frame**:
+  - color,
+  - width,
+  - style (solid, dashed, etc.).
+- **Background application**:
+  - apply background to the whole gallery,
+  - only to tiles,
+  - both, or none.
+- **Shadow** (on/off).
+- **Captions** (on/off).
+
+### Data sources
+
+- **Folder mode** – use a FAL folder (optionally recursive).
+- **Category mode** (if enabled) – render images by categories.
+
+---
+
+## Usage overview
+
+1. Create or choose a page for your gallery.
+2. Add content element **Anatolkin Mosaic Gallery**.
+3. On the **Plugin** tab, configure:
+
+   - **Source**: folder or categories.
+   - **Items per page**: e.g. `6`.
+   - **Load step**: e.g. `6` (or `0` to load all remaining items at once).
+   - **Max image width**: to control file size and layout.
+   - **Lightbox**: enable if you want click‑to‑zoom behaviour.
+   - **Captions**: enable if you want image titles shown under the tiles.
+
+4. Optionally tune the **Design** sub‑tab:
+   - background, frame, radius, shadow, etc.
+
+5. Save and clear the TYPO3 caches (if needed).
+
+---
+
+## How “Load more” works in 0.1.11
+
+At render time the controller prepares a list of items. For each item it marks an internal `hidden` flag based on the **items per page** and **load step** settings.
+
+In the Fluid template (`Resources/Private/Templates/Gallery/List.html`):
+
+- visible items are rendered as:
+
+  ```html
+  <figure class="mosaic-item">
   ```
 
-- `Configuration/TsConfig/Page/NewContentElementWizard.typoscript` registers the plugin in a dedicated **“Gallery”** group:
+- hidden items are rendered as:
 
-  ```typoscript
-  mod.wizards.newContentElement.wizardItems.gallery {
-    header = Gallery
-    position = after:plugins
-
-    elements.anatolkin_mosaic_gallery {
-      iconIdentifier = mosaic-gallery-plugin
-      title = Anatolkin Mosaic Gallery
-      description = Masonry-like image gallery using FAL with optional lightbox
-
-      tt_content_defValues {
-        CType = list
-        list_type = mosaicgallery_pi1
-      }
-    }
-
-    show := addToList(anatolkin_mosaic_gallery)
-  }
+  ```html
+  <figure class="mosaic-item is-hidden">
   ```
 
-You should see **“Anatolkin Mosaic Gallery”** as a selectable content element under the “Gallery” group in the New Content Element wizard.
+In `mosaic-init.js`:
+
+- Masonry is initialised on the grid after all currently visible images are loaded.
+- Clicking **Load more**:
+  - finds a batch of `.mosaic-item.is-hidden` elements,
+  - removes `is-hidden` from that batch,
+  - calls `msnry.appended(reveal)` and `msnry.layout()`,
+  - reloads GLightbox if it is enabled,
+  - removes the button when no hidden items remain.
+
+This combination keeps the grid tight and avoids large empty bands in the layout.
 
 ---
 
-## Plugin and TypoScript wiring
+## Backwards compatibility
 
-### Extension key and plugin signature
-
-- Extension key: `anatolkin_mosaic_gallery`
-- Plugin name: `Pi1`
-- Final list_type: `mosaicgallery_pi1`
-
-TCA (simplified):
-
-```php
-$extensionKey = 'anatolkin_mosaic_gallery';
-$pluginName = 'Pi1';
-$pluginSignature = str_replace('_', '', $extensionKey) . '_' . strtolower($pluginName); // mosaicgallery_pi1
-```
-
-This plugin signature is used in:
-
-- `tt_content.list_type`
-- TypoScript content object registration
-- FlexForm registration
-- New Content Element wizard configuration
-
-### TypoScript setup
-
-The extension imports its main TypoScript via:
-
-```typoscript
-@import "EXT:anatolkin_mosaic_gallery/Configuration/TypoScript/setup.typoscript"
-```
-
-In the setup, you will find the base configuration:
-
-```typoscript
-plugin.tx_mosaicgallery_pi1 {
-  view {
-    templateRootPaths.10 = EXT:anatolkin_mosaic_gallery/Resources/Private/Templates/
-    partialRootPaths.10  = EXT:anatolkin_mosaic_gallery/Resources/Private/Partials/
-    layoutRootPaths.10   = EXT:anatolkin_mosaic_gallery/Resources/Private/Layouts/
-  }
-
-  settings {
-    source    = folder
-    folder    = fileadmin/gallery/
-    recursive = 1
-    gap       = 12
-  }
-}
-```
-
-And the content object registration:
-
-```typoscript
-tt_content.list.20.mosaicgallery_pi1 = USER
-tt_content.list.20.mosaicgallery_pi1 {
-  userFunc      = TYPO3\CMS\Extbase\Core\Bootstrap->run
-  vendorName    = Anatolkin
-  extensionName = MosaicGallery
-  pluginName    = Pi1
-}
-```
-
-### Backwards compatibility
-
-If you have older content elements using the old list_type `anatolkinmosaicgallery_pi1`, they are still supported:
-
-```typoscript
-tt_content.list.20.anatolkinmosaicgallery_pi1 < tt_content.list.20.mosaicgallery_pi1
-```
-
-This avoids runtime errors like:
-
-```text
-No Content Object definition found at TypoScript object path "tt_content.list.20.anatolkinmosaicgallery_pi1"
-```
-
----
-
-## How to use
-
-1. **Prepare an image folder**
-
-   - In the **Filelist** module, create a folder for your gallery, for example:
-
-     ```text
-     fileadmin/gallery/
-     ```
-
-   - Upload images to that folder (and optionally to subfolders).
-
-2. **Create a gallery content element**
-
-   - Go to the **Page** module.
-   - On the desired page, click **“New Content Element”**.
-   - Open the **“Gallery”** group.
-   - Choose **“Anatolkin Mosaic Gallery”**.
-
-3. **Configure the plugin**
-
-   - Switch to the **Plugin** tab of the content element.
-   - Select **source = folder** (default).
-   - Choose the folder containing your images (e.g. `fileadmin/gallery/`).
-   - Optionally enable recursive loading to include subfolders.
-   - Adjust other settings as needed (gap, number of images per “page”, etc. if available in the FlexForm).
-
-4. **Save and view the page**
-
-   - Clear frontend cache if needed.
-   - Open the page in the frontend and verify that the masonry gallery appears.
-
----
-
-## Layout, masonry and “Load more”
-
-- The layout is based on a masonry-like CSS grid.
-- The `gap` setting (in TypoScript / FlexForm) controls the spacing between tiles.
-- “Load more” behavior allows progressively loading additional images instead of rendering everything at once.
-- Depending on your theme and CSS, you might want to adjust:
-  - breakpoints,
-  - number of columns,
-  - gap size,
-  - animation or hover effects.
-
-Future releases will focus on exposing more of these options via Constants and FlexForm.
-
----
-
-## Troubleshooting
-
-### The plugin does not appear in the New Content Element wizard
-
-- Make sure the extension is **installed and active**.
-- Check that Page TSconfig import is in place (it is done automatically via `ext_localconf.php`).
-- Clear all caches:
-
-  ```bash
-  php vendor/bin/typo3 cache:flush
-  ```
-
-- Log out and log in again to the backend if necessary.
-
-### Error: “No Content Object definition found at TypoScript object path …”
-
-- This usually means TypoScript for the plugin has not been included.
-- Ensure that the static TypoScript set  
-  **“Anatolkin Mosaic Gallery (Assets & Masonry)”**  
-  is included in your site template.
-- If you have very old content elements, the alias
+- Old `list_type` values are still supported:
 
   ```typoscript
   tt_content.list.20.anatolkinmosaicgallery_pi1 < tt_content.list.20.mosaicgallery_pi1
   ```
 
-  should handle them. If not, please open an issue with details.
-
-### FlexForm file not found / 500 errors in backend
-
-- Make sure the extension path is correct and the FlexForm is referenced as:
-
-  ```php
-  'FILE:EXT:anatolkin_mosaic_gallery/Configuration/FlexForms/MosaicGallery.xml'
-  ```
-
-- If you manually copied files between instances, verify that the `Configuration/FlexForms/` directory exists and contains `MosaicGallery.xml`.
+- Existing content elements created with earlier versions (0.1.6–0.1.10) continue to work.
+- Extension key is consistently **`anatolkin_mosaic_gallery`** everywhere.
 
 ---
 
-## Development
+## Changelog (short)
 
-The extension follows a standard TYPO3 Extbase + Fluid structure:
+### 0.1.11
 
-- PHP namespace: `Anatolkin\MosaicGallery`
-- Controller: `Classes/Controller/GalleryController.php`
-- Templates: `Resources/Private/Templates/`
-- Partials: `Resources/Private/Partials/`
-- Layouts: `Resources/Private/Layouts/`
+- Refined **“Load more”** behaviour:
+  - now shows only the configured number of items on first load;
+  - reveals additional items in proper Masonry batches;
+  - removes the button when no items remain.
+- Fixed layout gaps that could appear between initial and newly loaded tiles.
+- Small internal clean‑ups in JS to better handle lightbox re‑initialisation.
 
-Repository:
+### 0.1.10
 
-- GitHub: `https://github.com/anatolkin-s/anatolkin-mosaic-gallery`
+- Unified extension key: `anatolkin_mosaic_gallery` (Composer + TYPO3).
+- Unified plugin signature: `mosaicgallery_pi1`.
+- Added TypoScript alias for older `list_type` values.
+- Cleaned up TypoScript and TSconfig wiring.
+- Improved backend integration (wizard group, icons, labels).
+- Hardened FlexForm and Extbase plugin wiring for TYPO3 13.
 
-If you want to develop locally:
-
-```bash
-git clone https://github.com/anatolkin-s/anatolkin-mosaic-gallery.git
-```
-
-Place the extension under your TYPO3 project’s `packages/` or `typo3conf/ext/` (depending on your setup) and register it accordingly.
-
----
-
-## Changelog
-
-The full changelog is available in the **Releases** section on GitHub:
-
-- `https://github.com/anatolkin-s/anatolkin-mosaic-gallery/releases`
-
-Key releases:
-
-- **v0.1.10** – Stable TYPO3 13 support, unified extension key, consistent list_type, improved wiring.
+(Older versions are not listed here in detail.)
 
 ---
 
-## License
+## Support / issues
 
-This extension is licensed under the **MIT License**.
+Please report bugs or feature requests on GitHub:
 
-See the `LICENSE` file for details.
+- Issues: `https://github.com/anatolkin-s/anatolkin-mosaic-gallery/issues`
+- Source: `https://github.com/anatolkin-s/anatolkin-mosaic-gallery`
+
+When reporting a problem, please include:
+
+- TYPO3 version,
+- PHP version,
+- screenshot of the content element configuration,
+- any relevant log messages or exception codes,
+- and (if possible) a short description of the folder/category structure.
