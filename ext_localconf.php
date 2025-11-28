@@ -29,18 +29,18 @@ ExtensionUtility::configurePlugin(
     $registry->registerIcon(
         'mosaic-gallery-extension',
         SvgIconProvider::class,
-        ['source' => 'EXT:mosaic_gallery/Resources/Public/Icons/Extension.svg']
+        ['source' => 'EXT:anatolkin_mosaic_gallery/Resources/Public/Icons/Extension.svg']
     );
 
     // Icon for the content element / plugin
     $registry->registerIcon(
         'mosaic-gallery-plugin',
         SvgIconProvider::class,
-        ['source' => 'EXT:mosaic_gallery/Resources/Public/Icons/PluginMosaic.svg']
+        ['source' => 'EXT:anatolkin_mosaic_gallery/Resources/Public/Icons/PluginMosaic.svg']
     );
 })();
 
 // Register Page TSconfig for the "New Content Element" wizard
 ExtensionManagementUtility::addPageTSConfig(
-    "@import 'EXT:mosaic_gallery/Configuration/TsConfig/Page/NewContentElementWizard.typoscript'"
+    "@import 'EXT:anatolkin_mosaic_gallery/Configuration/TsConfig/Page/NewContentElementWizard.typoscript'"
 );

@@ -1,1 +1,1 @@
-@import 'EXT:mosaic_gallery/Configuration/PageTS/Mod/Wizards/NewContentElement.tsconfig'
+@import 'EXT:anatolkin_mosaic_gallery/Configuration/TsConfig/Page/NewContentElementWizard.typoscript'

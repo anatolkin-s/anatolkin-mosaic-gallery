@@ -6,16 +6,15 @@ defined('TYPO3') || die();
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
 (static function (): void {
-    // Extension key of this plugin
+    // Extension key (для путей EXT:anatolkin_mosaic_gallery/...)
     $extensionKey = 'anatolkin_mosaic_gallery';
 
-    // Plugin name as defined in registerPlugin()
-    $pluginName = 'Pi1';
+    // ВНУТРЕННЯЯ сигнатура плагина (Extbase + TypoScript)
+    // ВАЖНО: должна совпадать с тем, что даёт configurePlugin('MosaicGallery','Pi1')
+    // => mosaicgallery_pi1
+    $pluginSignature = 'mosaicgallery_pi1';
 
-    // Plugin signature used in TCA for list_type, e.g. anatolkinmosaicgallery_pi1
-    $pluginSignature = str_replace('_', '', $extensionKey) . '_' . strtolower($pluginName);
-
-    // Ensure "items" array for list_type exists to avoid RuntimeException
+    // Гарантируем, что items для list_type — массив
     if (
         !isset($GLOBALS['TCA']['tt_content']['columns']['list_type']['config']['items'])
         || !is_array($GLOBALS['TCA']['tt_content']['columns']['list_type']['config']['items'])
@@ -23,21 +22,20 @@ use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
         $GLOBALS['TCA']['tt_content']['columns']['list_type']['config']['items'] = [];
     }
 
-    // Register "Anatolkin Mosaic Gallery" in the list of plugins (CType = list, field list_type)
+    // Регистрация нашего плагина в списке "Insert plugin"
     $GLOBALS['TCA']['tt_content']['columns']['list_type']['config']['items'][] = [
-        'Anatolkin Mosaic Gallery',   // Label shown in the BE content type selector
-        $pluginSignature,             // list_type value, e.g. anatolkinmosaicgallery_pi1
-        'mosaic-gallery-plugin',      // iconIdentifier (registered in ext_localconf.php)
+        'Anatolkin Mosaic Gallery',   // Лейбл в BE
+        $pluginSignature,             // list_type = mosaicgallery_pi1
+        'mosaic-gallery-plugin',      // iconIdentifier (см. ext_localconf.php)
     ];
 
-    // Enable FlexForm configuration for this plugin
+    // Включаем FlexForm для этого плагина
     $GLOBALS['TCA']['tt_content']['types']['list']['subtypes_addlist'][$pluginSignature]
         = 'pi_flexform';
 
-    // FlexForm XML by extension key – работает и в Composer, и в Classic установках
+    // Подключаем FlexForm, уже с правильным EXT:anatolkin_mosaic_gallery/...
     ExtensionManagementUtility::addPiFlexFormValue(
         $pluginSignature,
-        'FILE:EXT:anatolkin_mosaic_gallery/Configuration/FlexForms/MosaicGallery.xml'
+        'FILE:EXT:' . $extensionKey . '/Configuration/FlexForms/MosaicGallery.xml'
     );
 })();
-

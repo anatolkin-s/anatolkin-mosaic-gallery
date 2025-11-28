@@ -1,13 +1,34 @@
 plugin.tx_mosaicgallery_pi1 {
   view {
-    templateRootPaths.10 = EXT:mosaic_gallery/Resources/Private/Templates/
-    partialRootPaths.10  = EXT:mosaic_gallery/Resources/Private/Partials/
-    layoutRootPaths.10   = EXT:mosaic_gallery/Resources/Private/Layouts/
+    templateRootPaths {
+      10 = EXT:anatolkin_mosaic_gallery/Resources/Private/Templates/
+    }
+    partialRootPaths {
+      10 = EXT:anatolkin_mosaic_gallery/Resources/Private/Partials/
+    }
+    layoutRootPaths {
+      10 = EXT:anatolkin_mosaic_gallery/Resources/Private/Layouts/
+    }
   }
+
   settings {
+    # Источник изображений по умолчанию — папка
     source = folder
+
+    # Базовая папка по умолчанию (администратор может переопределить в FlexForm)
     folder = fileadmin/gallery/
+
+    # Рекурсивный обход подпапок
     recursive = 1
+
+    # Отступ (gap) между картинками, px
     gap = 12
   }
 }
+
+# -----------------------------------------------------------------
+# Backward-compatible alias:
+# поддерживаем старый list_type = anatolkinmosaicgallery_pi1
+# через рабочий mosaicgallery_pi1
+# -----------------------------------------------------------------
+tt_content.list.20.anatolkinmosaicgallery_pi1 < tt_content.list.20.mosaicgallery_pi1
