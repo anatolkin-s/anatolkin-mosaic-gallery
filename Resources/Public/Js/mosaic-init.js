@@ -9,9 +9,16 @@
         try {
           var imgs = el.querySelectorAll("img");
           var left = imgs.length;
-          if (!left) { cb(); return; }
+          if (!left) {
+            cb();
+            return;
+          }
           imgs.forEach(function (img) {
-            var done = function () { if (--left === 0) cb(); };
+            var done = function () {
+              if (--left === 0) {
+                cb();
+              }
+            };
             if (img.complete) {
               done();
             } else {
@@ -26,12 +33,12 @@
     }
 
     containers.forEach(function (container) {
-      var gap      = parseInt(container.style.getPropertyValue("--gap") || "12", 10);
-      var step     = parseInt(container.getAttribute("data-step") || "0", 10);
-      var initial  = parseInt(container.getAttribute("data-initial") || "0", 10);
-      var enable   = container.getAttribute("data-lightbox") === "1";
-      var group    = container.getAttribute("data-group") || "gallery";
-      var grid     = container.querySelector(".mosaic-grid") || container;
+      var gap     = parseInt(container.style.getPropertyValue("--gap") || "12", 10);
+      var step    = parseInt(container.getAttribute("data-step") || "0", 10);
+      var initial = parseInt(container.getAttribute("data-initial") || "0", 10);
+      var enable  = container.getAttribute("data-lightbox") === "1";
+      var group   = container.getAttribute("data-group") || "gallery";
+      var grid    = container.querySelector(".mosaic-grid") || container;
       var lightbox = null;
 
       function tryInitLightbox() {
@@ -54,27 +61,30 @@
       }
 
       imagesLoaded(grid, function () {
-        var sizer    = grid.querySelector(".mosaic-sizer") || grid.querySelector(".mosaic-item");
-        var allItems = grid.querySelectorAll(".mosaic-item");
-
-        // Сначала показываем всё, затем режем по initial, чтобы не было «дыры»
-        if (initial > 0 && allItems.length > initial) {
-          for (var i = initial; i < allItems.length; i++) {
-            allItems[i].classList.add("is-hidden");
-          }
+        // JS hides extra items based on data-initial
+        var items = grid.querySelectorAll(".mosaic-item");
+        if (initial > 0 && initial < items.length) {
+          Array.prototype.forEach.call(items, function (el, idx) {
+            if (idx >= initial) {
+              el.classList.add("is-hidden");
+            }
+          });
         }
 
+        var sizer = grid.querySelector(".mosaic-sizer") || grid.querySelector(".mosaic-item");
         var msnry = new Masonry(grid, {
           itemSelector: ".mosaic-item",
           columnWidth:  sizer,
           percentPosition: true,
           gutter: gap,
-          fitWidth: true
+          fitWidth: false  // занимаем всю ширину контейнера
         });
 
-        window.addEventListener("resize", function () {
+        function relayout() {
           msnry.layout();
-        });
+        }
+
+        window.addEventListener("resize", relayout);
 
         var btn = container.querySelector(".mosaic-load-more");
         if (btn) {
@@ -85,14 +95,13 @@
               return;
             }
 
-            var revealCount = (step && step > 0) ? step : hidden.length;
-            var reveal = Array.prototype.slice.call(hidden, 0, revealCount);
-
+            var reveal = Array.prototype.slice.call(hidden, 0, step || hidden.length);
             reveal.forEach(function (el) {
               el.classList.remove("is-hidden");
             });
 
-            imagesLoaded(grid, function () {
+            imagesLoaded(reveal, function () {
+              // no appended, just layout() again to avoid gaps
               msnry.layout();
               if (enable && lightbox && typeof lightbox.reload === "function") {
                 lightbox.reload();
@@ -109,28 +118,28 @@
   });
 })();
 
-/* === mosaic_gallery v1.3.1 ▒ Lightbox theme + frame copied from gallery tiles === */
-(function(){
-  function hexToRgb(hex){
-    if (!hex) return {r:0,g:0,b:0};
+/* === mosaic_gallery ▒ Lightbox theme + frame copied from gallery tiles === */
+(function () {
+  function hexToRgb(hex) {
+    if (!hex) return { r: 0, g: 0, b: 0 };
     if (/^rgba?\(/i.test(hex)) {
       var m = hex.match(/(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
-      return {r:+(m && m[1] || 0), g:+(m && m[2] || 0), b:+(m && m[3] || 0)};
+      return { r: +(m && m[1] || 0), g: +(m && m[2] || 0), b: +(m && m[3] || 0) };
     }
-    var s = String(hex).replace("#","").trim();
+    var s = String(hex).replace("#", "").trim();
     if (s.length === 3) {
-      s = s.split("").map(function(c){ return c + c; }).join("");
+      s = s.split("").map(function (c) { return c + c; }).join("");
     }
-    var n = parseInt(s,16);
-    if (isNaN(n)) return {r:0,g:0,b:0};
+    var n = parseInt(s, 16);
+    if (isNaN(n)) return { r: 0, g: 0, b: 0 };
     return {
-      r:(n>>16)&255,
-      g:(n>>8)&255,
-      b:n&255
+      r: (n >> 16) & 255,
+      g: (n >> 8) & 255,
+      b: n & 255
     };
   }
 
-  function toRgba(hex, a){
+  function toRgba(hex, a) {
     if (!hex) return "rgba(0,0,0," + (a || 0.92) + ")";
     if (/^rgba?\(/i.test(hex)) return hex;
     var c = hexToRgb(hex);
@@ -139,7 +148,7 @@
     return "rgba(" + c.r + "," + c.g + "," + c.b + "," + alpha + ")";
   }
 
-  function injectCss(id, css){
+  function injectCss(id, css) {
     if (document.getElementById(id)) return;
     var st = document.createElement("style");
     st.id = id;
@@ -148,16 +157,15 @@
     document.head.appendChild(st);
   }
 
-  document.addEventListener("DOMContentLoaded", function(){
+  document.addEventListener("DOMContentLoaded", function () {
     document
       .querySelectorAll(".mosaic-gallery[data-lightbox=\"1\"]")
-      .forEach(function(root, idx){
-        var ds    = root.dataset;
+      .forEach(function (root, idx) {
+        var ds = root.dataset;
         var group = ds.group || ("mg" + idx);
 
-        // Read CSS variables from the gallery to mirror frame/background in the lightbox
         var cs = getComputedStyle(root);
-        function gv(n, d){
+        function gv(n, d) {
           return (cs.getPropertyValue(n) || d).toString().trim();
         }
 
@@ -165,36 +173,36 @@
         var frameWidth = gv("--frame-width", "0px");
         var frameStyle = gv("--frame-style", "none");
 
-        var radius = (function(v){
+        var radius = (function (v) {
           v = (v || "0").toString().trim();
           return v.endsWith("px") ? v : (parseInt(v, 10) || 0) + "px";
-        })(gv("--radius","0"));
+        })(gv("--radius", "0"));
 
         var bgApply = (root.getAttribute("data-apply-bg") || "").toLowerCase();
         var bgColor = gv("--bg", "transparent");
-        var tileBg  = (bgApply === "tiles" || bgApply === "both") ? bgColor : "transparent";
+        var tileBg = (bgApply === "tiles" || bgApply === "both") ? bgColor : "transparent";
 
         var css =
           ".goverlay{background:" +
-            toRgba(ds.lbOverlay || "#000000", ds.lbOverlayAlpha || "0.92") +
-            "!important;}" +
+          toRgba(ds.lbOverlay || "#000000", ds.lbOverlayAlpha || "0.92") +
+          "!important;}" +
           ".glightbox-clean .gclose path{fill:" +
-            (ds.lbClose || "#FFFFFF") +
-            "!important;}" +
+          (ds.lbClose || "#FFFFFF") +
+          "!important;}" +
           ".glightbox-clean .gnext path,.glightbox-clean .gprev path{fill:" +
-            (ds.lbNav || "#FFFFFF") +
-            "!important;}" +
+          (ds.lbNav || "#FFFFFF") +
+          "!important;}" +
           ".glightbox-container .gslide-title,.glightbox-container .gslide-desc{color:" +
-            (ds.lbCaption || "#FFFFFF") +
-            "!important;}" +
+          (ds.lbCaption || "#FFFFFF") +
+          "!important;}" +
           ".glightbox-clean .gslide-description{background:" +
-            (ds.lbCaptionBg || "rgba(0,0,0,0.75)") +
-            "!important;}" +
+          (ds.lbCaptionBg || "rgba(0,0,0,0.75)") +
+          "!important;}" +
           ".glightbox-container .gslide-image img{" +
-            "border:" + frameWidth + " " + frameStyle + " " + frameColor + " !important;" +
-            "border-radius:" + radius + " !important;" +
-            "background:" + tileBg + " !important;" +
-            "box-sizing:border-box;" +
+          "border:" + frameWidth + " " + frameStyle + " " + frameColor + " !important;" +
+          "border-radius:" + radius + " !important;" +
+          "background:" + tileBg + " !important;" +
+          "box-sizing:border-box;" +
           "}";
 
         injectCss("mg-glx-theme-" + group, css);

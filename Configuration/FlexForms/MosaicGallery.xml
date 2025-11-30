@@ -4,15 +4,21 @@
 
     <sDEF>
       <ROOT>
-        <TCEforms><sheetTitle>Mosaic Gallery</sheetTitle></TCEforms>
+        <TCEforms>
+          <sheetTitle>Mosaic Gallery</sheetTitle>
+        </TCEforms>
         <el>
 
           <settings.source>
             <label>Source</label>
             <config>
-              <type>select</type><renderType>selectSingle</renderType>
+              <type>select</type>
+              <renderType>selectSingle</renderType>
               <items>
-                <numIndex index="0"><numIndex index="0">Folder (fileadmin)</numIndex><numIndex index="1">folder</numIndex></numIndex>
+                <numIndex index="0">
+                  <numIndex index="0">Folder (fileadmin)</numIndex>
+                  <numIndex index="1">folder</numIndex>
+                </numIndex>
               </items>
               <default>folder</default>
             </config>
@@ -22,25 +28,41 @@
             <label>Folder</label>
             <displayCond>FIELD:settings.source:=:folder</displayCond>
             <config>
-              <type>group</type><internal_type>folder</internal_type>
-              <allowed>sys_file</allowed><size>1</size><maxitems>1</maxitems>
+              <type>group</type>
+              <internal_type>folder</internal_type>
+              <allowed>sys_file</allowed>
+              <size>1</size>
+              <maxitems>1</maxitems>
               <default>fileadmin/gallery/</default>
             </config>
           </settings.folder>
 
           <settings.recursive>
             <label>Recursive</label>
-            <config><type>check</type><default>1</default></config>
+            <config>
+              <type>check</type>
+              <default>1</default>
+            </config>
           </settings.recursive>
 
           <settings.sortBy>
             <label>Sort by</label>
             <config>
-              <type>select</type><renderType>selectSingle</renderType>
+              <type>select</type>
+              <renderType>selectSingle</renderType>
               <items>
-                <numIndex index="0"><numIndex index="0">Filename</numIndex><numIndex index="1">name</numIndex></numIndex>
-                <numIndex index="1"><numIndex index="0">Modified time</numIndex><numIndex index="1">mtime</numIndex></numIndex>
-                <numIndex index="2"><numIndex index="0">Random</numIndex><numIndex index="1">random</numIndex></numIndex>
+                <numIndex index="0">
+                  <numIndex index="0">Filename</numIndex>
+                  <numIndex index="1">name</numIndex>
+                </numIndex>
+                <numIndex index="1">
+                  <numIndex index="0">Modified time</numIndex>
+                  <numIndex index="1">mtime</numIndex>
+                </numIndex>
+                <numIndex index="2">
+                  <numIndex index="0">Random</numIndex>
+                  <numIndex index="1">random</numIndex>
+                </numIndex>
               </items>
               <default>name</default>
             </config>
@@ -49,10 +71,17 @@
           <settings.sortDir>
             <label>Sort direction</label>
             <config>
-              <type>select</type><renderType>selectSingle</renderType>
+              <type>select</type>
+              <renderType>selectSingle</renderType>
               <items>
-                <numIndex index="0"><numIndex index="0">Ascending</numIndex><numIndex index="1">asc</numIndex></numIndex>
-                <numIndex index="1"><numIndex index="0">Descending</numIndex><numIndex index="1">desc</numIndex></numIndex>
+                <numIndex index="0">
+                  <numIndex index="0">Ascending</numIndex>
+                  <numIndex index="1">asc</numIndex>
+                </numIndex>
+                <numIndex index="1">
+                  <numIndex index="0">Descending</numIndex>
+                  <numIndex index="1">desc</numIndex>
+                </numIndex>
               </items>
               <default>asc</default>
             </config>
@@ -60,47 +89,110 @@
 
           <settings.gap>
             <label>Gutter (px)</label>
-            <config><type>input</type><eval>int</eval><default>12</default></config>
+            <config>
+              <type>input</type>
+              <eval>int</eval>
+              <default>12</default>
+            </config>
           </settings.gap>
 
           <settings.maxWidth>
             <label>Image max width (px)</label>
-            <config><type>input</type><eval>int</eval><default>1200</default></config>
+            <config>
+              <type>input</type>
+              <eval>int</eval>
+              <default>1200</default>
+            </config>
           </settings.maxWidth>
 
           <settings.enableLightbox>
             <label>Enable lightbox</label>
-            <config><type>check</type><default>1</default></config>
+            <config>
+              <type>check</type>
+              <default>1</default>
+            </config>
           </settings.enableLightbox>
 
           <settings.showCaptions>
             <label>Show captions</label>
-            <config><type>check</type><default>1</default></config>
+            <config>
+              <type>check</type>
+              <default>1</default>
+            </config>
           </settings.showCaptions>
+
+          <settings.captionAlign>
+            <label>Caption alignment</label>
+            <config>
+              <type>select</type>
+              <renderType>selectSingle</renderType>
+              <items>
+                <numIndex index="0">
+                  <numIndex index="0">Left</numIndex>
+                  <numIndex index="1">left</numIndex>
+                </numIndex>
+                <numIndex index="1">
+                  <numIndex index="0">Center</numIndex>
+                  <numIndex index="1">center</numIndex>
+                </numIndex>
+                <numIndex index="2">
+                  <numIndex index="0">Right</numIndex>
+                  <numIndex index="1">right</numIndex>
+                </numIndex>
+              </items>
+              <default>left</default>
+            </config>
+          </settings.captionAlign>
 
           <settings.useFalCaptions>
             <label>Use FAL titles/descriptions (multilingual)</label>
-            <config><type>check</type><default>1</default></config>
+            <config>
+              <type>check</type>
+              <default>1</default>
+            </config>
           </settings.useFalCaptions>
 
           <settings.captions>
             <label>Captions (one line per image, order-based; used if FAL captions disabled)</label>
-            <config><type>text</type><cols>40</cols><rows>6</rows></config>
+            <config>
+              <type>text</type>
+              <cols>40</cols>
+              <rows>6</rows>
+            </config>
           </settings.captions>
 
           <settings.enableLoadMore>
             <label>Enable "Load more"</label>
-            <config><type>check</type><default>1</default></config>
+            <config>
+              <type>check</type>
+              <default>1</default>
+            </config>
           </settings.enableLoadMore>
+
+          <settings.loadMoreUseFrameStyle>
+            <label>Use frame style for "Load more" button</label>
+            <config>
+              <type>check</type>
+              <default>1</default>
+            </config>
+          </settings.loadMoreUseFrameStyle>
 
           <settings.itemsPerPage>
             <label>Items initially</label>
-            <config><type>input</type><eval>int</eval><default>12</default></config>
+            <config>
+              <type>input</type>
+              <eval>int</eval>
+              <default>12</default>
+            </config>
           </settings.itemsPerPage>
 
           <settings.loadStep>
             <label>Load step</label>
-            <config><type>input</type><eval>int</eval><default>12</default></config>
+            <config>
+              <type>input</type>
+              <eval>int</eval>
+              <default>12</default>
+            </config>
           </settings.loadStep>
 
         </el>
@@ -109,7 +201,9 @@
 
     <sDESIGN>
       <ROOT>
-        <TCEforms><sheetTitle>Design</sheetTitle></TCEforms>
+        <TCEforms>
+          <sheetTitle>Design</sheetTitle>
+        </TCEforms>
         <el>
 
           <settings.frameColor>
@@ -130,7 +224,10 @@
               <eval>int</eval>
               <size>4</size>
               <default>1</default>
-              <range><lower>0</lower><upper>12</upper></range>
+              <range>
+                <lower>0</lower>
+                <upper>12</upper>
+              </range>
             </config>
           </settings.frameWidth>
 
@@ -140,10 +237,22 @@
               <type>select</type>
               <renderType>selectSingle</renderType>
               <items>
-                <numIndex index="0"><numIndex index="0">None</numIndex><numIndex index="1">none</numIndex></numIndex>
-                <numIndex index="1"><numIndex index="0">Solid</numIndex><numIndex index="1">solid</numIndex></numIndex>
-                <numIndex index="2"><numIndex index="0">Dashed</numIndex><numIndex index="1">dashed</numIndex></numIndex>
-                <numIndex index="3"><numIndex index="0">Dotted</numIndex><numIndex index="1">dotted</numIndex></numIndex>
+                <numIndex index="0">
+                  <numIndex index="0">None</numIndex>
+                  <numIndex index="1">none</numIndex>
+                </numIndex>
+                <numIndex index="1">
+                  <numIndex index="0">Solid</numIndex>
+                  <numIndex index="1">solid</numIndex>
+                </numIndex>
+                <numIndex index="2">
+                  <numIndex index="0">Dashed</numIndex>
+                  <numIndex index="1">dashed</numIndex>
+                </numIndex>
+                <numIndex index="3">
+                  <numIndex index="0">Dotted</numIndex>
+                  <numIndex index="1">dotted</numIndex>
+                </numIndex>
               </items>
               <default>solid</default>
             </config>
@@ -151,24 +260,31 @@
 
           <settings.borderRadius>
             <label>Border radius (px)</label>
-            <config><type>input</type><eval>int</eval><default>6</default></config>
+            <config>
+              <type>input</type>
+              <eval>int</eval>
+              <default>6</default>
+            </config>
           </settings.borderRadius>
 
           <settings.shadow>
             <label>Shadow</label>
-            <config><type>check</type><default>0</default></config>
+            <config>
+              <type>check</type>
+              <default>0</default>
+            </config>
           </settings.shadow>
 
-<settings.backgroundColor>
-  <label>Background color</label>
-  <config>
-    <type>input</type>
-    <renderType>colorpicker</renderType>
-    <size>10</size>
-    <eval>trim</eval>
-    <default>#221A28</default>
-  </config>
-</settings.backgroundColor>
+          <settings.backgroundColor>
+            <label>Background color</label>
+            <config>
+              <type>input</type>
+              <renderType>colorpicker</renderType>
+              <size>10</size>
+              <eval>trim</eval>
+              <default>#221A28</default>
+            </config>
+          </settings.backgroundColor>
 
           <settings.applyTo>
             <label>Apply background to</label>
@@ -176,81 +292,87 @@
               <type>select</type>
               <renderType>selectSingle</renderType>
               <items>
-                <numIndex index="0"><numIndex index="0">Container</numIndex><numIndex index="1">container</numIndex></numIndex>
-                <numIndex index="1"><numIndex index="0">Tiles</numIndex><numIndex index="1">tiles</numIndex></numIndex>
-                <numIndex index="2"><numIndex index="0">Both</numIndex><numIndex index="1">both</numIndex></numIndex>
+                <numIndex index="0">
+                  <numIndex index="0">Container</numIndex>
+                  <numIndex index="1">container</numIndex>
+                </numIndex>
+                <numIndex index="1">
+                  <numIndex index="0">Tiles</numIndex>
+                  <numIndex index="1">tiles</numIndex>
+                </numIndex>
+                <numIndex index="2">
+                  <numIndex index="0">Both</numIndex>
+                  <numIndex index="1">both</numIndex>
+                </numIndex>
               </items>
               <default>both</default>
             </config>
           </settings.applyTo>
 
+          <settings.lbOverlay>
+            <label>Lightbox overlay color</label>
+            <config>
+              <type>input</type>
+              <renderType>colorpicker</renderType>
+              <size>10</size>
+              <eval>trim</eval>
+              <default>#000000</default>
+            </config>
+          </settings.lbOverlay>
 
-<!-- Lightbox look -->
-<settings.lbOverlay>
-  <label>Lightbox overlay color</label>
-  <config>
-    <type>input</type>
-    <renderType>colorpicker</renderType>
-    <size>10</size>
-    <eval>trim</eval>
-    <default>#000000</default>
-  </config>
-</settings.lbOverlay>
+          <settings.lbOverlayAlpha>
+            <label>Lightbox overlay opacity (0.00-1.00)</label>
+            <config>
+              <type>input</type>
+              <size>6</size>
+              <eval>trim</eval>
+              <default>0.92</default>
+            </config>
+          </settings.lbOverlayAlpha>
 
-<settings.lbOverlayAlpha>
-  <label>Lightbox overlay opacity (0.00–1.00)</label>
-  <config>
-    <type>input</type>
-    <size>6</size>
-    <eval>trim</eval>
-    <default>0.92</default>
-  </config>
-</settings.lbOverlayAlpha>
+          <settings.lbNavColor>
+            <label>Lightbox arrows color</label>
+            <config>
+              <type>input</type>
+              <renderType>colorpicker</renderType>
+              <size>10</size>
+              <eval>trim</eval>
+              <default>#FFFFFF</default>
+            </config>
+          </settings.lbNavColor>
 
-<settings.lbNavColor>
-  <label>Lightbox arrows color</label>
-  <config>
-    <type>input</type>
-    <renderType>colorpicker</renderType>
-    <size>10</size>
-    <eval>trim</eval>
-    <default>#FFFFFF</default>
-  </config>
-</settings.lbNavColor>
+          <settings.lbCloseColor>
+            <label>Lightbox close button color</label>
+            <config>
+              <type>input</type>
+              <renderType>colorpicker</renderType>
+              <size>10</size>
+              <eval>trim</eval>
+              <default>#FFFFFF</default>
+            </config>
+          </settings.lbCloseColor>
 
-<settings.lbCloseColor>
-  <label>Lightbox close button color</label>
-  <config>
-    <type>input</type>
-    <renderType>colorpicker</renderType>
-    <size>10</size>
-    <eval>trim</eval>
-    <default>#FFFFFF</default>
-  </config>
-</settings.lbCloseColor>
+          <settings.lbCaptionColor>
+            <label>Lightbox caption text color</label>
+            <config>
+              <type>input</type>
+              <renderType>colorpicker</renderType>
+              <size>10</size>
+              <eval>trim</eval>
+              <default>#FFFFFF</default>
+            </config>
+          </settings.lbCaptionColor>
 
-<settings.lbCaptionColor>
-  <label>Lightbox caption text color</label>
-  <config>
-    <type>input</type>
-    <renderType>colorpicker</renderType>
-    <size>10</size>
-    <eval>trim</eval>
-    <default>#FFFFFF</default>
-  </config>
-</settings.lbCaptionColor>
-
-<settings.lbCaptionBg>
-  <label>Lightbox caption background (HEX or rgba)</label>
-  <config>
-    <type>input</type>
-    <renderType>colorpicker</renderType>
-    <size>16</size>
-    <eval>trim</eval>
-    <default>rgba(0,0,0,0.75)</default>
-  </config>
-</settings.lbCaptionBg>
-
+          <settings.lbCaptionBg>
+            <label>Lightbox caption background (HEX or rgba)</label>
+            <config>
+              <type>input</type>
+              <renderType>colorpicker</renderType>
+              <size>16</size>
+              <eval>trim</eval>
+              <default>rgba(0,0,0,0.75)</default>
+            </config>
+          </settings.lbCaptionBg>
 
         </el>
       </ROOT>

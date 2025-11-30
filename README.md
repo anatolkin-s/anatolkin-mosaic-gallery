@@ -236,3 +236,8 @@ When reporting a problem, please include:
 - screenshot of the content element configuration,
 - any relevant log messages or exception codes,
 - and (if possible) a short description of the folder/category structure.
+
+## Version 0.1.12
+
+- Fixes the "Load more" pagination and removes Masonry layout gaps.
+- Adds an option to style the "Load more" button using the gallery frame.

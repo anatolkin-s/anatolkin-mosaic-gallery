@@ -77,3 +77,97 @@
 .mosaic-grid {
   overflow-anchor: none;
 }
+
+/* === Load more button: same frame as tiles ============================= */
+
+.mosaic-actions {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.mosaic-actions .mosaic-load-more {
+  display: inline-block;
+  padding: 0.55rem 1.9rem;
+  font-size: 0.94rem;
+  line-height: 1.4;
+  cursor: pointer;
+
+  /* те же параметры рамки, что у картинок */
+  border-style: var(--frame-style, solid);
+  border-color: var(--frame-color, #d9c28b);
+  border-width: min(var(--frame-width, 2px), 12px);
+  border-radius: var(--radius, 0);
+
+  /* фон и текст по умолчанию – мягкие, но читаемые */
+  background-color: var(--bg, #f3f3ee);
+  color: var(--frame-color, #333333);
+
+  text-transform: none;
+  letter-spacing: 0.02em;
+
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.15s ease,
+    transform 0.12s ease;
+}
+
+.mosaic-actions .mosaic-load-more:hover,
+.mosaic-actions .mosaic-load-more:focus-visible {
+  background-color: var(--frame-color, #d9c28b);
+  color: #ffffff;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.18);
+  transform: translateY(-1px);
+}
+
+.mosaic-actions .mosaic-load-more:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+
+/* === Load more button (uses same frame variables as tiles) ============= */
+
+.mosaic-actions {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.mosaic-actions .mosaic-load-more {
+  display: inline-block;
+  padding: 0.55rem 1.9rem;
+  font-size: 0.94rem;
+  line-height: 1.4;
+  cursor: pointer;
+
+  /* use the same frame parameters as tiles */
+  border-style: var(--frame-style, solid);
+  border-color: var(--frame-color, #d9c28b);
+  border-width: min(var(--frame-width, 4px), 12px);
+  border-radius: var(--radius, 0);
+
+  /* background and text follow gallery theme */
+  background: var(--bg, #f3f3ee);
+  color: var(--frame-color, #333333);
+
+  text-transform: none;
+  letter-spacing: 0.02em;
+
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.15s ease,
+    transform 0.12s ease;
+}
+
+.mosaic-actions .mosaic-load-more:hover,
+.mosaic-actions .mosaic-load-more:focus-visible {
+  background-color: var(--frame-color, #d9c28b);
+  color: #ffffff;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.18);
+  transform: translateY(-1px);
+}
+
+.mosaic-actions .mosaic-load-more:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+}
