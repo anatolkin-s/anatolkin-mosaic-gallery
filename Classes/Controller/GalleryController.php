@@ -42,9 +42,9 @@ final class GalleryController extends ActionController
         $showCaptions   = (bool)($this->settings['showCaptions'] ?? true);
         $useFalCaptions = (bool)($this->settings['useFalCaptions'] ?? true);
 
-        $borderRadius= max(0, (int)($this->settings['borderRadius'] ?? 6));
-        $shadow      = (bool)($this->settings['shadow'] ?? false);
-        $background  = (string)($this->settings['background'] ?? '');
+        $borderRadius = max(0, (int)($this->settings['borderRadius'] ?? 6));
+        $shadow       = (bool)($this->settings['shadow'] ?? false);
+        $background   = (string)($this->settings['background'] ?? '');
 
         $enableLoadMore = (bool)($this->settings['enableLoadMore'] ?? true);
         $itemsPerPage   = max(1, (int)($this->settings['itemsPerPage'] ?? 12));
@@ -67,9 +67,12 @@ final class GalleryController extends ActionController
                     } catch (\Throwable $e) {
                         $meta = [];
                     }
+
+                    // Безопасное чтение метаданных: ключ 'title' может отсутствовать
                     $caption = $useFalCaptions
-                        ? ($meta['title'] ?: ($meta['caption'] ?? '') ?: ($meta['description'] ?? ''))
+                        ? (($meta['title'] ?? '') ?: ($meta['caption'] ?? '') ?: ($meta['description'] ?? ''))
                         : ($lines[$idx] ?? '');
+
                     $alt = ($meta['alternative'] ?? '') ?: $caption;
 
                     $items[] = [
@@ -157,7 +160,7 @@ final class GalleryController extends ActionController
      * Безопасная локализация метаданных:
      * 1) Берём базовую запись (sys_language_uid=0) по file
      * 2) Если есть язык > 0, ищем overlay по l10n_parent и sys_language_uid
-     * 3) Мерджим overlay поверх базы. Любая ошибка — тихий фоллбэк.
+     * 3) Мерджим overlay поверх базы. Пустые строки не перетирают.
      */
     private function getLocalizedMeta(File $file): array
     {
@@ -222,3 +225,4 @@ final class GalleryController extends ActionController
         return '1:' . $path;
     }
 }
+

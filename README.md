@@ -25,7 +25,7 @@ It is designed to be:
 ### 1. Install via Composer
 
 ```bash
-composer require anatolkin/anatolkin-mosaic-gallery:^0.1.11
+composer require anatolkin/anatolkin-mosaic-gallery:^0.1.13
 ```
 
 Run TYPO3 extension setup and clear the caches:
@@ -153,6 +153,17 @@ Per content element, you can configure:
 
 ---
 
+## Changelog
+
+### 0.1.13
+- Fix: prevent PHP warning “Undefined array key 'title'” when FAL metadata is missing or not translated.
+
+### 0.1.12
+- Fixes the “Load more” pagination and removes Masonry layout gaps when loading additional items.
+- Improves Masonry re-layout on resize.
+- Adds an option to style the “Load more” button with the same frame as gallery tiles.
+
+
 ## How “Load more” works in 0.1.11
 
 At render time the controller prepares a list of items. For each item it marks an internal `hidden` flag based on the **items per page** and **load step** settings.
@@ -237,7 +248,3 @@ When reporting a problem, please include:
 - any relevant log messages or exception codes,
 - and (if possible) a short description of the folder/category structure.
 
-## Version 0.1.12
-
-- Fixes the "Load more" pagination and removes Masonry layout gaps.
-- Adds an option to style the "Load more" button using the gallery frame.
