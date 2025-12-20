@@ -2,13 +2,13 @@
 
 $EM_CONF[$_EXTKEY] = [
     'title' => 'Anatolkin Mosaic Gallery',
-    'description' => 'Masonry-like image gallery for TYPO3 using FAL with optional GLightbox.',
+    'description' => 'Mosaic image gallery for TYPO3 using FAL with optional GLightbox.',
     'category' => 'plugin',
     'author' => 'Sergey Fedorov',
     'author_email' => 'typo3@anatolkin.com',
-    'state' => 'beta',
+    'state' => 'stable',
     'clearCacheOnLoad' => 1,
-    'version' => '0.1.11',
+    'version' => '0.1.14',
     'constraints' => [
         'depends' => [
             'typo3' => '13.4.0-13.99.99',

@@ -4,10 +4,12 @@ Anatolkin Mosaic Gallery is a masonry-like image gallery extension for TYPO3 CMS
 
 It is designed to be:
 
-- **Simple to install** – ship everything via Composer and one static TypoScript include.
-- **Safe for editors** – everything is configured through a single content element.
+- **Simple to install** – shipped via Composer and a single static TypoScript include.
+- **Safe for editors** – everything is configured through one content element.
 - **Nice by default** – sensible defaults for spacing, frames, captions and lightbox theme.
 - **Flexible** – supports folders, categories and fine‑tuning of the visual style.
+
+_Current stable version: **0.1.14**_
 
 ---
 
@@ -25,7 +27,7 @@ It is designed to be:
 ### 1. Install via Composer
 
 ```bash
-composer require anatolkin/anatolkin-mosaic-gallery:^0.1.11
+composer require anatolkin/anatolkin-mosaic-gallery:^0.1.14
 ```
 
 Run TYPO3 extension setup and clear the caches:
@@ -66,7 +68,7 @@ Editors can:
 
 1. Choose **Folder (fileadmin)** or **Categories** as the source.
 2. Select a folder or categories.
-3. Configure layout options on the **Plugin** tab.
+3. Configure layout options on the **Plugin** and **Design** tabs.
 
 ---
 
@@ -80,8 +82,6 @@ Editors can:
 
 ### “Load more” pagination
 
-Version **0.1.11** refines the “Load more” behaviour:
-
 - You can define:
   - **Items per page** – how many tiles are shown initially.
   - **Load step** – how many additional tiles are revealed on each click.
@@ -92,8 +92,8 @@ Version **0.1.11** refines the “Load more” behaviour:
 
 This behaviour is controlled by:
 
-- Server-side logic (marking items as hidden or visible) and
-- Client-side JS (`Resources/Public/Js/mosaic-init.js`).
+- server-side logic (marking items as hidden or visible) and
+- client-side JS (`Resources/Public/Js/mosaic-init.js`).
 
 ### Optional lightbox (GLightbox)
 
@@ -125,6 +125,7 @@ Per content element, you can configure:
   - both, or none.
 - **Shadow** (on/off).
 - **Captions** (on/off).
+- **Caption alignment** and source (FAL metadata or manual captions).
 
 ### Data sources
 
@@ -140,20 +141,24 @@ Per content element, you can configure:
 3. On the **Plugin** tab, configure:
 
    - **Source**: folder or categories.
-   - **Items per page**: e.g. `6`.
-   - **Load step**: e.g. `6` (or `0` to load all remaining items at once).
+   - **Items per page**: e.g. `18`.
+   - **Load step**: e.g. `12` (or `0` to load all remaining items at once).
    - **Max image width**: to control file size and layout.
    - **Lightbox**: enable if you want click‑to‑zoom behaviour.
    - **Captions**: enable if you want image titles shown under the tiles.
 
-4. Optionally tune the **Design** sub‑tab:
-   - background, frame, radius, shadow, etc.
+4. Tune the **Design** tab (per element):
+
+   - frame color, width, style and border radius,
+   - background color and where it is applied (container/tiles/both),
+   - shadow,
+   - lightbox overlay, arrows, close button and caption colors.
 
 5. Save and clear the TYPO3 caches (if needed).
 
 ---
 
-## How “Load more” works in 0.1.11
+## How “Load more” works
 
 At render time the controller prepares a list of items. For each item it marks an internal `hidden` flag based on the **items per page** and **load step** settings.
 
@@ -199,6 +204,28 @@ This combination keeps the grid tight and avoids large empty bands in the layout
 ---
 
 ## Changelog (short)
+
+### 0.1.14 (stable)
+
+- New default EDITABLE via Backend visual theme:
+  - frame color `#b40000`, width `2px`, solid;
+  - border radius `6px`, optional shadow;
+  - background color `#e5e5e5` applied to container and tiles;
+  - lightbox overlay `#2c5222` with opacity `0.92`;
+  - white arrows, close button and caption text;
+  - caption background `#b40000`.
+- Cleaned up FlexForm labels and defaults for **Plugin** and **Design** tabs.
+- Internal documentation and README updated for the stable release.
+
+### 0.1.13
+
+- Fix: prevent PHP warning *“Undefined array key 'title'”* when FAL metadata is missing or not translated.
+
+### 0.1.12
+
+- Fixes the “Load more” pagination and removes Masonry layout gaps when loading additional items.
+- Improves Masonry re‑layout on resize.
+- Adds an option to style the “Load more” button with the same frame as gallery tiles.
 
 ### 0.1.11
 
