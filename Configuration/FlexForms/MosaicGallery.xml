@@ -64,7 +64,7 @@
                   <numIndex index="1">random</numIndex>
                 </numIndex>
               </items>
-              <default>name</default>
+              <default>random</default>
             </config>
           </settings.sortBy>
 
@@ -92,7 +92,7 @@
             <config>
               <type>input</type>
               <eval>int</eval>
-              <default>12</default>
+              <default>6</default>
             </config>
           </settings.gap>
 
@@ -101,7 +101,7 @@
             <config>
               <type>input</type>
               <eval>int</eval>
-              <default>1200</default>
+              <default>1800</default>
             </config>
           </settings.maxWidth>
 
@@ -182,7 +182,7 @@
             <config>
               <type>input</type>
               <eval>int</eval>
-              <default>12</default>
+              <default>18</default>
             </config>
           </settings.itemsPerPage>
 
@@ -213,7 +213,7 @@
               <renderType>colorpicker</renderType>
               <size>10</size>
               <eval>trim</eval>
-              <default>#FFFFFF</default>
+              <default>#b40000</default>
             </config>
           </settings.frameColor>
 
@@ -223,7 +223,7 @@
               <type>input</type>
               <eval>int</eval>
               <size>4</size>
-              <default>1</default>
+              <default>2</default>
               <range>
                 <lower>0</lower>
                 <upper>12</upper>
@@ -271,7 +271,7 @@
             <label>Shadow</label>
             <config>
               <type>check</type>
-              <default>0</default>
+              <default>1</default>
             </config>
           </settings.shadow>
 
@@ -282,7 +282,7 @@
               <renderType>colorpicker</renderType>
               <size>10</size>
               <eval>trim</eval>
-              <default>#221A28</default>
+              <default>#e5e5e5</default>
             </config>
           </settings.backgroundColor>
 
@@ -316,7 +316,7 @@
               <renderType>colorpicker</renderType>
               <size>10</size>
               <eval>trim</eval>
-              <default>#000000</default>
+              <default>#2c5222</default>
             </config>
           </settings.lbOverlay>
 
@@ -364,13 +364,13 @@
           </settings.lbCaptionColor>
 
           <settings.lbCaptionBg>
-            <label>Lightbox caption background (HEX or rgba)</label>
+            <label>Lightbox caption background</label>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
               <size>16</size>
               <eval>trim</eval>
-              <default>rgba(0,0,0,0.75)</default>
+              <default>#b40000</default>
             </config>
           </settings.lbCaptionBg>
 
