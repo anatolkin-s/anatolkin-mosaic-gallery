@@ -1,15 +1,15 @@
 # Anatolkin Mosaic Gallery
 
-Anatolkin Mosaic Gallery is a masonry-like image gallery extension for TYPO3 CMS 13 that uses the TYPO3 File Abstraction Layer (FAL) and an optional GLightbox-based lightbox.
+Anatolkin Mosaic Gallery is a mosaic / masonry-style image gallery extension for TYPO3 CMS 13 that uses the TYPO3 File Abstraction Layer (FAL) and an optional GLightbox-based lightbox.
 
 It is designed to be:
 
 - **Simple to install** – shipped via Composer and a single static TypoScript include.
 - **Safe for editors** – everything is configured through one content element.
 - **Nice by default** – sensible defaults for spacing, frames, captions and lightbox theme.
-- **Flexible** – supports folders, categories and fine‑tuning of the visual style.
+- **Flexible** – supports folders, categories and fine-tuning of the visual style.
 
-_Current stable version: **0.1.14**_
+_Current stable version: **0.1.15**_
 
 ---
 
@@ -27,7 +27,7 @@ _Current stable version: **0.1.14**_
 ### 1. Install via Composer
 
 ```bash
-composer require anatolkin/anatolkin-mosaic-gallery:^0.1.14
+composer require anatolkin/anatolkin-mosaic-gallery:^0.1.15
 ```
 
 Run TYPO3 extension setup and clear the caches:
@@ -74,7 +74,7 @@ Editors can:
 
 ## Features
 
-### Masonry layout
+### Masonry / mosaic layout
 
 - Uses **Masonry** + **imagesLoaded** to create a responsive grid.
 - Supports variable image heights and different aspect ratios.
@@ -92,16 +92,16 @@ Editors can:
 
 This behaviour is controlled by:
 
-- server-side logic (marking items as hidden or visible) and
+- server-side logic (marking items as hidden or visible), and
 - client-side JS (`Resources/Public/Js/mosaic-init.js`).
 
 ### Optional lightbox (GLightbox)
 
 - Uses **GLightbox** for a modern, responsive lightbox.
 - Can be enabled/disabled per content element.
-- The lightbox theme automatically mirrors:
+- The lightbox theme can mirror:
   - frame color and width,
-  - border‑radius,
+  - border-radius,
   - (optionally) tile background color.
 - Additional color options for:
   - overlay,
@@ -125,7 +125,7 @@ Per content element, you can configure:
   - both, or none.
 - **Shadow** (on/off).
 - **Captions** (on/off).
-- **Caption alignment** and source (FAL metadata or manual captions).
+- **Caption alignment** and caption source (FAL metadata or manual captions).
 
 ### Data sources
 
@@ -144,13 +144,13 @@ Per content element, you can configure:
    - **Items per page**: e.g. `18`.
    - **Load step**: e.g. `12` (or `0` to load all remaining items at once).
    - **Max image width**: to control file size and layout.
-   - **Lightbox**: enable if you want click‑to‑zoom behaviour.
+   - **Lightbox**: enable if you want click-to-zoom behaviour.
    - **Captions**: enable if you want image titles shown under the tiles.
 
 4. Tune the **Design** tab (per element):
 
    - frame color, width, style and border radius,
-   - background color and where it is applied (container/tiles/both),
+   - background color and where it is applied (container / tiles / both),
    - shadow,
    - lightbox overlay, arrows, close button and caption colors.
 
@@ -205,9 +205,16 @@ This combination keeps the grid tight and avoids large empty bands in the layout
 
 ## Changelog (short)
 
+### 0.1.15 (stable)
+
+- Fix: guard access to FAL metadata keys (`title`, `caption`, `description`, `alternative`) to avoid PHP warning  
+  `Undefined array key "title"` on installations where some metadata fields are empty or not translated.
+- The warning only affected logs in some cases; gallery rendering itself remained functional. Behaviour of captions is unchanged.
+- Internal cleanup of the controller code and comments (English-only, TYPO3-friendly style).
+
 ### 0.1.14 (stable)
 
-- New default EDITABLE via Backend visual theme:
+- New default editable visual theme in the backend:
   - frame color `#b40000`, width `2px`, solid;
   - border radius `6px`, optional shadow;
   - background color `#e5e5e5` applied to container and tiles;
@@ -215,16 +222,16 @@ This combination keeps the grid tight and avoids large empty bands in the layout
   - white arrows, close button and caption text;
   - caption background `#b40000`.
 - Cleaned up FlexForm labels and defaults for **Plugin** and **Design** tabs.
-- Internal documentation and README updated for the stable release.
+- Documentation and README updated for the stable release.
 
 ### 0.1.13
 
-- Fix: prevent PHP warning *“Undefined array key 'title'”* when FAL metadata is missing or not translated.
+- Fix: prevent PHP warning *“Undefined array key 'title'”* when FAL metadata is missing or not translated (first iteration of the fix).
 
 ### 0.1.12
 
 - Fixes the “Load more” pagination and removes Masonry layout gaps when loading additional items.
-- Improves Masonry re‑layout on resize.
+- Improves Masonry re-layout on resize.
 - Adds an option to style the “Load more” button with the same frame as gallery tiles.
 
 ### 0.1.11
@@ -234,7 +241,7 @@ This combination keeps the grid tight and avoids large empty bands in the layout
   - reveals additional items in proper Masonry batches;
   - removes the button when no items remain.
 - Fixed layout gaps that could appear between initial and newly loaded tiles.
-- Small internal clean‑ups in JS to better handle lightbox re‑initialisation.
+- Small internal clean-ups in JS to better handle lightbox re-initialisation.
 
 ### 0.1.10
 
@@ -253,7 +260,7 @@ This combination keeps the grid tight and avoids large empty bands in the layout
 
 Please report bugs or feature requests on GitHub:
 
-- Issues: `https://github.com/anatolkin-s/anatolkin-mosaic-gallery/issues`
+- Issues: `https://github.com/anatolkin-s/anatolkin-mosaic-gallery/issues`  
 - Source: `https://github.com/anatolkin-s/anatolkin-mosaic-gallery`
 
 When reporting a problem, please include:

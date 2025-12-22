@@ -19,18 +19,40 @@ final class GalleryController extends ActionController
     public function listAction(): ResponseInterface
     {
         $assets = GeneralUtility::makeInstance(AssetCollector::class);
-        $assets->addStyleSheet('mosaic-css', 'EXT:anatolkin_mosaic_gallery/Resources/Public/Css/mosaic.css');
-        $assets->addJavaScript('imagesloaded', 'EXT:anatolkin_mosaic_gallery/Resources/Public/Js/imagesloaded.pkgd.min.js', ['defer' => true]);
-        $assets->addJavaScript('masonry', 'EXT:anatolkin_mosaic_gallery/Resources/Public/Js/masonry.pkgd.min.js', ['defer' => true]);
-        $assets->addJavaScript('mosaic-init', 'EXT:anatolkin_mosaic_gallery/Resources/Public/Js/mosaic-init.js', ['defer' => true]);
+        $assets->addStyleSheet(
+            'mosaic-css',
+            'EXT:anatolkin_mosaic_gallery/Resources/Public/Css/mosaic.css'
+        );
+        $assets->addJavaScript(
+            'imagesloaded',
+            'EXT:anatolkin_mosaic_gallery/Resources/Public/Js/imagesloaded.pkgd.min.js',
+            ['defer' => true]
+        );
+        $assets->addJavaScript(
+            'masonry',
+            'EXT:anatolkin_mosaic_gallery/Resources/Public/Js/masonry.pkgd.min.js',
+            ['defer' => true]
+        );
+        $assets->addJavaScript(
+            'mosaic-init',
+            'EXT:anatolkin_mosaic_gallery/Resources/Public/Js/mosaic-init.js',
+            ['defer' => true]
+        );
 
         $enableLightbox = (bool)($this->settings['enableLightbox'] ?? true);
         if ($enableLightbox) {
-            $assets->addStyleSheet('glightbox-css', 'EXT:anatolkin_mosaic_gallery/Resources/Public/Css/glightbox.min.css');
-            $assets->addJavaScript('glightbox-js', 'EXT:anatolkin_mosaic_gallery/Resources/Public/Js/glightbox.min.js', ['defer' => true]);
+            $assets->addStyleSheet(
+                'glightbox-css',
+                'EXT:anatolkin_mosaic_gallery/Resources/Public/Css/glightbox.min.css'
+            );
+            $assets->addJavaScript(
+                'glightbox-js',
+                'EXT:anatolkin_mosaic_gallery/Resources/Public/Js/glightbox.min.js',
+                ['defer' => true]
+            );
         }
 
-        // settings
+        // Settings
         $source    = (string)($this->settings['source'] ?? 'folder');
         $folderIn  = (string)($this->settings['folder'] ?? 'fileadmin/gallery/');
         $recursive = (bool)($this->settings['recursive'] ?? true);
@@ -42,34 +64,44 @@ final class GalleryController extends ActionController
         $showCaptions   = (bool)($this->settings['showCaptions'] ?? true);
         $useFalCaptions = (bool)($this->settings['useFalCaptions'] ?? true);
 
-        $borderRadius= max(0, (int)($this->settings['borderRadius'] ?? 6));
-        $shadow      = (bool)($this->settings['shadow'] ?? false);
-        $background  = (string)($this->settings['background'] ?? '');
+        $borderRadius = max(0, (int)($this->settings['borderRadius'] ?? 6));
+        $shadow       = (bool)($this->settings['shadow'] ?? false);
+        $background   = (string)($this->settings['background'] ?? '');
 
         $enableLoadMore = (bool)($this->settings['enableLoadMore'] ?? true);
         $itemsPerPage   = max(1, (int)($this->settings['itemsPerPage'] ?? 12));
         $loadStep       = max(1, (int)($this->settings['loadStep'] ?? $itemsPerPage));
 
-        $items = [];
+        $items   = [];
         $groupId = 'mosaic-' . $this->resolveContentUid();
 
         if ($source === 'folder') {
             try {
-                $rf = GeneralUtility::makeInstance(ResourceFactory::class);
-                $folder = $rf->getFolderObjectFromCombinedIdentifier($this->toCombinedIdentifier($folderIn));
+                $rf     = GeneralUtility::makeInstance(ResourceFactory::class);
+                $folder = $rf->getFolderObjectFromCombinedIdentifier(
+                    $this->toCombinedIdentifier($folderIn)
+                );
                 $files  = $this->collectFiles($folder, $recursive);
                 $files  = $this->sortFiles($files, $sortBy, $sortDir);
 
                 $lines = $this->splitLines((string)($this->settings['captions'] ?? ''));
+
                 foreach ($files as $idx => $file) {
                     try {
                         $meta = $useFalCaptions ? $this->getLocalizedMeta($file) : [];
                     } catch (\Throwable $e) {
                         $meta = [];
                     }
+
+                    // Safe access to FAL metadata: all keys are optional.
+                    $title       = $meta['title'] ?? '';
+                    $captionMeta = $meta['caption'] ?? '';
+                    $description = $meta['description'] ?? '';
+
                     $caption = $useFalCaptions
-                        ? ($meta['title'] ?: ($meta['caption'] ?? '') ?: ($meta['description'] ?? ''))
+                        ? ($title !== '' ? $title : ($captionMeta !== '' ? $captionMeta : $description))
                         : ($lines[$idx] ?? '');
+
                     $alt = ($meta['alternative'] ?? '') ?: $caption;
 
                     $items[] = [
@@ -80,7 +112,7 @@ final class GalleryController extends ActionController
                     ];
                 }
             } catch (\Throwable $e) {
-                // оставляем пустую галерею, чтобы не ронять страницу
+                // Fail silently for this content element instead of breaking the whole page.
             }
         }
 
@@ -116,20 +148,23 @@ final class GalleryController extends ActionController
 
     private function collectFiles(Folder $folder, bool $recursive): array
     {
-        $result = [];
-        $allowed = ['jpg','jpeg','png','gif','webp','bmp','tif','tiff'];
+        $result  = [];
+        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tif', 'tiff'];
+
         foreach ($folder->getFiles() as $file) {
             /** @var File $file */
             $ext = strtolower((string)$file->getExtension());
-            if (in_array($ext, $allowed, true)) {
+            if (\in_array($ext, $allowed, true)) {
                 $result[] = $file;
             }
         }
+
         if ($recursive) {
             foreach ($folder->getSubfolders() as $sub) {
                 $result = array_merge($result, $this->collectFiles($sub, true));
             }
         }
+
         return $result;
     }
 
@@ -139,36 +174,50 @@ final class GalleryController extends ActionController
             shuffle($files);
             return $files;
         }
-        usort($files, static function (File $a, File $b) use ($by, $dir) {
-            if ($by === 'mtime') {
-                $av = (int)($a->getProperty('modification_date') ?? 0);
-                $bv = (int)($b->getProperty('modification_date') ?? 0);
-            } else {
-                $av = strtolower($a->getName());
-                $bv = strtolower($b->getName());
+
+        usort(
+            $files,
+            static function (File $a, File $b) use ($by, $dir) {
+                if ($by === 'mtime') {
+                    $av = (int)($a->getProperty('modification_date') ?? 0);
+                    $bv = (int)($b->getProperty('modification_date') ?? 0);
+                } else {
+                    $av = strtolower($a->getName());
+                    $bv = strtolower($b->getName());
+                }
+
+                $cmp = $av <=> $bv;
+                return $dir === 'desc' ? -$cmp : $cmp;
             }
-            $cmp = $av <=> $bv;
-            return $dir === 'desc' ? -$cmp : $cmp;
-        });
+        );
+
         return $files;
     }
 
     /**
-     * Безопасная локализация метаданных:
-     * 1) Берём базовую запись (sys_language_uid=0) по file
-     * 2) Если есть язык > 0, ищем overlay по l10n_parent и sys_language_uid
-     * 3) Мерджим overlay поверх базы. Любая ошибка — тихий фоллбэк.
+     * Returns localized FAL metadata for a given file.
+     *
+     * Strategy:
+     * 1) Fetch base record (sys_language_uid = 0) by file UID.
+     * 2) If current language > 0, look for an overlay (l10n_parent + sys_language_uid).
+     * 3) Merge overlay on top of base; empty strings in overlay do not overwrite base values.
+     *
+     * Any DB/context error falls back to base or an empty metadata array.
      */
     private function getLocalizedMeta(File $file): array
     {
-        $ctx = GeneralUtility::makeInstance(Context::class);
+        $ctx    = GeneralUtility::makeInstance(Context::class);
         $langId = (int)$ctx->getPropertyFromAspect('language', 'id');
 
-        $qb = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('sys_file_metadata');
+        $qb   = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getQueryBuilderForTable('sys_file_metadata');
         $base = $qb->select('*')
             ->from('sys_file_metadata')
             ->where(
-                $qb->expr()->eq('file', $qb->createNamedParameter($file->getUid(), \PDO::PARAM_INT)),
+                $qb->expr()->eq(
+                    'file',
+                    $qb->createNamedParameter($file->getUid(), \PDO::PARAM_INT)
+                ),
                 $qb->expr()->eq('sys_language_uid', 0)
             )
             ->setMaxResults(1)
@@ -176,21 +225,28 @@ final class GalleryController extends ActionController
             ->fetchAssociative() ?: [];
 
         if ($langId > 0 && !empty($base['uid'])) {
-            $qb2 = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('sys_file_metadata');
+            $qb2     = GeneralUtility::makeInstance(ConnectionPool::class)
+                ->getQueryBuilderForTable('sys_file_metadata');
             $overlay = $qb2->select('*')
                 ->from('sys_file_metadata')
                 ->where(
-                    $qb2->expr()->eq('l10n_parent', $qb2->createNamedParameter((int)$base['uid'], \PDO::PARAM_INT)),
-                    $qb2->expr()->eq('sys_language_uid', $qb2->createNamedParameter($langId, \PDO::PARAM_INT))
+                    $qb2->expr()->eq(
+                        'l10n_parent',
+                        $qb2->createNamedParameter((int)$base['uid'], \PDO::PARAM_INT)
+                    ),
+                    $qb2->expr()->eq(
+                        'sys_language_uid',
+                        $qb2->createNamedParameter($langId, \PDO::PARAM_INT)
+                    )
                 )
                 ->setMaxResults(1)
                 ->executeQuery()
                 ->fetchAssociative() ?: [];
 
             if ($overlay) {
-                // overlay дополняет базу, пустые строки не перетирают
+                // Overlay extends base metadata; empty strings do not overwrite base values.
                 foreach ($overlay as $k => $v) {
-                    if (is_string($v) && $v !== '') {
+                    if (\is_string($v) && $v !== '') {
                         $base[$k] = $v;
                     }
                 }
@@ -209,7 +265,12 @@ final class GalleryController extends ActionController
     private function splitLines(string $text): array
     {
         $lines = preg_split('/\r\n|\r|\n/', $text);
-        return array_values(array_filter($lines, static fn($v) => $v !== null));
+        return array_values(
+            array_filter(
+                $lines,
+                static fn($v) => $v !== null
+            )
+        );
     }
 
     private function toCombinedIdentifier(string $input): string
@@ -217,8 +278,10 @@ final class GalleryController extends ActionController
         if (preg_match('#^\d+:/#', $input)) {
             return rtrim($input, '/') . '/';
         }
+
         $path = preg_replace('#^fileadmin/?#', '', $input);
-        $path = '/' . trim($path, '/') . '/';
+        $path = '/' . trim((string)$path, '/') . '/';
+
         return '1:' . $path;
     }
 }
