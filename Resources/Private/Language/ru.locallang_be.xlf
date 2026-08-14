@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" target-language="ru" datatype="plaintext" original="messages" date="2026-08-14T00:00:00Z"><body>
+    <trans-unit id="plugin.title"><source>Anatolkin Mosaic Gallery</source><target>Anatolkin Mosaic Gallery</target></trans-unit>
+    <trans-unit id="plugin.typoscriptTitle"><source>Anatolkin Mosaic Gallery (Assets &amp; Masonry)</source><target>Anatolkin Mosaic Gallery (ресурсы и раскладка Masonry)</target></trans-unit>
+    <trans-unit id="plugin.description"><source>Masonry-style image gallery using FAL with an optional lightbox</source><target>Мозаичная галерея изображений на основе FAL с дополнительным лайтбоксом</target></trans-unit>
+    <trans-unit id="plugin.group"><source>Gallery</source><target>Галерея</target></trans-unit>
+    <trans-unit id="flexform.sheet.general"><source>Mosaic Gallery</source><target>Мозаичная галерея</target></trans-unit>
+    <trans-unit id="flexform.sheet.design"><source>Design</source><target>Оформление</target></trans-unit>
+    <trans-unit id="flexform.source"><source>Source</source><target>Источник</target></trans-unit>
+    <trans-unit id="flexform.source.folder"><source>Folder (fileadmin)</source><target>Папка (fileadmin)</target></trans-unit>
+    <trans-unit id="flexform.folder"><source>Folder</source><target>Папка</target></trans-unit>
+    <trans-unit id="flexform.recursive"><source>Include subfolders</source><target>Включать вложенные папки</target></trans-unit>
+    <trans-unit id="flexform.sortBy"><source>Sort by</source><target>Сортировать по</target></trans-unit>
+    <trans-unit id="flexform.sortBy.name"><source>Filename</source><target>Имени файла</target></trans-unit>
+    <trans-unit id="flexform.sortBy.mtime"><source>Modification time</source><target>Времени изменения</target></trans-unit>
+    <trans-unit id="flexform.sortBy.random"><source>Random order</source><target>Случайному порядку</target></trans-unit>
+    <trans-unit id="flexform.sortDir"><source>Sort direction</source><target>Направление сортировки</target></trans-unit>
+    <trans-unit id="flexform.sortDir.asc"><source>Ascending</source><target>По возрастанию</target></trans-unit>
+    <trans-unit id="flexform.sortDir.desc"><source>Descending</source><target>По убыванию</target></trans-unit>
+    <trans-unit id="flexform.gap"><source>Gap (px)</source><target>Интервал (пикс.)</target></trans-unit>
+    <trans-unit id="flexform.maxWidth"><source>Maximum image width (px)</source><target>Максимальная ширина изображения (пикс.)</target></trans-unit>
+    <trans-unit id="flexform.enableLightbox"><source>Enable lightbox</source><target>Включить лайтбокс</target></trans-unit>
+    <trans-unit id="flexform.showCaptions"><source>Show captions</source><target>Показывать подписи</target></trans-unit>
+    <trans-unit id="flexform.captionAlign"><source>Caption alignment</source><target>Выравнивание подписей</target></trans-unit>
+    <trans-unit id="flexform.captionAlign.left"><source>Left</source><target>По левому краю</target></trans-unit>
+    <trans-unit id="flexform.captionAlign.center"><source>Center</source><target>По центру</target></trans-unit>
+    <trans-unit id="flexform.captionAlign.right"><source>Right</source><target>По правому краю</target></trans-unit>
+    <trans-unit id="flexform.useFalCaptions"><source>Use multilingual FAL titles and descriptions</source><target>Использовать многоязычные заголовки и описания FAL</target></trans-unit>
+    <trans-unit id="flexform.captions"><source>Captions, one line per image in display order; used when FAL captions are disabled</source><target>Подписи: одна строка на изображение в порядке показа; используются, если подписи FAL отключены</target></trans-unit>
+    <trans-unit id="flexform.enableLoadMore"><source>Enable “Load more”</source><target>Включить кнопку «Загрузить ещё»</target></trans-unit>
+    <trans-unit id="flexform.loadMoreUseFrameStyle"><source>Use the gallery frame style for the “Load more” button</source><target>Использовать стиль рамки галереи для кнопки «Загрузить ещё»</target></trans-unit>
+    <trans-unit id="flexform.itemsPerPage"><source>Images shown initially</source><target>Количество изображений при первом показе</target></trans-unit>
+    <trans-unit id="flexform.loadStep"><source>Images revealed per step</source><target>Количество изображений за один шаг</target></trans-unit>
+    <trans-unit id="flexform.frameColor"><source>Frame color</source><target>Цвет рамки</target></trans-unit>
+    <trans-unit id="flexform.frameWidth"><source>Frame width (px)</source><target>Ширина рамки (пикс.)</target></trans-unit>
+    <trans-unit id="flexform.frameStyle"><source>Frame style</source><target>Стиль рамки</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.none"><source>None</source><target>Без рамки</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.solid"><source>Solid</source><target>Сплошная</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.dashed"><source>Dashed</source><target>Штриховая</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.dotted"><source>Dotted</source><target>Пунктирная</target></trans-unit>
+    <trans-unit id="flexform.borderRadius"><source>Corner radius (px)</source><target>Радиус скругления (пикс.)</target></trans-unit>
+    <trans-unit id="flexform.shadow"><source>Shadow</source><target>Тень</target></trans-unit>
+    <trans-unit id="flexform.backgroundColor"><source>Background color</source><target>Цвет фона</target></trans-unit>
+    <trans-unit id="flexform.applyTo"><source>Apply background to</source><target>Применить фон к</target></trans-unit>
+    <trans-unit id="flexform.applyTo.container"><source>Container</source><target>Контейнеру</target></trans-unit>
+    <trans-unit id="flexform.applyTo.tiles"><source>Images</source><target>Изображениям</target></trans-unit>
+    <trans-unit id="flexform.applyTo.both"><source>Container and images</source><target>Контейнеру и изображениям</target></trans-unit>
+    <trans-unit id="flexform.lbOverlay"><source>Lightbox overlay color</source><target>Цвет затемнения лайтбокса</target></trans-unit>
+    <trans-unit id="flexform.lbOverlayAlpha"><source>Lightbox overlay opacity (0.00–1.00)</source><target>Непрозрачность затемнения лайтбокса (0,00–1,00)</target></trans-unit>
+    <trans-unit id="flexform.lbNavColor"><source>Lightbox navigation color</source><target>Цвет элементов навигации лайтбокса</target></trans-unit>
+    <trans-unit id="flexform.lbCloseColor"><source>Lightbox close button color</source><target>Цвет кнопки закрытия лайтбокса</target></trans-unit>
+    <trans-unit id="flexform.lbCaptionColor"><source>Lightbox caption text color</source><target>Цвет текста подписи в лайтбоксе</target></trans-unit>
+    <trans-unit id="flexform.lbCaptionBg"><source>Lightbox caption background</source><target>Фон подписи в лайтбоксе</target></trans-unit>
+  </body></file>
+</xliff>

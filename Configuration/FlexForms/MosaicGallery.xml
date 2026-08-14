@@ -4,20 +4,18 @@
 
     <sDEF>
       <ROOT>
-        <TCEforms>
-          <sheetTitle>Mosaic Gallery</sheetTitle>
-        </TCEforms>
+        <sheetTitle>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.sheet.general</sheetTitle>
         <el>
 
           <settings.source>
-            <label>Source</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.source</label>
             <config>
               <type>select</type>
               <renderType>selectSingle</renderType>
               <items>
                 <numIndex index="0">
-                  <numIndex index="0">Folder (fileadmin)</numIndex>
-                  <numIndex index="1">folder</numIndex>
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.source.folder</label>
+                  <value>folder</value>
                 </numIndex>
               </items>
               <default>folder</default>
@@ -25,7 +23,7 @@
           </settings.source>
 
           <settings.folder>
-            <label>Folder</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.folder</label>
             <displayCond>FIELD:settings.source:=:folder</displayCond>
             <config>
               <type>group</type>
@@ -38,7 +36,7 @@
           </settings.folder>
 
           <settings.recursive>
-            <label>Recursive</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.recursive</label>
             <config>
               <type>check</type>
               <default>1</default>
@@ -46,22 +44,22 @@
           </settings.recursive>
 
           <settings.sortBy>
-            <label>Sort by</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.sortBy</label>
             <config>
               <type>select</type>
               <renderType>selectSingle</renderType>
               <items>
                 <numIndex index="0">
-                  <numIndex index="0">Filename</numIndex>
-                  <numIndex index="1">name</numIndex>
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.sortBy.name</label>
+                  <value>name</value>
                 </numIndex>
                 <numIndex index="1">
-                  <numIndex index="0">Modified time</numIndex>
-                  <numIndex index="1">mtime</numIndex>
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.sortBy.mtime</label>
+                  <value>mtime</value>
                 </numIndex>
                 <numIndex index="2">
-                  <numIndex index="0">Random</numIndex>
-                  <numIndex index="1">random</numIndex>
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.sortBy.random</label>
+                  <value>random</value>
                 </numIndex>
               </items>
               <default>random</default>
@@ -69,18 +67,18 @@
           </settings.sortBy>
 
           <settings.sortDir>
-            <label>Sort direction</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.sortDir</label>
             <config>
               <type>select</type>
               <renderType>selectSingle</renderType>
               <items>
                 <numIndex index="0">
-                  <numIndex index="0">Ascending</numIndex>
-                  <numIndex index="1">asc</numIndex>
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.sortDir.asc</label>
+                  <value>asc</value>
                 </numIndex>
                 <numIndex index="1">
-                  <numIndex index="0">Descending</numIndex>
-                  <numIndex index="1">desc</numIndex>
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.sortDir.desc</label>
+                  <value>desc</value>
                 </numIndex>
               </items>
               <default>asc</default>
@@ -88,7 +86,7 @@
           </settings.sortDir>
 
           <settings.gap>
-            <label>Gutter (px)</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.gap</label>
             <config>
               <type>input</type>
               <eval>int</eval>
@@ -97,7 +95,7 @@
           </settings.gap>
 
           <settings.maxWidth>
-            <label>Image max width (px)</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.maxWidth</label>
             <config>
               <type>input</type>
               <eval>int</eval>
@@ -106,7 +104,7 @@
           </settings.maxWidth>
 
           <settings.enableLightbox>
-            <label>Enable lightbox</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.enableLightbox</label>
             <config>
               <type>check</type>
               <default>1</default>
@@ -114,7 +112,7 @@
           </settings.enableLightbox>
 
           <settings.showCaptions>
-            <label>Show captions</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.showCaptions</label>
             <config>
               <type>check</type>
               <default>1</default>
@@ -122,22 +120,22 @@
           </settings.showCaptions>
 
           <settings.captionAlign>
-            <label>Caption alignment</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.captionAlign</label>
             <config>
               <type>select</type>
               <renderType>selectSingle</renderType>
               <items>
                 <numIndex index="0">
-                  <numIndex index="0">Left</numIndex>
-                  <numIndex index="1">left</numIndex>
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.captionAlign.left</label>
+                  <value>left</value>
                 </numIndex>
                 <numIndex index="1">
-                  <numIndex index="0">Center</numIndex>
-                  <numIndex index="1">center</numIndex>
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.captionAlign.center</label>
+                  <value>center</value>
                 </numIndex>
                 <numIndex index="2">
-                  <numIndex index="0">Right</numIndex>
-                  <numIndex index="1">right</numIndex>
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.captionAlign.right</label>
+                  <value>right</value>
                 </numIndex>
               </items>
               <default>left</default>
@@ -145,7 +143,7 @@
           </settings.captionAlign>
 
           <settings.useFalCaptions>
-            <label>Use FAL titles/descriptions (multilingual)</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.useFalCaptions</label>
             <config>
               <type>check</type>
               <default>1</default>
@@ -153,7 +151,7 @@
           </settings.useFalCaptions>
 
           <settings.captions>
-            <label>Captions (one line per image, order-based; used if FAL captions disabled)</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.captions</label>
             <config>
               <type>text</type>
               <cols>40</cols>
@@ -162,7 +160,7 @@
           </settings.captions>
 
           <settings.enableLoadMore>
-            <label>Enable "Load more"</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.enableLoadMore</label>
             <config>
               <type>check</type>
               <default>1</default>
@@ -170,7 +168,7 @@
           </settings.enableLoadMore>
 
           <settings.loadMoreUseFrameStyle>
-            <label>Use frame style for "Load more" button</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.loadMoreUseFrameStyle</label>
             <config>
               <type>check</type>
               <default>1</default>
@@ -178,7 +176,7 @@
           </settings.loadMoreUseFrameStyle>
 
           <settings.itemsPerPage>
-            <label>Items initially</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.itemsPerPage</label>
             <config>
               <type>input</type>
               <eval>int</eval>
@@ -187,7 +185,7 @@
           </settings.itemsPerPage>
 
           <settings.loadStep>
-            <label>Load step</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.loadStep</label>
             <config>
               <type>input</type>
               <eval>int</eval>
@@ -201,13 +199,11 @@
 
     <sDESIGN>
       <ROOT>
-        <TCEforms>
-          <sheetTitle>Design</sheetTitle>
-        </TCEforms>
+        <sheetTitle>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.sheet.design</sheetTitle>
         <el>
 
           <settings.frameColor>
-            <label>Frame color</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameColor</label>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -218,7 +214,7 @@
           </settings.frameColor>
 
           <settings.frameWidth>
-            <label>Frame width (px)</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameWidth</label>
             <config>
               <type>input</type>
               <eval>int</eval>
@@ -232,26 +228,26 @@
           </settings.frameWidth>
 
           <settings.frameStyle>
-            <label>Frame style</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameStyle</label>
             <config>
               <type>select</type>
               <renderType>selectSingle</renderType>
               <items>
                 <numIndex index="0">
-                  <numIndex index="0">None</numIndex>
-                  <numIndex index="1">none</numIndex>
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameStyle.none</label>
+                  <value>none</value>
                 </numIndex>
                 <numIndex index="1">
-                  <numIndex index="0">Solid</numIndex>
-                  <numIndex index="1">solid</numIndex>
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameStyle.solid</label>
+                  <value>solid</value>
                 </numIndex>
                 <numIndex index="2">
-                  <numIndex index="0">Dashed</numIndex>
-                  <numIndex index="1">dashed</numIndex>
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameStyle.dashed</label>
+                  <value>dashed</value>
                 </numIndex>
                 <numIndex index="3">
-                  <numIndex index="0">Dotted</numIndex>
-                  <numIndex index="1">dotted</numIndex>
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameStyle.dotted</label>
+                  <value>dotted</value>
                 </numIndex>
               </items>
               <default>solid</default>
@@ -259,7 +255,7 @@
           </settings.frameStyle>
 
           <settings.borderRadius>
-            <label>Border radius (px)</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.borderRadius</label>
             <config>
               <type>input</type>
               <eval>int</eval>
@@ -268,7 +264,7 @@
           </settings.borderRadius>
 
           <settings.shadow>
-            <label>Shadow</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.shadow</label>
             <config>
               <type>check</type>
               <default>1</default>
@@ -276,7 +272,7 @@
           </settings.shadow>
 
           <settings.backgroundColor>
-            <label>Background color</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.backgroundColor</label>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -287,22 +283,22 @@
           </settings.backgroundColor>
 
           <settings.applyTo>
-            <label>Apply background to</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.applyTo</label>
             <config>
               <type>select</type>
               <renderType>selectSingle</renderType>
               <items>
                 <numIndex index="0">
-                  <numIndex index="0">Container</numIndex>
-                  <numIndex index="1">container</numIndex>
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.applyTo.container</label>
+                  <value>container</value>
                 </numIndex>
                 <numIndex index="1">
-                  <numIndex index="0">Tiles</numIndex>
-                  <numIndex index="1">tiles</numIndex>
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.applyTo.tiles</label>
+                  <value>tiles</value>
                 </numIndex>
                 <numIndex index="2">
-                  <numIndex index="0">Both</numIndex>
-                  <numIndex index="1">both</numIndex>
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.applyTo.both</label>
+                  <value>both</value>
                 </numIndex>
               </items>
               <default>both</default>
@@ -310,7 +306,7 @@
           </settings.applyTo>
 
           <settings.lbOverlay>
-            <label>Lightbox overlay color</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbOverlay</label>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -321,7 +317,7 @@
           </settings.lbOverlay>
 
           <settings.lbOverlayAlpha>
-            <label>Lightbox overlay opacity (0.00-1.00)</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbOverlayAlpha</label>
             <config>
               <type>input</type>
               <size>6</size>
@@ -331,7 +327,7 @@
           </settings.lbOverlayAlpha>
 
           <settings.lbNavColor>
-            <label>Lightbox arrows color</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbNavColor</label>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -342,7 +338,7 @@
           </settings.lbNavColor>
 
           <settings.lbCloseColor>
-            <label>Lightbox close button color</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCloseColor</label>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -353,7 +349,7 @@
           </settings.lbCloseColor>
 
           <settings.lbCaptionColor>
-            <label>Lightbox caption text color</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionColor</label>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -364,7 +360,7 @@
           </settings.lbCaptionColor>
 
           <settings.lbCaptionBg>
-            <label>Lightbox caption background</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionBg</label>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>

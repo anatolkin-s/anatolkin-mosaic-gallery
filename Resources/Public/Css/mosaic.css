@@ -1,4 +1,4 @@
-/* v1.3 � Masonry grid + design controlled via FlexForm */
+/* v1.3 – Masonry grid + design controlled via FlexForm */
 .mosaic-gallery{
   margin:0 auto;
   padding: var(--gap,12px);
@@ -92,13 +92,13 @@
   line-height: 1.4;
   cursor: pointer;
 
-  /* те же параметры рамки, что у картинок */
+  /* Use the same frame settings as the images. */
   border-style: var(--frame-style, solid);
   border-color: var(--frame-color, #d9c28b);
   border-width: min(var(--frame-width, 2px), 12px);
   border-radius: var(--radius, 0);
 
-  /* фон и текст по умолчанию – мягкие, но читаемые */
+  /* Use soft but readable default background and text colors. */
   background-color: var(--bg, #f3f3ee);
   color: var(--frame-color, #333333);
 

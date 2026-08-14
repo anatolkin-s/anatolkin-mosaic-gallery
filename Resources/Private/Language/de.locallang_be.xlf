@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" target-language="de" datatype="plaintext" original="messages" date="2026-08-14T00:00:00Z"><body>
+    <trans-unit id="plugin.title"><source>Anatolkin Mosaic Gallery</source><target>Anatolkin Mosaic Gallery</target></trans-unit>
+    <trans-unit id="plugin.typoscriptTitle"><source>Anatolkin Mosaic Gallery (Assets &amp; Masonry)</source><target>Anatolkin Mosaic Gallery (Assets &amp; Masonry)</target></trans-unit>
+    <trans-unit id="plugin.description"><source>Masonry-style image gallery using FAL with an optional lightbox</source><target>Bildergalerie im Masonry-Stil mit FAL und optionaler Lightbox</target></trans-unit>
+    <trans-unit id="plugin.group"><source>Gallery</source><target>Galerie</target></trans-unit>
+    <trans-unit id="flexform.sheet.general"><source>Mosaic Gallery</source><target>Mosaikgalerie</target></trans-unit>
+    <trans-unit id="flexform.sheet.design"><source>Design</source><target>Gestaltung</target></trans-unit>
+    <trans-unit id="flexform.source"><source>Source</source><target>Quelle</target></trans-unit>
+    <trans-unit id="flexform.source.folder"><source>Folder (fileadmin)</source><target>Ordner (fileadmin)</target></trans-unit>
+    <trans-unit id="flexform.folder"><source>Folder</source><target>Ordner</target></trans-unit>
+    <trans-unit id="flexform.recursive"><source>Include subfolders</source><target>Unterordner einbeziehen</target></trans-unit>
+    <trans-unit id="flexform.sortBy"><source>Sort by</source><target>Sortieren nach</target></trans-unit>
+    <trans-unit id="flexform.sortBy.name"><source>Filename</source><target>Dateiname</target></trans-unit>
+    <trans-unit id="flexform.sortBy.mtime"><source>Modification time</source><target>Änderungszeitpunkt</target></trans-unit>
+    <trans-unit id="flexform.sortBy.random"><source>Random order</source><target>Zufällige Reihenfolge</target></trans-unit>
+    <trans-unit id="flexform.sortDir"><source>Sort direction</source><target>Sortierrichtung</target></trans-unit>
+    <trans-unit id="flexform.sortDir.asc"><source>Ascending</source><target>Aufsteigend</target></trans-unit>
+    <trans-unit id="flexform.sortDir.desc"><source>Descending</source><target>Absteigend</target></trans-unit>
+    <trans-unit id="flexform.gap"><source>Gap (px)</source><target>Abstand (px)</target></trans-unit>
+    <trans-unit id="flexform.maxWidth"><source>Maximum image width (px)</source><target>Maximale Bildbreite (px)</target></trans-unit>
+    <trans-unit id="flexform.enableLightbox"><source>Enable lightbox</source><target>Lightbox aktivieren</target></trans-unit>
+    <trans-unit id="flexform.showCaptions"><source>Show captions</source><target>Bildunterschriften anzeigen</target></trans-unit>
+    <trans-unit id="flexform.captionAlign"><source>Caption alignment</source><target>Ausrichtung der Bildunterschrift</target></trans-unit>
+    <trans-unit id="flexform.captionAlign.left"><source>Left</source><target>Links</target></trans-unit>
+    <trans-unit id="flexform.captionAlign.center"><source>Center</source><target>Zentriert</target></trans-unit>
+    <trans-unit id="flexform.captionAlign.right"><source>Right</source><target>Rechts</target></trans-unit>
+    <trans-unit id="flexform.useFalCaptions"><source>Use multilingual FAL titles and descriptions</source><target>Mehrsprachige FAL-Titel und -Beschreibungen verwenden</target></trans-unit>
+    <trans-unit id="flexform.captions"><source>Captions, one line per image in display order; used when FAL captions are disabled</source><target>Bildunterschriften, eine Zeile je Bild in Anzeigereihenfolge; wird verwendet, wenn FAL-Bildunterschriften deaktiviert sind</target></trans-unit>
+    <trans-unit id="flexform.enableLoadMore"><source>Enable “Load more”</source><target>„Mehr laden“ aktivieren</target></trans-unit>
+    <trans-unit id="flexform.loadMoreUseFrameStyle"><source>Use the gallery frame style for the “Load more” button</source><target>Galerie-Rahmenstil für die Schaltfläche „Mehr laden“ verwenden</target></trans-unit>
+    <trans-unit id="flexform.itemsPerPage"><source>Images shown initially</source><target>Anfangs angezeigte Bilder</target></trans-unit>
+    <trans-unit id="flexform.loadStep"><source>Images revealed per step</source><target>Bilder pro Ladeschritt</target></trans-unit>
+    <trans-unit id="flexform.frameColor"><source>Frame color</source><target>Rahmenfarbe</target></trans-unit>
+    <trans-unit id="flexform.frameWidth"><source>Frame width (px)</source><target>Rahmenbreite (px)</target></trans-unit>
+    <trans-unit id="flexform.frameStyle"><source>Frame style</source><target>Rahmenstil</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.none"><source>None</source><target>Keiner</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.solid"><source>Solid</source><target>Durchgezogen</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.dashed"><source>Dashed</source><target>Gestrichelt</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.dotted"><source>Dotted</source><target>Gepunktet</target></trans-unit>
+    <trans-unit id="flexform.borderRadius"><source>Corner radius (px)</source><target>Eckenradius (px)</target></trans-unit>
+    <trans-unit id="flexform.shadow"><source>Shadow</source><target>Schatten</target></trans-unit>
+    <trans-unit id="flexform.backgroundColor"><source>Background color</source><target>Hintergrundfarbe</target></trans-unit>
+    <trans-unit id="flexform.applyTo"><source>Apply background to</source><target>Hintergrund anwenden auf</target></trans-unit>
+    <trans-unit id="flexform.applyTo.container"><source>Container</source><target>Container</target></trans-unit>
+    <trans-unit id="flexform.applyTo.tiles"><source>Images</source><target>Bilder</target></trans-unit>
+    <trans-unit id="flexform.applyTo.both"><source>Container and images</source><target>Container und Bilder</target></trans-unit>
+    <trans-unit id="flexform.lbOverlay"><source>Lightbox overlay color</source><target>Farbe der Lightbox-Überlagerung</target></trans-unit>
+    <trans-unit id="flexform.lbOverlayAlpha"><source>Lightbox overlay opacity (0.00–1.00)</source><target>Deckkraft der Lightbox-Überlagerung (0,00–1,00)</target></trans-unit>
+    <trans-unit id="flexform.lbNavColor"><source>Lightbox navigation color</source><target>Farbe der Lightbox-Navigation</target></trans-unit>
+    <trans-unit id="flexform.lbCloseColor"><source>Lightbox close button color</source><target>Farbe der Lightbox-Schließen-Schaltfläche</target></trans-unit>
+    <trans-unit id="flexform.lbCaptionColor"><source>Lightbox caption text color</source><target>Textfarbe der Lightbox-Bildunterschrift</target></trans-unit>
+    <trans-unit id="flexform.lbCaptionBg"><source>Lightbox caption background</source><target>Hintergrund der Lightbox-Bildunterschrift</target></trans-unit>
+  </body></file>
+</xliff>

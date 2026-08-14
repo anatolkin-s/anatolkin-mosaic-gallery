@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" datatype="plaintext" original="messages" date="2026-08-14T00:00:00Z"><body>
+    <trans-unit id="gallery.loadMore"><source>Load more</source></trans-unit>
+    <trans-unit id="gallery.loadMore.ariaLabel"><source>Load more images</source></trans-unit>
+  </body></file>
+</xliff>

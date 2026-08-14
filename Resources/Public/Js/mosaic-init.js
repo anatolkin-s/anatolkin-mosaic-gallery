@@ -77,7 +77,7 @@
           columnWidth:  sizer,
           percentPosition: true,
           gutter: gap,
-          fitWidth: false  // занимаем всю ширину контейнера
+          fitWidth: false  // Use the full container width.
         });
 
         function relayout() {
@@ -118,7 +118,7 @@
   });
 })();
 
-/* === mosaic_gallery ▒ Lightbox theme + frame copied from gallery tiles === */
+/* === Lightbox theme and frame copied from gallery tiles === */
 (function () {
   function hexToRgb(hex) {
     if (!hex) return { r: 0, g: 0, b: 0 };

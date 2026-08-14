@@ -12,23 +12,22 @@ plugin.tx_mosaicgallery_pi1 {
   }
 
   settings {
-    # Источник изображений по умолчанию — папка
+    # Default image source: folder.
     source = folder
 
-    # Базовая папка по умолчанию (администратор может переопределить в FlexForm)
+    # Default base folder; editors can override it in the FlexForm.
     folder = fileadmin/gallery/
 
-    # Рекурсивный обход подпапок
+    # Traverse subfolders recursively.
     recursive = 1
 
-    # Отступ (gap) между картинками, px
+    # Gap between images in pixels.
     gap = 12
   }
 }
 
 # -----------------------------------------------------------------
 # Backward-compatible alias:
-# поддерживаем старый list_type = anatolkinmosaicgallery_pi1
-# через рабочий mosaicgallery_pi1
+# Map the legacy list_type anatolkinmosaicgallery_pi1 to the current plugin.
 # -----------------------------------------------------------------
 tt_content.list.20.anatolkinmosaicgallery_pi1 < tt_content.list.20.mosaicgallery_pi1

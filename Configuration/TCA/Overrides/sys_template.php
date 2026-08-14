@@ -11,6 +11,6 @@ use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
     ExtensionManagementUtility::addStaticFile(
         'anatolkin_mosaic_gallery',                    // Extension key
         'Configuration/TypoScript',         // Path to TypoScript directory
-        'Anatolkin Mosaic Gallery (Assets & Masonry)' // Label in "Include TypoScript sets"
+        'LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:plugin.typoscriptTitle'
     );
 })();
