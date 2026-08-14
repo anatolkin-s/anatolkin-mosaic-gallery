@@ -52,5 +52,15 @@
     <trans-unit id="flexform.lbCloseColor"><source>Lightbox close button color</source><target>Цвет кнопки закрытия лайтбокса</target></trans-unit>
     <trans-unit id="flexform.lbCaptionColor"><source>Lightbox caption text color</source><target>Цвет текста подписи в лайтбоксе</target></trans-unit>
     <trans-unit id="flexform.lbCaptionBg"><source>Lightbox caption background</source><target>Фон подписи в лайтбоксе</target></trans-unit>
+    <trans-unit id="metadata.title"><source>Image metadata</source><target>Метаданные изображений</target></trans-unit>
+    <trans-unit id="metadata.caption"><source>Caption</source><target>Подпись</target></trans-unit>
+    <trans-unit id="metadata.alternative"><source>Alternative text</source><target>Альтернативный текст</target></trans-unit>
+    <trans-unit id="metadata.decorative"><source>Decorative image</source><target>Декоративное изображение</target></trans-unit>
+    <trans-unit id="metadata.inherit"><source>Inherit</source><target>Наследовать</target></trans-unit>
+    <trans-unit id="metadata.custom"><source>Custom</source><target>Собственное значение</target></trans-unit>
+    <trans-unit id="metadata.filename"><source>Filename</source><target>Имя файла</target></trans-unit>
+    <trans-unit id="metadata.noImages"><source>No images found in the selected folder.</source><target>В выбранной папке изображения не найдены.</target></trans-unit>
+    <trans-unit id="metadata.folderNotSelected"><source>Select a folder and save the content element to edit image metadata.</source><target>Выберите папку и сохраните элемент содержимого, чтобы редактировать метаданные изображений.</target></trans-unit>
+    <trans-unit id="metadata.folderReadError"><source>Unable to read the selected folder.</source><target>Не удалось прочитать выбранную папку.</target></trans-unit>
   </body></file>
 </xliff>

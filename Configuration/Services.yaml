@@ -5,3 +5,7 @@ services:
     public: true
 
   Anatolkin\MosaicGallery\Controller\GalleryController: ~
+
+  Anatolkin\MosaicGallery\Service\FolderImageProvider: ~
+
+  Anatolkin\MosaicGallery\Backend\Form\Element\MetadataOverridesElement: ~

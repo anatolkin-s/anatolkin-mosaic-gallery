@@ -4,6 +4,7 @@ declare(strict_types=1);
 defined('TYPO3') || die();
 
 use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
+use Anatolkin\MosaicGallery\Backend\Form\Element\MetadataOverridesElement;
 use Anatolkin\MosaicGallery\Controller\GalleryController;
 use TYPO3\CMS\Core\Imaging\IconRegistry;
 use TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider;
@@ -19,6 +20,13 @@ ExtensionUtility::configurePlugin(
     ],
     []
 );
+
+// Register the per-file metadata FormEngine element.
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1755129600] = [
+    'nodeName' => 'mosaicGalleryMetadataOverrides',
+    'priority' => 40,
+    'class' => MetadataOverridesElement::class,
+];
 
 // Register backend icons (Extension Manager, plugin icon, etc.)
 (static function (): void {
