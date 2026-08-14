@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Anatolkin\MosaicGallery\Controller;
 
+use Anatolkin\MosaicGallery\Service\GalleryMetadataOverrideResolver;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -82,6 +83,8 @@ final class GalleryController extends ActionController
                     $this->toCombinedIdentifier($folderIn)
                 );
                 $files  = $this->collectFiles($folder, $recursive);
+                $metadataOverrides = GeneralUtility::makeInstance(GalleryMetadataOverrideResolver::class)
+                    ->decode($this->resolveMetadataOverridesValue());
                 $files  = $this->sortFiles($files, $sortBy, $sortDir);
 
                 $lines = $this->splitLines((string)($this->settings['captions'] ?? ''));
@@ -103,6 +106,16 @@ final class GalleryController extends ActionController
                         : ($lines[$idx] ?? '');
 
                     $alt = ($meta['alternative'] ?? '') ?: $caption;
+
+                    $fileOverride = $metadataOverrides[(string)$file->getUid()] ?? [];
+                    if (($fileOverride['caption']['mode'] ?? null) === 'custom') {
+                        $caption = $fileOverride['caption']['value'];
+                    }
+                    if (($fileOverride['alt']['mode'] ?? null) === 'custom') {
+                        $alt = $fileOverride['alt']['value'];
+                    } elseif (($fileOverride['alt']['mode'] ?? null) === 'empty') {
+                        $alt = '';
+                    }
 
                     $items[] = [
                         'file'    => $file,
@@ -144,6 +157,15 @@ final class GalleryController extends ActionController
             return (int)($cObj->data['uid'] ?? 0);
         }
         return 0;
+    }
+
+    private function resolveMetadataOverridesValue(): string
+    {
+        $cObj = $this->request->getAttribute('currentContentObject');
+        if ($cObj instanceof ContentObjectRenderer) {
+            return (string)($cObj->data['tx_anatolkinmosaicgallery_metadata_overrides'] ?? '');
+        }
+        return '';
     }
 
     private function collectFiles(Folder $folder, bool $recursive): array

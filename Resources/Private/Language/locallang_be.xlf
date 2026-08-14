@@ -27,7 +27,8 @@
       <trans-unit id="flexform.captionAlign.left"><source>Left</source></trans-unit>
       <trans-unit id="flexform.captionAlign.center"><source>Center</source></trans-unit>
       <trans-unit id="flexform.captionAlign.right"><source>Right</source></trans-unit>
-      <trans-unit id="flexform.useFalCaptions"><source>Use multilingual FAL titles and descriptions</source></trans-unit>
+      <trans-unit id="flexform.useFalCaptions"><source>Use file metadata as fallback</source></trans-unit>
+      <trans-unit id="flexform.useFalCaptions.help"><source>Uses metadata from TYPO3 Filelist when gallery-specific text is not set. When disabled, legacy manual captions are used.</source></trans-unit>
       <trans-unit id="flexform.captions"><source>Captions, one line per image in display order; used when FAL captions are disabled</source></trans-unit>
       <trans-unit id="flexform.enableLoadMore"><source>Enable “Load more”</source></trans-unit>
       <trans-unit id="flexform.loadMoreUseFrameStyle"><source>Use the gallery frame style for the “Load more” button</source></trans-unit>
@@ -63,6 +64,10 @@
       <trans-unit id="metadata.noImages"><source>No images found in the selected folder.</source></trans-unit>
       <trans-unit id="metadata.folderNotSelected"><source>Select a folder and save the content element to edit image metadata.</source></trans-unit>
       <trans-unit id="metadata.folderReadError"><source>Unable to read the selected folder.</source></trans-unit>
+      <trans-unit id="metadata.help.title"><source>Gallery-specific image metadata</source></trans-unit>
+      <trans-unit id="metadata.help.gallerySpecific"><source>Caption and alternative text entered here belong to this gallery and stay with the image when its order changes. Choose Inherit to use the existing fallback.</source></trans-unit>
+      <trans-unit id="metadata.help.filelist"><source>Reusable file metadata can be maintained under File → Filelist → Edit Metadata. Gallery-specific values are local to this gallery and can override that metadata.</source></trans-unit>
+      <trans-unit id="metadata.help.multilingual"><source>File metadata can be translated through the normal Filelist translation workflow. For gallery-specific text in another language, edit the translated Mosaic Gallery content element. Without an override, the current fallback behavior applies.</source></trans-unit>
     </body>
   </file>
 </xliff>

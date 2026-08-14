@@ -8,4 +8,6 @@ services:
 
   Anatolkin\MosaicGallery\Service\FolderImageProvider: ~
 
+  Anatolkin\MosaicGallery\Service\GalleryMetadataOverrideResolver: ~
+
   Anatolkin\MosaicGallery\Backend\Form\Element\MetadataOverridesElement: ~

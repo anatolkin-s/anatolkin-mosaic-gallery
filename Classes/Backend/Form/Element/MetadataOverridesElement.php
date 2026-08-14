@@ -44,7 +44,11 @@ final class MetadataOverridesElement extends AbstractFormElement
             . '<input type="hidden" id="' . htmlspecialchars($fieldId, ENT_QUOTES) . '"'
             . ' name="' . htmlspecialchars($fieldName, ENT_QUOTES) . '"'
             . ' value="' . $hiddenValue . '" data-formengine-input-name="' . htmlspecialchars($fieldName, ENT_QUOTES) . '"'
-            . ' data-mosaic-metadata-storage>';
+            . ' data-mosaic-metadata-storage>'
+            . '<div class="alert alert-info"><strong>' . $this->label('metadata.help.title') . '</strong>'
+            . '<p class="mb-1">' . $this->label('metadata.help.gallerySpecific') . '</p>'
+            . '<p class="mb-1">' . $this->label('metadata.help.filelist') . '</p>'
+            . '<p class="mb-0">' . $this->label('metadata.help.multilingual') . '</p></div>';
 
         if ($folder === '') {
             $html .= '<p class="form-text">' . $this->label('metadata.folderNotSelected') . '</p>';

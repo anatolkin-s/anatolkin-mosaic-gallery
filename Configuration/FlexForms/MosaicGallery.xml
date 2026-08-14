@@ -144,20 +144,12 @@
 
           <settings.useFalCaptions>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.useFalCaptions</label>
+            <description>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.useFalCaptions.help</description>
             <config>
               <type>check</type>
               <default>1</default>
             </config>
           </settings.useFalCaptions>
-
-          <settings.captions>
-            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.captions</label>
-            <config>
-              <type>text</type>
-              <cols>40</cols>
-              <rows>6</rows>
-            </config>
-          </settings.captions>
 
           <settings.enableLoadMore>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.enableLoadMore</label>
@@ -192,6 +184,15 @@
               <default>12</default>
             </config>
           </settings.loadStep>
+
+          <settings.captions>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.captions</label>
+            <config>
+              <type>text</type>
+              <cols>40</cols>
+              <rows>6</rows>
+            </config>
+          </settings.captions>
 
         </el>
       </ROOT>
