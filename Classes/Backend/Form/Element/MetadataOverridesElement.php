@@ -83,7 +83,7 @@ final class MetadataOverridesElement extends AbstractFormElement
         $resultArray['html'] = $html;
         $resultArray['javaScriptModules'][] = JavaScriptModuleInstruction::create(
             '@anatolkin/mosaic-gallery/metadata-editor.js',
-        )->invoke('initialize');
+        );
 
         return $resultArray;
     }

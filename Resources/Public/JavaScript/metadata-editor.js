@@ -72,6 +72,8 @@ const initializeEditor = (editor) => {
   });
 };
 
-export const initialize = () => {
+const initialize = () => {
   document.querySelectorAll('[data-mosaic-metadata-editor]').forEach(initializeEditor);
 };
+
+initialize();
