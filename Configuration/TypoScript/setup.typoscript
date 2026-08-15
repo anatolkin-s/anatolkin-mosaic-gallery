@@ -25,9 +25,3 @@ plugin.tx_mosaicgallery_pi1 {
     gap = 12
   }
 }
-
-# -----------------------------------------------------------------
-# Backward-compatible alias:
-# Map the legacy list_type anatolkinmosaicgallery_pi1 to the current plugin.
-# -----------------------------------------------------------------
-tt_content.list.20.anatolkinmosaicgallery_pi1 < tt_content.list.20.mosaicgallery_pi1

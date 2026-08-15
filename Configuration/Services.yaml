@@ -13,3 +13,5 @@ services:
   Anatolkin\MosaicGallery\Service\GalleryImageSorter: ~
 
   Anatolkin\MosaicGallery\Backend\Form\Element\MetadataOverridesElement: ~
+
+  Anatolkin\MosaicGallery\Upgrades\MosaicGalleryCTypeMigration: ~

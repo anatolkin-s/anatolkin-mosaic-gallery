@@ -9,7 +9,6 @@ use Anatolkin\MosaicGallery\Controller\GalleryController;
 use TYPO3\CMS\Core\Imaging\IconRegistry;
 use TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
 // Configure Extbase plugin
 ExtensionUtility::configurePlugin(
@@ -18,7 +17,8 @@ ExtensionUtility::configurePlugin(
     [
         GalleryController::class => 'list',
     ],
-    []
+    [],
+    ExtensionUtility::PLUGIN_TYPE_CONTENT_ELEMENT,
 );
 
 // Register the per-file metadata FormEngine element.
@@ -47,8 +47,3 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1755129600] = [
         ['source' => 'EXT:anatolkin_mosaic_gallery/Resources/Public/Icons/PluginMosaic.svg']
     );
 })();
-
-// Register Page TSconfig for the "New Content Element" wizard
-ExtensionManagementUtility::addPageTSConfig(
-    "@import 'EXT:anatolkin_mosaic_gallery/Configuration/TsConfig/Page/NewContentElementWizard.typoscript'"
-);
