@@ -13,9 +13,9 @@ use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Resource\Folder;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Log\LogManager;
-use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
+use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 final class GalleryController extends ActionController
@@ -173,41 +173,23 @@ final class GalleryController extends ActionController
     {
         $cObj = $this->request->getAttribute('currentContentObject');
         if ($cObj instanceof ContentObjectRenderer) {
-            $metadataOverrides = (string)($cObj->data['tx_anatolkinmosaicgallery_metadata_overrides'] ?? '');
-            $this->logMetadataOverridesDiagnostic($cObj, $metadataOverrides);
+            $contentRow = $cObj->data;
+            try {
+                $languageAspect = GeneralUtility::makeInstance(Context::class)->getAspect('language');
+                if ($languageAspect instanceof LanguageAspect) {
+                    $overlaidRow = GeneralUtility::makeInstance(PageRepository::class)
+                        ->getLanguageOverlay('tt_content', $contentRow, $languageAspect);
+                    if (is_array($overlaidRow)) {
+                        $contentRow = $overlaidRow;
+                    }
+                }
+            } catch (\Throwable) {
+                // Keep the current content-object row when an overlay cannot be resolved.
+            }
 
-            return $metadataOverrides;
+            return (string)($contentRow['tx_anatolkinmosaicgallery_metadata_overrides'] ?? '');
         }
         return '';
-    }
-
-    private function logMetadataOverridesDiagnostic(
-        ContentObjectRenderer $contentObject,
-        string $metadataOverrides,
-    ): void
-    {
-        $siteLanguage = $this->request->getAttribute('language');
-        $frontendLanguageId = $siteLanguage instanceof SiteLanguage
-            ? $siteLanguage->getLanguageId()
-            : (int)GeneralUtility::makeInstance(Context::class)
-                ->getPropertyFromAspect('language', 'id');
-        $logContext = [
-            'uid' => $contentObject->data['uid'] ?? null,
-            '_LOCALIZED_UID' => $contentObject->data['_LOCALIZED_UID'] ?? null,
-            'sys_language_uid' => $contentObject->data['sys_language_uid'] ?? null,
-            'l18n_parent' => $contentObject->data['l18n_parent'] ?? null,
-            'l10n_source' => $contentObject->data['l10n_source'] ?? null,
-            'frontendLanguageId' => $frontendLanguageId,
-            'containsTestA' => str_contains($metadataOverrides, 'Test A'),
-            'containsRussianAspens1992' => str_contains($metadataOverrides, 'Осины 1992'),
-        ];
-        if (array_key_exists('_LOCALIZED_PID', $contentObject->data)) {
-            $logContext['_LOCALIZED_PID'] = $contentObject->data['_LOCALIZED_PID'];
-        }
-
-        GeneralUtility::makeInstance(LogManager::class)
-            ->getLogger(self::class)
-            ->warning('Temporary Mosaic Gallery currentContentObject localization diagnostic', $logContext);
     }
 
     private function collectFiles(Folder $folder, bool $recursive): array
