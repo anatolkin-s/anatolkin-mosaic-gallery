@@ -6,10 +6,16 @@ namespace Anatolkin\MosaicGallery\Backend\Form\Element;
 use Anatolkin\MosaicGallery\Service\FolderImageProvider;
 use Anatolkin\MosaicGallery\Service\GalleryImageSorter;
 use TYPO3\CMS\Backend\Form\Element\AbstractFormElement;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\Database\Connection;
+use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Page\JavaScriptModuleInstruction;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\ProcessedFile;
 use TYPO3\CMS\Core\Service\FlexFormService;
+use TYPO3\CMS\Core\Site\Entity\Site;
+use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
+use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\StringUtility;
 
@@ -29,6 +35,7 @@ final class MetadataOverridesElement extends AbstractFormElement
         );
         $legacyCaptionLines = $this->splitLegacyCaptionLines($legacyCaptions);
         $legacyCaptionsConverted = ($storedDocument['legacyCaptionsConverted'] ?? false) === true;
+        $languageContext = $this->resolveLanguageContext();
 
         $images = [];
         $folderError = false;
@@ -61,6 +68,7 @@ final class MetadataOverridesElement extends AbstractFormElement
             . ' data-mosaic-metadata-storage>'
             . '<div class="alert alert-info"><strong>' . $this->label('metadata.help.title') . '</strong>'
             . ' <span class="badge text-bg-primary">' . $this->label('metadata.recommended') . '</span>'
+            . $this->renderLanguageContext($languageContext)
             . '<p class="mb-1">' . $this->label('metadata.help.gallerySpecific') . '</p>'
             . '<p class="mb-1">' . $this->label('metadata.help.filelist') . '</p>'
             . '<p class="mb-0">' . $this->label('metadata.help.multilingual') . '</p></div>'
@@ -111,6 +119,266 @@ final class MetadataOverridesElement extends AbstractFormElement
         );
 
         return $resultArray;
+    }
+
+    /**
+     * @return array{
+     *     languageId: int,
+     *     languageTitle: string,
+     *     isDefault: bool,
+     *     isAll: bool,
+     *     isTranslation: bool,
+     *     siteLanguages: list<SiteLanguage>,
+     *     availableLanguageIds: array<int, true>|null
+     * }
+     */
+    private function resolveLanguageContext(): array
+    {
+        $databaseRow = is_array($this->data['databaseRow'] ?? null) ? $this->data['databaseRow'] : [];
+        $languageId = (int)$this->scalarValue($databaseRow['sys_language_uid'] ?? 0);
+        $recordUid = (int)$this->scalarValue($databaseRow['uid'] ?? 0);
+        $translationParentUid = (int)$this->scalarValue($databaseRow['l18n_parent'] ?? 0);
+        $translationSourceUid = (int)$this->scalarValue($databaseRow['l10n_source'] ?? 0);
+        $pageId = (int)$this->scalarValue($databaseRow['pid'] ?? $this->data['effectivePid'] ?? 0);
+        $site = $this->resolveSite($pageId);
+        $siteLanguages = $site instanceof Site ? $this->resolveSiteLanguages($site, $pageId) : [];
+        $languageTitle = $this->resolveLanguageTitle($site, $languageId);
+
+        return [
+            'languageId' => $languageId,
+            'languageTitle' => $languageTitle,
+            'isDefault' => $languageId === 0,
+            'isAll' => $languageId === -1,
+            'isTranslation' => $languageId > 0
+                && ($translationParentUid > 0 || $translationSourceUid > 0),
+            'siteLanguages' => $siteLanguages,
+            'availableLanguageIds' => $this->findAvailableLanguageIds(
+                $recordUid,
+                $languageId,
+                $translationParentUid,
+                $translationSourceUid,
+            ),
+        ];
+    }
+
+    /** @return list<SiteLanguage> */
+    private function resolveSiteLanguages(Site $site, int $pageId): array
+    {
+        $languages = $site->getLanguages();
+        $backendUser = $GLOBALS['BE_USER'] ?? null;
+        if (!$backendUser instanceof BackendUserAuthentication) {
+            return array_values($languages);
+        }
+
+        try {
+            $userLanguages = $site->getAvailableLanguages($backendUser, false, $pageId);
+            $languages = array_intersect_key($languages, $userLanguages);
+        } catch (\Throwable) {
+            // Enabled site languages remain useful if backend-user filtering is unavailable.
+        }
+
+        return array_values($languages);
+    }
+
+    private function resolveSite(int $pageId): ?Site
+    {
+        if ($pageId <= 0) {
+            return null;
+        }
+
+        try {
+            return GeneralUtility::makeInstance(SiteFinder::class)->getSiteByPageId($pageId);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function resolveLanguageTitle(?Site $site, int $languageId): string
+    {
+        if ($languageId === -1) {
+            return $this->rawLabel('metadata.language.all');
+        }
+        if ($site instanceof Site) {
+            try {
+                return $site->getLanguageById($languageId)->getTitle();
+            } catch (\Throwable) {
+                // The record remains editable if its language is not available in the current site configuration.
+            }
+        }
+
+        return $this->formatRawLabel('metadata.language.unresolved', (string)$languageId);
+    }
+
+    /** @return array<int, true>|null */
+    private function findAvailableLanguageIds(
+        int $recordUid,
+        int $languageId,
+        int $translationParentUid,
+        int $translationSourceUid,
+    ): ?array
+    {
+        if ($languageId === -1) {
+            return null;
+        }
+
+        if ($translationParentUid > 0) {
+            $lineageUid = $translationParentUid;
+            $isFreeMode = false;
+        } elseif ($translationSourceUid > 0) {
+            $lineageUid = $translationSourceUid;
+            $isFreeMode = true;
+        } elseif ($languageId === 0 && $recordUid > 0) {
+            $lineageUid = $recordUid;
+            $isFreeMode = false;
+        } else {
+            return null;
+        }
+
+        try {
+            $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
+                ->getQueryBuilderForTable('tt_content');
+            $rows = $queryBuilder
+                ->select('uid', 'sys_language_uid', 'l18n_parent', 'l10n_source')
+                ->from('tt_content')
+                ->where(
+                    $queryBuilder->expr()->or(
+                        $queryBuilder->expr()->eq(
+                            'uid',
+                            $queryBuilder->createNamedParameter($lineageUid, Connection::PARAM_INT),
+                        ),
+                        $queryBuilder->expr()->eq(
+                            'l18n_parent',
+                            $queryBuilder->createNamedParameter($lineageUid, Connection::PARAM_INT),
+                        ),
+                        $queryBuilder->expr()->eq(
+                            'l10n_source',
+                            $queryBuilder->createNamedParameter($lineageUid, Connection::PARAM_INT),
+                        ),
+                    ),
+                )
+                ->executeQuery()
+                ->fetchAllAssociative();
+
+            if ($isFreeMode && !$this->hasUnambiguousFreeModeSource($rows, $lineageUid)) {
+                return null;
+            }
+            if ($this->hasNestedTranslationSources($rows, $lineageUid)) {
+                return null;
+            }
+
+            $availableLanguageIds = [];
+            foreach ($rows as $row) {
+                $rowLanguageId = (int)($row['sys_language_uid'] ?? -1);
+                if ($rowLanguageId >= 0) {
+                    $availableLanguageIds[$rowLanguageId] = true;
+                }
+            }
+            $availableLanguageIds[$languageId] = true;
+
+            return $availableLanguageIds;
+        } catch (\Throwable) {
+            // Translation status is supplemental and must never block metadata editing.
+            return null;
+        }
+    }
+
+    /** @param list<array<string, mixed>> $rows */
+    private function hasUnambiguousFreeModeSource(array $rows, int $sourceUid): bool
+    {
+        foreach ($rows as $row) {
+            if ((int)($row['uid'] ?? 0) !== $sourceUid) {
+                continue;
+            }
+
+            return (int)($row['l18n_parent'] ?? 0) === 0
+                && (int)($row['l10n_source'] ?? 0) === 0;
+        }
+
+        return false;
+    }
+
+    /** @param list<array<string, mixed>> $rows */
+    private function hasNestedTranslationSources(array $rows, int $lineageUid): bool
+    {
+        $directTranslationUids = [];
+        foreach ($rows as $row) {
+            $rowUid = (int)($row['uid'] ?? 0);
+            if ($rowUid > 0 && $rowUid !== $lineageUid) {
+                $directTranslationUids[] = $rowUid;
+            }
+        }
+        if ($directTranslationUids === []) {
+            return false;
+        }
+
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getQueryBuilderForTable('tt_content');
+
+        return $queryBuilder
+            ->count('uid')
+            ->from('tt_content')
+            ->where(
+                $queryBuilder->expr()->in(
+                    'l10n_source',
+                    $queryBuilder->createNamedParameter($directTranslationUids, Connection::PARAM_INT_ARRAY),
+                ),
+            )
+            ->executeQuery()
+            ->fetchOne() > 0;
+    }
+
+    /**
+     * @param array{
+     *     languageId: int,
+     *     languageTitle: string,
+     *     isDefault: bool,
+     *     isAll: bool,
+     *     isTranslation: bool,
+     *     siteLanguages: list<SiteLanguage>,
+     *     availableLanguageIds: array<int, true>|null
+     * } $context
+     */
+    private function renderLanguageContext(array $context): string
+    {
+        $html = '<div class="mt-2 mb-2"><strong>'
+            . $this->formatLabel('metadata.language.current', $context['languageTitle'])
+            . '</strong></div>';
+
+        if ($context['isAll']) {
+            $html .= '<div class="alert alert-warning mb-2">'
+                . $this->label('metadata.language.allWarning') . '</div>';
+        } elseif ($context['isDefault']) {
+            $html .= '<p class="mb-2">'
+                . $this->formatLabel('metadata.language.default', $context['languageTitle']) . '</p>';
+        } elseif ($context['isTranslation']) {
+            $html .= '<p class="mb-2">'
+                . $this->formatLabel('metadata.language.translated', $context['languageTitle']) . '</p>';
+        } else {
+            $html .= '<p class="mb-2">'
+                . $this->formatLabel('metadata.language.currentRecord', $context['languageTitle']) . '</p>';
+        }
+
+        if (!$context['isAll'] && $context['siteLanguages'] !== [] && $context['availableLanguageIds'] !== null) {
+            $html .= '<div class="d-flex flex-wrap gap-1 align-items-center mb-1"><span>'
+                . $this->label('metadata.language.translations') . '</span>';
+            foreach ($context['siteLanguages'] as $siteLanguage) {
+                $isAvailable = isset($context['availableLanguageIds'][$siteLanguage->getLanguageId()]);
+                $statusLabel = $isAvailable
+                    ? $this->label('metadata.language.available')
+                    : $this->label('metadata.language.missing');
+                $html .= '<span class="badge ' . ($isAvailable ? 'text-bg-success' : 'text-bg-secondary') . '"'
+                    . ' title="' . $statusLabel . '">'
+                    . htmlspecialchars($siteLanguage->getTitle(), ENT_QUOTES)
+                    . ' ' . ($isAvailable ? '&#10003;' : '&mdash;') . '</span>';
+            }
+            $html .= '</div><p class="mb-0 small">'
+                . $this->label('metadata.language.translationWorkflow') . '</p>';
+        } elseif (!$context['isAll'] && $context['siteLanguages'] !== []) {
+            $html .= '<p class="mb-0 small">'
+                . $this->label('metadata.language.statusUnavailable') . '</p>';
+        }
+
+        return $html;
     }
 
     /** @return array{0: string, 1: bool, 2: string, 3: string, 4: string, 5: bool} */
@@ -287,6 +555,21 @@ final class MetadataOverridesElement extends AbstractFormElement
 
     private function label(string $key): string
     {
-        return htmlspecialchars((string)$GLOBALS['LANG']->sL(self::LANGUAGE_FILE . $key), ENT_QUOTES);
+        return htmlspecialchars($this->rawLabel($key), ENT_QUOTES);
+    }
+
+    private function rawLabel(string $key): string
+    {
+        return (string)$GLOBALS['LANG']->sL(self::LANGUAGE_FILE . $key);
+    }
+
+    private function formatLabel(string $key, string ...$values): string
+    {
+        return htmlspecialchars($this->formatRawLabel($key, ...$values), ENT_QUOTES);
+    }
+
+    private function formatRawLabel(string $key, string ...$values): string
+    {
+        return sprintf($this->rawLabel($key), ...$values);
     }
 }
