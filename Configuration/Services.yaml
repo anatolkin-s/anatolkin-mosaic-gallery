@@ -10,4 +10,6 @@ services:
 
   Anatolkin\MosaicGallery\Service\GalleryMetadataOverrideResolver: ~
 
+  Anatolkin\MosaicGallery\Service\GalleryImageSorter: ~
+
   Anatolkin\MosaicGallery\Backend\Form\Element\MetadataOverridesElement: ~

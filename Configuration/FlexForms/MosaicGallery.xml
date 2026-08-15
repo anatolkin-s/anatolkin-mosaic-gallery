@@ -187,6 +187,7 @@
 
           <settings.captions>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.captions</label>
+            <description>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.captions.help</description>
             <config>
               <type>text</type>
               <cols>40</cols>

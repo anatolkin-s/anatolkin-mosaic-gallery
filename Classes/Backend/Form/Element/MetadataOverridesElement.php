@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Anatolkin\MosaicGallery\Backend\Form\Element;
 
 use Anatolkin\MosaicGallery\Service\FolderImageProvider;
+use Anatolkin\MosaicGallery\Service\GalleryImageSorter;
 use TYPO3\CMS\Backend\Form\Element\AbstractFormElement;
 use TYPO3\CMS\Core\Page\JavaScriptModuleInstruction;
 use TYPO3\CMS\Core\Resource\File;
@@ -23,13 +24,21 @@ final class MetadataOverridesElement extends AbstractFormElement
         $fieldId = StringUtility::getUniqueId('formengine-input-');
         $fieldName = (string)$parameterArray['itemFormElName'];
         $storedDocument = $this->decodeDocument((string)($parameterArray['itemFormElValue'] ?? ''));
-        [$folder, $recursive] = $this->readFolderSettings($this->data['databaseRow']['pi_flexform'] ?? '');
+        [$folder, $recursive, $sortBy, $sortDir, $legacyCaptions, $useFalCaptions] = $this->readSettings(
+            $this->data['databaseRow']['pi_flexform'] ?? '',
+        );
+        $legacyCaptionLines = $this->splitLegacyCaptionLines($legacyCaptions);
+        $legacyCaptionsConverted = ($storedDocument['legacyCaptionsConverted'] ?? false) === true;
 
         $images = [];
         $folderError = false;
         if ($folder !== '') {
             try {
                 $images = GeneralUtility::makeInstance(FolderImageProvider::class)->getImages($folder, $recursive);
+                if ($sortBy !== 'random') {
+                    $images = GeneralUtility::makeInstance(GalleryImageSorter::class)
+                        ->sortDeterministically($images, $sortBy, $sortDir);
+                }
             } catch (\Throwable) {
                 $folderError = true;
             }
@@ -39,16 +48,30 @@ final class MetadataOverridesElement extends AbstractFormElement
             (string)json_encode($storedDocument, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
             ENT_QUOTES,
         );
+        $legacyCaptionLinesJson = htmlspecialchars(
+            (string)json_encode($legacyCaptionLines, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            ENT_QUOTES,
+        );
         $html = $this->renderLabel($fieldId)
-            . '<div class="form-control-wrap" data-mosaic-metadata-editor>'
+            . '<div class="form-control-wrap" data-mosaic-metadata-editor'
+            . ' data-mosaic-legacy-captions="' . $legacyCaptionLinesJson . '">'
             . '<input type="hidden" id="' . htmlspecialchars($fieldId, ENT_QUOTES) . '"'
             . ' name="' . htmlspecialchars($fieldName, ENT_QUOTES) . '"'
             . ' value="' . $hiddenValue . '" data-formengine-input-name="' . htmlspecialchars($fieldName, ENT_QUOTES) . '"'
             . ' data-mosaic-metadata-storage>'
             . '<div class="alert alert-info"><strong>' . $this->label('metadata.help.title') . '</strong>'
+            . ' <span class="badge text-bg-primary">' . $this->label('metadata.recommended') . '</span>'
             . '<p class="mb-1">' . $this->label('metadata.help.gallerySpecific') . '</p>'
             . '<p class="mb-1">' . $this->label('metadata.help.filelist') . '</p>'
-            . '<p class="mb-0">' . $this->label('metadata.help.multilingual') . '</p></div>';
+            . '<p class="mb-0">' . $this->label('metadata.help.multilingual') . '</p></div>'
+            . $this->renderConversionUi(
+                $legacyCaptions,
+                $legacyCaptionsConverted,
+                $sortBy,
+                max(0, count($legacyCaptionLines) - count($images)),
+                $folder !== '' && !$folderError && $images !== [],
+                $useFalCaptions,
+            );
 
         if ($folder === '') {
             $html .= '<p class="form-text">' . $this->label('metadata.folderNotSelected') . '</p>';
@@ -88,20 +111,20 @@ final class MetadataOverridesElement extends AbstractFormElement
         return $resultArray;
     }
 
-    /** @return array{0: string, 1: bool} */
-    private function readFolderSettings(mixed $flexForm): array
+    /** @return array{0: string, 1: bool, 2: string, 3: string, 4: string, 5: bool} */
+    private function readSettings(mixed $flexForm): array
     {
         if (is_string($flexForm) && trim($flexForm) !== '') {
             try {
                 $flexForm = GeneralUtility::makeInstance(FlexFormService::class)
                     ->convertFlexFormContentToArray($flexForm);
             } catch (\Throwable) {
-                return ['', false];
+                return ['', false, 'name', 'asc', '', true];
             }
         }
 
         if (!is_array($flexForm)) {
-            return ['', false];
+            return ['', false, 'name', 'asc', '', true];
         }
 
         $folder = $flexForm['settings']['folder']
@@ -110,8 +133,73 @@ final class MetadataOverridesElement extends AbstractFormElement
         $recursive = $flexForm['settings']['recursive']
             ?? $flexForm['data']['sDEF']['lDEF']['settings.recursive']['vDEF']
             ?? false;
+        $sortBy = $flexForm['settings']['sortBy']
+            ?? $flexForm['data']['sDEF']['lDEF']['settings.sortBy']['vDEF']
+            ?? 'name';
+        $sortDir = $flexForm['settings']['sortDir']
+            ?? $flexForm['data']['sDEF']['lDEF']['settings.sortDir']['vDEF']
+            ?? 'asc';
+        $captions = $flexForm['settings']['captions']
+            ?? $flexForm['data']['sDEF']['lDEF']['settings.captions']['vDEF']
+            ?? '';
+        $useFalCaptions = $flexForm['settings']['useFalCaptions']
+            ?? $flexForm['data']['sDEF']['lDEF']['settings.useFalCaptions']['vDEF']
+            ?? true;
 
-        return [(string)$this->scalarValue($folder), (bool)$this->scalarValue($recursive)];
+        return [
+            (string)$this->scalarValue($folder),
+            (bool)$this->scalarValue($recursive),
+            (string)$this->scalarValue($sortBy),
+            (string)$this->scalarValue($sortDir),
+            (string)$this->scalarValue($captions),
+            (bool)$this->scalarValue($useFalCaptions),
+        ];
+    }
+
+    /** @return list<string> */
+    private function splitLegacyCaptionLines(string $captions): array
+    {
+        $lines = preg_split('/\r\n|\r|\n/', $captions);
+        return array_values(array_filter($lines, static fn($value) => $value !== null));
+    }
+
+    private function renderConversionUi(
+        string $legacyCaptions,
+        bool $converted,
+        string $sortBy,
+        int $unmatchedLineCount,
+        bool $hasImages,
+        bool $useFalCaptions,
+    ): string
+    {
+        if ($converted) {
+            return '<div class="alert alert-success">' . $this->label('metadata.conversion.complete') . '</div>';
+        }
+        if (trim($legacyCaptions) === '') {
+            return '';
+        }
+        if (!$hasImages) {
+            return '';
+        }
+        if ($useFalCaptions) {
+            return '<div class="alert alert-info">'
+                . $this->label('metadata.conversion.fileMetadataEnabled') . '</div>';
+        }
+        if ($sortBy === 'random') {
+            return '<div class="alert alert-warning">' . $this->label('metadata.conversion.randomBlocked') . '</div>';
+        }
+
+        return '<div class="card mb-3" data-mosaic-conversion-panel><div class="card-body py-2">'
+            . '<strong>' . $this->label('metadata.conversion.title') . '</strong>'
+            . '<p class="mb-2">' . $this->label('metadata.conversion.guidance') . '</p>'
+            . '<p class="mb-2">' . $this->label('metadata.conversion.multilingual') . '</p>'
+            . '<p class="mb-2">' . $this->label('metadata.conversion.savedSettings') . '</p>'
+            . '<button type="button" class="btn btn-default btn-sm" data-mosaic-convert-legacy>'
+            . $this->label('metadata.conversion.action') . '</button></div></div>'
+            . '<div class="alert alert-success d-none" data-mosaic-conversion-status'
+            . ' data-success-text="' . $this->label('metadata.conversion.complete') . '"'
+            . ' data-extra-text="' . $this->label('metadata.conversion.extraLines') . '"'
+            . ' data-unmatched-line-count="' . $unmatchedLineCount . '"></div>';
     }
 
     private function scalarValue(mixed $value): mixed

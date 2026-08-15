@@ -29,7 +29,8 @@
       <trans-unit id="flexform.captionAlign.right"><source>Right</source></trans-unit>
       <trans-unit id="flexform.useFalCaptions"><source>Use file metadata as fallback</source></trans-unit>
       <trans-unit id="flexform.useFalCaptions.help"><source>Uses metadata from TYPO3 Filelist when gallery-specific text is not set. When disabled, legacy manual captions are used.</source></trans-unit>
-      <trans-unit id="flexform.captions"><source>Captions, one line per image in display order; used when FAL captions are disabled</source></trans-unit>
+      <trans-unit id="flexform.captions"><source>Quick captions (simple / legacy method)</source></trans-unit>
+      <trans-unit id="flexform.captions.help"><source>Enter one line per image in the current display order. This is convenient for a small gallery with a fixed file set and order, but captions are not attached to individual files. Adding or removing files, or using Random order, can move captions to different images. Use Image metadata for stable captions.</source></trans-unit>
       <trans-unit id="flexform.enableLoadMore"><source>Enable “Load more”</source></trans-unit>
       <trans-unit id="flexform.loadMoreUseFrameStyle"><source>Use the gallery frame style for the “Load more” button</source></trans-unit>
       <trans-unit id="flexform.itemsPerPage"><source>Images shown initially</source></trans-unit>
@@ -68,6 +69,16 @@
       <trans-unit id="metadata.help.gallerySpecific"><source>Caption and alternative text entered here belong to this gallery and stay with the image when its order changes. Choose Inherit to use the existing fallback.</source></trans-unit>
       <trans-unit id="metadata.help.filelist"><source>Reusable file metadata can be maintained under File → Filelist → Edit Metadata. Gallery-specific values are local to this gallery and can override that metadata.</source></trans-unit>
       <trans-unit id="metadata.help.multilingual"><source>File metadata can be translated through the normal Filelist translation workflow. For gallery-specific text in another language, edit the translated Mosaic Gallery content element. Without an override, the current fallback behavior applies.</source></trans-unit>
+      <trans-unit id="metadata.recommended"><source>Recommended</source></trans-unit>
+      <trans-unit id="metadata.conversion.title"><source>Move Quick captions to Image metadata</source></trans-unit>
+      <trans-unit id="metadata.conversion.action"><source>Convert legacy captions to image metadata</source></trans-unit>
+      <trans-unit id="metadata.conversion.guidance"><source>Copies the existing caption lines to the files they currently match and attaches them to those images. The original Quick captions text is retained. After conversion, Image metadata is authoritative and captions remain stable when files are reordered, added, or removed.</source></trans-unit>
+      <trans-unit id="metadata.conversion.randomBlocked"><source>Legacy captions cannot be converted while Random order is selected. Choose Filename or Modification time, save the gallery, then convert.</source></trans-unit>
+      <trans-unit id="metadata.conversion.complete"><source>Legacy captions have been converted. Image metadata is now used for stable file-linked captions. Quick captions are retained only as a legacy reference.</source></trans-unit>
+      <trans-unit id="metadata.conversion.extraLines"><source>%d legacy caption line(s) had no current image match and remain in Quick captions.</source></trans-unit>
+      <trans-unit id="metadata.conversion.multilingual"><source>Convert captions separately in each translated gallery.</source></trans-unit>
+      <trans-unit id="metadata.conversion.fileMetadataEnabled"><source>Quick captions are not currently used because file metadata fallback is enabled. To convert Quick captions, disable file metadata fallback, save the gallery, then convert.</source></trans-unit>
+      <trans-unit id="metadata.conversion.savedSettings"><source>Conversion uses the last saved gallery settings. Save changes to sorting, Quick captions, or file metadata fallback before converting.</source></trans-unit>
     </body>
   </file>
 </xliff>

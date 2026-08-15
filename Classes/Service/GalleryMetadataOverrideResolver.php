@@ -10,21 +10,32 @@ final class GalleryMetadataOverrideResolver
      */
     public function decode(string $json): array
     {
+        return $this->decodeDocument($json)['files'];
+    }
+
+    /**
+     * @return array{
+     *     legacyCaptionsConverted: bool,
+     *     files: array<string, array{caption?: array{mode: string, value: string}, alt?: array{mode: string, value: string}}>
+     * }
+     */
+    public function decodeDocument(string $json): array
+    {
         if (trim($json) === '') {
-            return [];
+            return $this->emptyDocument();
         }
 
         try {
             $document = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
         } catch (\JsonException) {
-            return [];
+            return $this->emptyDocument();
         }
 
         if (!is_array($document)
             || ($document['schemaVersion'] ?? null) !== 1
             || !is_array($document['files'] ?? null)
         ) {
-            return [];
+            return $this->emptyDocument();
         }
 
         $overrides = [];
@@ -47,7 +58,19 @@ final class GalleryMetadataOverrideResolver
             }
         }
 
-        return $overrides;
+        return [
+            'legacyCaptionsConverted' => ($document['legacyCaptionsConverted'] ?? false) === true,
+            'files' => $overrides,
+        ];
+    }
+
+    /** @return array{legacyCaptionsConverted: false, files: array{}} */
+    private function emptyDocument(): array
+    {
+        return [
+            'legacyCaptionsConverted' => false,
+            'files' => [],
+        ];
     }
 
     /** @param list<string> $allowedModes @return array{mode: string, value: string}|null */

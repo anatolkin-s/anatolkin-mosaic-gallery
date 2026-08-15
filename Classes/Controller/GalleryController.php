@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Anatolkin\MosaicGallery\Controller;
 
 use Anatolkin\MosaicGallery\Service\GalleryMetadataOverrideResolver;
+use Anatolkin\MosaicGallery\Service\GalleryImageSorter;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -83,9 +84,16 @@ final class GalleryController extends ActionController
                     $this->toCombinedIdentifier($folderIn)
                 );
                 $files  = $this->collectFiles($folder, $recursive);
-                $metadataOverrides = GeneralUtility::makeInstance(GalleryMetadataOverrideResolver::class)
-                    ->decode($this->resolveMetadataOverridesValue());
-                $files  = $this->sortFiles($files, $sortBy, $sortDir);
+                $metadataDocument = GeneralUtility::makeInstance(GalleryMetadataOverrideResolver::class)
+                    ->decodeDocument($this->resolveMetadataOverridesValue());
+                $metadataOverrides = $metadataDocument['files'];
+                $legacyCaptionsConverted = $metadataDocument['legacyCaptionsConverted'];
+                if ($sortBy === 'random') {
+                    shuffle($files);
+                } else {
+                    $files = GeneralUtility::makeInstance(GalleryImageSorter::class)
+                        ->sortDeterministically($files, $sortBy, $sortDir);
+                }
 
                 $lines = $this->splitLines((string)($this->settings['captions'] ?? ''));
 
@@ -103,7 +111,7 @@ final class GalleryController extends ActionController
 
                     $caption = $useFalCaptions
                         ? ($title !== '' ? $title : ($captionMeta !== '' ? $captionMeta : $description))
-                        : ($lines[$idx] ?? '');
+                        : ($legacyCaptionsConverted ? '' : ($lines[$idx] ?? ''));
 
                     $alt = ($meta['alternative'] ?? '') ?: $caption;
 
@@ -188,32 +196,6 @@ final class GalleryController extends ActionController
         }
 
         return $result;
-    }
-
-    private function sortFiles(array $files, string $by, string $dir): array
-    {
-        if ($by === 'random') {
-            shuffle($files);
-            return $files;
-        }
-
-        usort(
-            $files,
-            static function (File $a, File $b) use ($by, $dir) {
-                if ($by === 'mtime') {
-                    $av = (int)($a->getProperty('modification_date') ?? 0);
-                    $bv = (int)($b->getProperty('modification_date') ?? 0);
-                } else {
-                    $av = strtolower($a->getName());
-                    $bv = strtolower($b->getName());
-                }
-
-                $cmp = $av <=> $bv;
-                return $dir === 'desc' ? -$cmp : $cmp;
-            }
-        );
-
-        return $files;
     }
 
     /**

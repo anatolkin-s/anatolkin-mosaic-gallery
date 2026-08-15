@@ -45,6 +45,63 @@ const persistRow = (editor, row) => {
   storage.dispatchEvent(new Event('change', { bubbles: true }));
 };
 
+const convertLegacyCaptions = (editor) => {
+  const storage = editor.querySelector('[data-mosaic-metadata-storage]');
+  if (!storage) {
+    return;
+  }
+  let captions;
+  try {
+    captions = JSON.parse(editor.dataset.mosaicLegacyCaptions);
+  } catch (error) {
+    return;
+  }
+  if (!Array.isArray(captions)) {
+    return;
+  }
+
+  const document = createDocument(storage.value);
+  editor.querySelectorAll('[data-mosaic-file-uid]').forEach((row, index) => {
+    const uid = Number.parseInt(row.dataset.mosaicFileUid, 10);
+    if (!Number.isInteger(uid)) {
+      return;
+    }
+    const key = String(uid);
+    const entry = document.files[key] && typeof document.files[key] === 'object'
+      ? document.files[key]
+      : {};
+    const hasCustomCaption = entry.caption?.mode === 'custom'
+      && typeof entry.caption.value === 'string';
+    if (!hasCustomCaption) {
+      const value = captions[index] ?? '';
+      entry.caption = { mode: 'custom', value };
+      const modeControl = row.querySelector('[data-mosaic-mode][data-mosaic-property="caption"]');
+      const valueControl = row.querySelector('[data-mosaic-value][data-mosaic-property="caption"]');
+      if (modeControl && valueControl) {
+        modeControl.value = 'custom';
+        valueControl.value = value;
+        valueControl.disabled = false;
+      }
+    }
+    entry.fileUid = uid;
+    document.files[key] = entry;
+  });
+  document.legacyCaptionsConverted = true;
+  storage.value = JSON.stringify(document);
+  storage.dispatchEvent(new Event('change', { bubbles: true }));
+
+  editor.querySelector('[data-mosaic-conversion-panel]')?.classList.add('d-none');
+  const status = editor.querySelector('[data-mosaic-conversion-status]');
+  if (status) {
+    const unmatchedCount = Number.parseInt(status.dataset.unmatchedLineCount, 10);
+    const extra = unmatchedCount > 0
+      ? ` ${status.dataset.extraText.replace('%d', String(unmatchedCount))}`
+      : '';
+    status.textContent = `${status.dataset.successText}${extra}`;
+    status.classList.remove('d-none');
+  }
+};
+
 const initializeEditor = (editor) => {
   if (editor.dataset.mosaicMetadataInitialized === 'true') {
     return;
@@ -68,6 +125,11 @@ const initializeEditor = (editor) => {
     const row = control?.closest('[data-mosaic-file-uid]');
     if (control && row) {
       persistRow(editor, row);
+    }
+  });
+  editor.addEventListener('click', (event) => {
+    if (event.target.closest('[data-mosaic-convert-legacy]')) {
+      convertLegacyCaptions(editor);
     }
   });
 };
