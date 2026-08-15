@@ -81,10 +81,10 @@ Configured site languages are discovered from TYPO3 Site Configuration. The five
 
 ## Compatibility and release status
 
-This README describes the 0.2.0 release line, developed and integration-tested for TYPO3 13.4. Existing folder galleries and legacy Quick captions remain supported. No automatic content migration or caption conversion is required; conversion to UID-linked metadata is an explicit editor action.
+This README describes the 0.2.x release line, developed and integration-tested for TYPO3 13.4. Existing folder galleries and legacy Quick captions remain supported. No automatic content migration or caption conversion is required; conversion to UID-linked metadata is an explicit editor action.
 
 TYPO3 14 compatibility is not claimed. It must be tested separately before support can be declared.
 
 ## License
 
-Anatolkin Mosaic Gallery is released under the [MIT License](LICENSE).
+Anatolkin Mosaic Gallery is released under the [GNU General Public License v2.0 or later](LICENSE).

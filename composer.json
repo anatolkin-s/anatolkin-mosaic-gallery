@@ -2,7 +2,7 @@
   "name": "anatolkin/anatolkin-mosaic-gallery",
   "description": "Anatolkin Mosaic Gallery: Mosaic image gallery for TYPO3 CMS 13 using FAL and optional GLightbox.",
   "type": "typo3-cms-extension",
-  "license": "MIT",
+  "license": "GPL-2.0-or-later",
   "keywords": [
     "typo3",
     "gallery",
