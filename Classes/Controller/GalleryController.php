@@ -16,6 +16,7 @@ use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
+use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 final class GalleryController extends ActionController
@@ -179,6 +180,29 @@ final class GalleryController extends ActionController
                 if ($languageAspect instanceof LanguageAspect) {
                     $overlaidRow = GeneralUtility::makeInstance(PageRepository::class)
                         ->getLanguageOverlay('tt_content', $contentRow, $languageAspect);
+                    $overlayMetadata = is_array($overlaidRow)
+                        ? (string)($overlaidRow['tx_anatolkinmosaicgallery_metadata_overrides'] ?? '')
+                        : '';
+                    $logContext = [
+                        'languageAspectId' => $languageAspect->getId(),
+                        'languageAspectContentId' => $languageAspect->getContentId(),
+                        'languageAspectOverlayType' => $languageAspect->getOverlayType(),
+                        'languageAspectFallbackChain' => $languageAspect->getFallbackChain(),
+                        'baseUid' => $contentRow['uid'] ?? null,
+                        'baseSysLanguageUid' => $contentRow['sys_language_uid'] ?? null,
+                        'overlayUid' => is_array($overlaidRow) ? ($overlaidRow['uid'] ?? null) : null,
+                        'overlaySysLanguageUid' => is_array($overlaidRow)
+                            ? ($overlaidRow['sys_language_uid'] ?? null)
+                            : null,
+                        'overlayMetadataContainsTestA' => str_contains($overlayMetadata, 'Test A'),
+                        'overlayMetadataContainsRussianAspens1992' => str_contains($overlayMetadata, 'Осины 1992'),
+                    ];
+                    if (is_array($overlaidRow) && array_key_exists('_LOCALIZED_UID', $overlaidRow)) {
+                        $logContext['overlayLocalizedUid'] = $overlaidRow['_LOCALIZED_UID'];
+                    }
+                    GeneralUtility::makeInstance(LogManager::class)
+                        ->getLogger(self::class)
+                        ->warning('Temporary Mosaic Gallery PageRepository overlay diagnostic', $logContext);
                     if (is_array($overlaidRow)) {
                         $contentRow = $overlaidRow;
                     }
