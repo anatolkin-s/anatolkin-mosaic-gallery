@@ -1,4 +1,4 @@
-/* v1.3 – Masonry grid + design controlled via FlexForm */
+/* Masonry grid and FlexForm-controlled design. */
 .mosaic-gallery{
   margin:0 auto;
   padding: var(--gap,12px);
@@ -72,7 +72,7 @@
   display:none !important;
 }
 
-/* v1.2.1: iOS scroll anchoring fix */
+/* Prevent iOS scroll anchoring from shifting the gallery. */
 .mosaic-gallery,
 .mosaic-grid {
   overflow-anchor: none;
