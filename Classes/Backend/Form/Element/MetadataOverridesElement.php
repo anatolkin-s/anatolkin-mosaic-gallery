@@ -104,6 +104,8 @@ final class MetadataOverridesElement extends AbstractFormElement
 
         $html .= '</div>';
         $resultArray['html'] = $html;
+        $resultArray['stylesheetFiles'][] =
+            'EXT:anatolkin_mosaic_gallery/Resources/Public/Backend/Css/form-layout.css';
         $resultArray['javaScriptModules'][] = JavaScriptModuleInstruction::create(
             '@anatolkin/mosaic-gallery/metadata-editor.js',
         );
