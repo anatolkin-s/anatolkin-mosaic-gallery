@@ -6,8 +6,8 @@ Anatolkin Mosaic Gallery is a TYPO3 extension for responsive masonry-style image
 
 ## Requirements
 
-- TYPO3 CMS 13.4
-- PHP 8.1, 8.2, or 8.3
+- TYPO3 CMS 13.4 or 14.3
+- PHP 8.2 through 8.5
 
 ## Installation
 
@@ -24,7 +24,65 @@ php vendor/bin/typo3 extension:setup
 php vendor/bin/typo3 cache:flush
 ```
 
-Add the static TypoScript include **Anatolkin Mosaic Gallery (Assets & Masonry)** to the site template.
+### Site Set integration (recommended)
+
+For sites using TYPO3 Site Sets:
+
+1. Open **Site Management → Sites**.
+2. Edit the site configuration.
+3. Under **Sets for this Site**, add **Anatolkin Mosaic Gallery**.
+4. Save the site configuration and flush caches.
+
+This is the recommended frontend TypoScript integration for TYPO3 13.4 and 14.3 sites using Site Sets.
+
+### Legacy TypoScript integration
+
+Installations intentionally using TypoScript records instead of Site Sets remain supported. Add the static TypoScript include **Anatolkin Mosaic Gallery (Assets & Masonry)** to the site template.
+
+As an alternative, add this explicit import to the site's TypoScript **Setup**, not Constants:
+
+```typoscript
+@import 'EXT:anatolkin_mosaic_gallery/Configuration/TypoScript/setup.typoscript'
+```
+
+A site should normally use one integration method. Do not include the same Mosaic Gallery TypoScript through a Site Set, static include, and manual import at the same time.
+
+## Upgrade from 0.2.x to 0.3.0
+
+1. Update or install Anatolkin Mosaic Gallery 0.3.0.
+2. Run TYPO3 extension setup:
+
+   ```bash
+   php vendor/bin/typo3 extension:setup
+   ```
+
+3. For sites using Site Sets, add the **Anatolkin Mosaic Gallery** Site Set.
+4. Run the registered TYPO3 upgrade wizard `mosaicGalleryCTypeMigration`.
+5. Flush caches.
+6. Verify existing Mosaic Gallery content elements in the backend and frontend.
+
+The upgrade wizard converts legacy records from:
+
+```text
+CType=list
+list_type=mosaicgallery_pi1
+```
+
+or:
+
+```text
+CType=list
+list_type=anatolkinmosaicgallery_pi1
+```
+
+to:
+
+```text
+CType=mosaicgallery_pi1
+list_type=''
+```
+
+Do not edit these database records manually.
 
 ## Basic usage
 
@@ -81,9 +139,9 @@ Configured site languages are discovered from TYPO3 Site Configuration. The five
 
 ## Compatibility and release status
 
-This README describes the 0.2.x release line, developed and integration-tested for TYPO3 13.4. Existing folder galleries and legacy Quick captions remain supported. No automatic content migration or caption conversion is required; conversion to UID-linked metadata is an explicit editor action.
+The 0.3.0 release targets TYPO3 13.4 and TYPO3 14.3. TYPO3 13.4 backward compatibility and the `list_type` to `CType` migration have been runtime tested. TYPO3 14.3 runtime validation is still in progress on the compatibility branch.
 
-TYPO3 14 compatibility is not claimed. It must be tested separately before support can be declared.
+Existing folder galleries and legacy Quick captions remain supported. No automatic caption conversion is required; conversion to UID-linked metadata remains an explicit editor action.
 
 ## License
 
