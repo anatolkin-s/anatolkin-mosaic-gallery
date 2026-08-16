@@ -113,6 +113,11 @@
     var captionAlign = normalizeCaptionAlign(ds.lbCaptionAlign);
     var captionSize = resolveCaptionSize(ds.lbCaptionSize);
     var captionStyle = resolveCaptionStyle(ds.lbCaptionStyle);
+    var captionLabelMargins = {
+      left: "margin-left:0!important;margin-right:auto!important;",
+      center: "margin-left:auto!important;margin-right:auto!important;",
+      right: "margin-left:auto!important;margin-right:0!important;"
+    }[captionAlign];
 
     var css =
       scope + ".goverlay{background:" +
@@ -133,10 +138,18 @@
       "font-weight:" + captionStyle.fontWeight + "!important;" +
       "line-height:1.35!important;" +
       "margin:0!important;}" +
-      scope + ".glightbox-clean .gslide-description{background:" +
+      scope + ".glightbox-clean .gslide-description{background:transparent!important;}" +
+      scope + ".glightbox-clean .gdesc-inner{background:" +
       captionBackground +
-      "!important;}" +
-      scope + ".glightbox-clean .gdesc-inner{padding:0.65rem 0.8rem!important;}" +
+      "!important;" +
+      "padding:0.65rem 0.8rem!important;" +
+      "box-sizing:border-box;" +
+      "width:fit-content!important;" +
+      "max-width:100%!important;" +
+      "border-radius:4px;" +
+      "overflow-wrap:anywhere;" +
+      captionLabelMargins +
+      "}" +
       scope + ".glightbox-container .gslide-title + .gslide-desc{margin-top:0.3rem!important;}" +
       scope + ".glightbox-container .gslide-image img{" +
       "border:" + frameWidth + " " + frameStyle + " " + frameColor + " !important;" +
