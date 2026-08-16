@@ -123,11 +123,17 @@ const updateFieldState = (control, modified) => {
   }
 };
 
-const applyEffectiveValues = (editor, base, document) => {
-  editor.querySelectorAll('[data-design-control]').forEach((control) => {
-    const path = control.dataset.designPath;
+const applyEffectiveValues = (editor, base, overrides, paths = []) => {
+  const controls = new Map([...editor.querySelectorAll('[data-design-control]')].map(
+    (control) => [control.dataset.designPath, control],
+  ));
+  (paths.length > 0 ? paths : [...controls.keys()]).forEach((path) => {
+    const control = controls.get(path);
+    if (!control) {
+      return;
+    }
     const baseValue = valueAtPath(base, path);
-    const overrideValue = valueAtPath(document, path);
+    const overrideValue = valueAtPath(overrides, path);
     const modified = overrideValue !== undefined;
     control.dataset.designBaseValue = JSON.stringify(baseValue);
     displayValue(control, modified ? overrideValue : baseValue);
@@ -231,11 +237,23 @@ const initializeEditor = (editor) => {
   const customSections = [...sheet.querySelectorAll(':scope > .form-section')].filter(
     (section) => section !== presetSection && section !== configuratorSection,
   );
+  const presetSlot = editor.querySelector('[data-design-preset-slot]');
+  if (presetSlot) {
+    presetSlot.append(presetSection);
+  }
   const bases = parseDocument(editor.dataset.presetBases);
   const labels = parseDocument(editor.dataset.presetLabels);
+  const controlPaths = (() => {
+    try {
+      const paths = JSON.parse(editor.dataset.controlPaths);
+      return Array.isArray(paths) ? paths : [];
+    } catch (error) {
+      return [];
+    }
+  })();
   const savedPreset = normalizePreset(editor.dataset.savedPreset);
   const savedDocument = parseDocument(editor.dataset.savedOverrides);
-  let document = parseDocument(storage.value);
+  let overrides = parseDocument(storage.value);
 
   const currentPreset = () => normalizePreset(presetSelector.value);
   const presetLabel = (preset) => labels[preset] ?? preset;
@@ -245,10 +263,31 @@ const initializeEditor = (editor) => {
     return Boolean(section && Object.prototype.hasOwnProperty.call(CUSTOM_FIELDS, section.dataset.id));
   };
   const proxyControls = [...editor.querySelectorAll('[data-design-proxy]')];
-  const flexForm = sheet.parentElement;
-  const canonicalControl = (fieldName) => fieldControl(
-    flexForm.querySelector(`.form-section[data-id="${fieldName}"]`),
-  );
+  const formScope = (() => {
+    let scope = sheet.parentElement;
+    while (scope && scope !== storage.form) {
+      const hasCanonicalFields = [...scope.querySelectorAll('.form-section[data-id]')].some(
+        (section) => section.dataset.id === 'settings.gap',
+      );
+      if (hasCanonicalFields) {
+        return scope;
+      }
+      scope = scope.parentElement;
+    }
+    return storage.form || editor.closest('form') || sheet.parentElement;
+  })();
+  const canonicalControl = (fieldName) => {
+    const section = [...formScope.querySelectorAll('.form-section[data-id]')].find(
+      (candidate) => candidate.dataset.id === fieldName,
+    );
+    if (section) {
+      return fieldControl(section);
+    }
+    return [...formScope.querySelectorAll('[name]')].find(
+      (control) => control.name.includes('[pi_flexform]')
+        && control.name.endsWith(`[${fieldName}][vDEF]`),
+    ) ?? null;
+  };
   const canonicalValue = (control) => control?.type === 'checkbox'
     ? (control.checked ? '1' : '0')
     : (control?.value ?? '');
@@ -261,12 +300,12 @@ const initializeEditor = (editor) => {
     const base = currentBase();
     const effective = preset === 'custom'
       ? customDesign(customSections)
-      : (base ? effectiveDesign(base, document) : {});
+      : (base ? effectiveDesign(base, overrides) : {});
     editor.dispatchEvent(new CustomEvent('mosaic-design-change', {
       bubbles: true,
       detail: {
         preset,
-        overrides: clone(document),
+        overrides: clone(overrides),
         effective,
         display: displayState(),
       },
@@ -275,8 +314,8 @@ const initializeEditor = (editor) => {
 
   const updateStatus = () => {
     const preset = currentPreset();
-    const count = countLeaves(document);
-    const dirty = preset !== savedPreset || canonicalJson(document) !== canonicalJson(savedDocument);
+    const count = countLeaves(overrides);
+    const dirty = preset !== savedPreset || canonicalJson(overrides) !== canonicalJson(savedDocument);
     const preview = editor.querySelector('[data-design-preview]');
     const modifications = editor.querySelector('[data-design-modifications]');
     const resetAll = editor.querySelector('[data-design-reset-all]');
@@ -307,14 +346,14 @@ const initializeEditor = (editor) => {
     configuratorSection.hidden = false;
     editor.classList.toggle('is-custom', custom);
     if (!custom) {
-      applyEffectiveValues(editor, currentBase(), document);
+      applyEffectiveValues(editor, currentBase(), overrides, controlPaths);
     }
     updateStatus();
     publishState();
   };
 
   const persist = () => {
-    storage.value = JSON.stringify(document);
+    storage.value = JSON.stringify(overrides);
     storage.dispatchEvent(new Event('change', { bubbles: true }));
     updateStatus();
     publishState();
@@ -374,16 +413,16 @@ const initializeEditor = (editor) => {
     const path = control.dataset.designPath;
     const base = valueAtPath(currentBase(), path);
     if (control.dataset.designKind === 'color' && !/^#[\da-f]{6}$/i.test(control.value)) {
-      displayValue(control, valueAtPath(document, path) ?? base);
+      displayValue(control, valueAtPath(overrides, path) ?? base);
       return;
     }
     const value = controlValue(control, base);
     displayValue(control, value);
     if (canonicalJson(value) === canonicalJson(base)) {
-      deletePath(document, path);
+      deletePath(overrides, path);
       updateFieldState(control, false);
     } else {
-      setPath(document, path, value);
+      setPath(overrides, path, value);
       updateFieldState(control, true);
     }
     persist();
@@ -410,8 +449,15 @@ const initializeEditor = (editor) => {
     }
     const previewLoadMore = event.target.closest('[data-design-preview-load-more]');
     if (previewLoadMore) {
+      const columns = [...editor.querySelectorAll('[data-design-preview-column]')];
       editor.querySelectorAll('[data-design-preview-extra]').forEach((item) => {
         item.hidden = false;
+        const shortestColumn = columns.reduce((shortest, column) => (
+          column.getBoundingClientRect().height < shortest.getBoundingClientRect().height
+            ? column
+            : shortest
+        ));
+        shortestColumn.append(item);
       });
       previewLoadMore.hidden = true;
       return;
@@ -420,7 +466,7 @@ const initializeEditor = (editor) => {
     if (resetField) {
       const control = resetField.closest('[data-design-field]')?.querySelector('[data-design-control]');
       if (control) {
-        deletePath(document, control.dataset.designPath);
+        deletePath(overrides, control.dataset.designPath);
         displayValue(control, valueAtPath(currentBase(), control.dataset.designPath));
         updateFieldState(control, false);
         persist();
@@ -428,8 +474,8 @@ const initializeEditor = (editor) => {
       return;
     }
     if (event.target.closest('[data-design-reset-all]')) {
-      document = {};
-      applyEffectiveValues(editor, currentBase(), document);
+      overrides = {};
+      applyEffectiveValues(editor, currentBase(), overrides, controlPaths);
       persist();
     }
   });
@@ -445,7 +491,7 @@ const initializeEditor = (editor) => {
     editor.querySelectorAll('[data-design-eyedropper]').forEach((button) => { button.hidden = false; });
     customSections.filter((section) => ['settings.frameColor', 'settings.backgroundColor', 'settings.captionColor', 'settings.lbOverlay', 'settings.lbNavColor', 'settings.lbCloseColor', 'settings.lbCaptionColor', 'settings.lbCaptionBg'].includes(section.dataset.id)).forEach((section) => {
       const control = fieldControl(section);
-      const button = document.createElement('button');
+      const button = window.document.createElement('button');
       button.type = 'button';
       button.className = 'btn btn-default btn-sm mosaic-design-eyedropper';
       button.textContent = '⌾';

@@ -115,12 +115,17 @@ final class DesignConfiguratorElement extends AbstractFormElement
             (string)json_encode($presetLabels, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
             ENT_QUOTES,
         );
+        $controlPathsJson = htmlspecialchars(
+            (string)json_encode(array_column(self::CONTROLS, 'path'), JSON_UNESCAPED_SLASHES),
+            ENT_QUOTES,
+        );
 
         $html = '<div class="form-control-wrap mosaic-design-configurator" data-mosaic-design-configurator'
             . ' data-saved-preset="' . htmlspecialchars($savedPreset, ENT_QUOTES) . '"'
             . ' data-saved-overrides="' . $hiddenValue . '"'
             . ' data-preset-bases="' . $presetBasesJson . '"'
             . ' data-preset-labels="' . $presetLabelsJson . '"'
+            . ' data-control-paths="' . $controlPathsJson . '"'
             . ' data-saved-label="' . $this->label('design.configurator.saved') . '"'
             . ' data-previewing-label="' . $this->label('design.configurator.previewing') . '"'
             . ' data-unsaved-label="' . $this->label('design.configurator.unsaved') . '"'
@@ -133,10 +138,12 @@ final class DesignConfiguratorElement extends AbstractFormElement
             . ' data-formengine-input-name="' . htmlspecialchars($fieldName, ENT_QUOTES) . '"'
             . ' data-design-storage>'
             . '<div class="mosaic-design-configurator__toolbar">'
-            . '<div data-design-status><strong>' . $this->label('design.configurator.saved') . ': '
+            . '<div class="mosaic-design-configurator__preset" data-design-preset-slot></div>'
+            . '<div class="mosaic-design-configurator__status" data-design-status><strong>'
+            . $this->label('design.configurator.saved') . ': '
             . '<span data-design-saved>' . htmlspecialchars($savedLabel, ENT_QUOTES) . '</span></strong>'
-            . '<div class="form-text" data-design-preview hidden></div>'
-            . '<div class="form-text" data-design-modifications></div></div>'
+            . '<span class="form-text" data-design-preview hidden></span>'
+            . '<span class="form-text" data-design-modifications></span></div>'
             . '<button type="button" class="btn btn-default btn-sm" data-design-reset-all'
             . ($modifiedCount === 0 ? ' disabled' : '') . '>'
             . $this->formatLabel(
@@ -180,12 +187,23 @@ final class DesignConfiguratorElement extends AbstractFormElement
             $this->previewImageUrl('contrast.svg'),
         ];
 
-        $galleryItems = '';
+        $galleryColumns = ['', '', ''];
+        $extraItems = '';
         foreach ($images as $index => $image) {
-            $galleryItems .= '<figure class="mosaic-design-preview__item"'
+            $item = '<figure class="mosaic-design-preview__item" data-preview-fixture="' . $index . '"'
                 . ($index > 2 ? ' data-design-preview-extra hidden' : '') . '>'
                 . '<img src="' . htmlspecialchars($image, ENT_QUOTES) . '" alt="">'
                 . '<figcaption>' . $caption . '</figcaption></figure>';
+            if ($index < 3) {
+                $galleryColumns[$index] = $item;
+            } else {
+                $extraItems .= $item;
+            }
+        }
+        $galleryItems = '';
+        foreach ($galleryColumns as $column) {
+            $galleryItems .= '<div class="mosaic-design-preview__column" data-design-preview-column>'
+                . $column . '</div>';
         }
 
         return '<section class="mosaic-design-preview" data-design-live-preview aria-labelledby="'
@@ -198,6 +216,7 @@ final class DesignConfiguratorElement extends AbstractFormElement
             . '<div class="mosaic-design-preview__panel-label">' . $this->label('design.preview.gallery') . '</div>'
             . '<div class="mosaic-design-preview__gallery-surface" data-preview-gallery-surface>'
             . '<div class="mosaic-design-preview__items">' . $galleryItems . '</div>'
+            . '<div data-design-preview-extras hidden>' . $extraItems . '</div>'
             . '<div class="mosaic-design-preview__actions"><button type="button" class="btn btn-default btn-sm"'
             . ' data-design-preview-load-more>' . $this->frontendLabel('gallery.loadMore') . '</button></div>'
             . '</div></div>'

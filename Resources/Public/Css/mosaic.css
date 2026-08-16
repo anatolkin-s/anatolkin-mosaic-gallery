@@ -192,17 +192,28 @@
 }
 
 .mosaic-gallery[data-frame-style="triple"] .mosaic-item > a::after {
-  box-shadow: inset 0 0 0 min(1px, var(--frame-width, 0px)) var(--bg, #fff),
-    inset 0 0 0 min(2px, var(--frame-width, 0px)) var(--frame-color, transparent);
+  box-shadow: inset 0 0 0 min(1px, var(--frame-width, 0px)) color-mix(in srgb, var(--frame-color) 25%, #fff),
+    inset 0 0 0 min(3px, var(--frame-width, 0px)) color-mix(in srgb, var(--frame-color) 70%, #000),
+    inset 0 0 0 min(5px, var(--frame-width, 0px)) var(--frame-color, transparent);
+}
+
+.mosaic-gallery[data-frame-style="doubleOuterStrong"] .mosaic-item > a::after {
+  box-shadow: inset 0 0 0 min(1px, var(--frame-width, 0px)) color-mix(in srgb, var(--frame-color) 30%, #fff);
+}
+
+.mosaic-gallery[data-frame-style="doubleInnerStrong"] .mosaic-item > a {
+  border-width: min(1px, var(--frame-width, 0px));
 }
 
 .mosaic-gallery[data-frame-style="doubleInnerStrong"] .mosaic-item > a::after {
-  box-shadow: inset 0 0 0 min(2px, var(--frame-width, 0px)) var(--frame-color, transparent);
+  box-shadow: inset 0 0 0 min(1px, var(--frame-width, 0px)) color-mix(in srgb, var(--frame-color) 30%, #fff),
+    inset 0 0 0 min(6px, var(--frame-width, 0px)) var(--frame-color, transparent);
 }
 
 .mosaic-gallery[data-frame-style="gallery"] .mosaic-item > a::after {
-  box-shadow: inset 0 0 0 min(1px, var(--frame-width, 0px)) color-mix(in srgb, var(--frame-color) 65%, #fff),
-    inset 0 0 0 min(2px, var(--frame-width, 0px)) color-mix(in srgb, var(--frame-color) 70%, #000);
+  box-shadow: inset 0 0 0 min(1px, var(--frame-width, 0px)) color-mix(in srgb, var(--frame-color) 20%, #fff),
+    inset 0 0 0 min(3px, var(--frame-width, 0px)) color-mix(in srgb, var(--frame-color) 72%, #000),
+    inset 0 0 0 min(6px, var(--frame-width, 0px)) color-mix(in srgb, var(--frame-color) 82%, var(--bg, #fff));
 }
 
 .mosaic-item figcaption {

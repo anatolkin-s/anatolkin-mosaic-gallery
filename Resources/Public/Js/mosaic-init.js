@@ -98,17 +98,20 @@
     var frameWidth = gv("--frame-width", "0px");
     var frameWidthValue = Math.max(0, parseFloat(frameWidth) || 0);
     var frameKeyline = Math.min(1, frameWidthValue) + "px";
-    var frameInnerLine = Math.min(2, frameWidthValue) + "px";
+    var frameMidLine = Math.min(3, frameWidthValue) + "px";
+    var frameInnerLine = Math.min(5, frameWidthValue) + "px";
+    var frameStrongBand = Math.min(6, frameWidthValue) + "px";
     var frameStyle = root.getAttribute("data-frame-style") || "none";
     var nativeFrameStyles = ["solid", "dashed", "dotted", "double", "groove", "ridge"];
     var compositeFrameStyles = ["triple", "doubleOuterStrong", "doubleInnerStrong", "gallery"];
     var safeFrameStyle = nativeFrameStyles.indexOf(frameStyle) !== -1 ? frameStyle : "none";
     var compositeFrame = compositeFrameStyles.indexOf(frameStyle) !== -1;
+    var compositeBorderWidth = frameStyle === "doubleInnerStrong" ? frameKeyline : frameWidth;
     var compositeShadow = {
-      triple: "inset 0 0 0 " + frameKeyline + " var(--mg-lightbox-tile-bg),inset 0 0 0 " + frameInnerLine + " " + frameColor,
-      doubleOuterStrong: "inset 0 0 0 " + frameKeyline + " " + frameColor,
-      doubleInnerStrong: "inset 0 0 0 " + frameInnerLine + " " + frameColor,
-      gallery: "inset 0 0 0 " + frameKeyline + " color-mix(in srgb," + frameColor + " 60%,#fff),inset 0 0 0 " + frameInnerLine + " color-mix(in srgb," + frameColor + " 70%,#000)"
+      triple: "inset 0 0 0 " + frameKeyline + " color-mix(in srgb," + frameColor + " 25%,#fff),inset 0 0 0 " + frameMidLine + " color-mix(in srgb," + frameColor + " 70%,#000),inset 0 0 0 " + frameInnerLine + " " + frameColor,
+      doubleOuterStrong: "inset 0 0 0 " + frameKeyline + " color-mix(in srgb," + frameColor + " 30%,#fff)",
+      doubleInnerStrong: "inset 0 0 0 " + frameKeyline + " color-mix(in srgb," + frameColor + " 30%,#fff),inset 0 0 0 " + frameStrongBand + " " + frameColor,
+      gallery: "inset 0 0 0 " + frameKeyline + " color-mix(in srgb," + frameColor + " 20%,#fff),inset 0 0 0 " + frameMidLine + " color-mix(in srgb," + frameColor + " 72%,#000),inset 0 0 0 " + frameStrongBand + " color-mix(in srgb," + frameColor + " 82%,var(--mg-lightbox-tile-bg))"
     }[frameStyle] || "none";
     if (frameWidthValue <= 0) {
       safeFrameStyle = "none";
@@ -170,7 +173,7 @@
       scope + ".glightbox-container .gslide-title + .gslide-desc{margin-top:0.3rem!important;}" +
       scope + ".glightbox-container .gslide-image img{" +
       "--mg-lightbox-tile-bg:" + tileBg + ";" +
-      "border:" + frameWidth + " " + (compositeFrame && frameWidthValue > 0 ? "solid" : safeFrameStyle) + " " + frameColor + " !important;" +
+      "border:" + (compositeFrame ? compositeBorderWidth : frameWidth) + " " + (compositeFrame && frameWidthValue > 0 ? "solid" : safeFrameStyle) + " " + frameColor + " !important;" +
       "border-radius:" + radius + " !important;" +
       "background:" + tileBg + " !important;" +
       (compositeFrame ? "box-shadow:" + compositeShadow + " !important;" : "") +

@@ -181,11 +181,36 @@
 
 .mosaic-design-configurator__toolbar {
   align-items: center;
+  display: grid;
+  gap: .75rem 1rem;
+  grid-template-columns: minmax(12rem, auto) minmax(0, 1fr) auto;
+  margin-bottom: 1rem;
+}
+
+.mosaic-design-configurator__preset .form-section {
+  margin: 0;
+  padding: 0;
+}
+
+.mosaic-design-configurator__preset .form-label {
+  font-size: .75rem;
+  margin-bottom: .2rem;
+}
+
+.mosaic-design-configurator__preset .form-text {
+  display: none;
+}
+
+.mosaic-design-configurator__status {
+  align-items: baseline;
   display: flex;
   flex-wrap: wrap;
-  gap: .75rem 1rem;
-  justify-content: space-between;
-  margin-bottom: 1rem;
+  gap: .25rem .6rem;
+  min-width: 0;
+}
+
+.mosaic-design-configurator__status .form-text {
+  margin: 0;
 }
 
 .mosaic-design-configurator__grid {
@@ -311,15 +336,20 @@
 }
 
 .mosaic-design-preview__items {
-  column-count: 3;
-  column-gap: var(--preview-gap, .55rem);
+  display: grid;
+  gap: var(--preview-gap, .55rem);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.mosaic-design-preview__column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--preview-gap, .55rem);
+  min-width: 0;
 }
 
 .mosaic-design-preview__item {
   margin: 0;
-  break-inside: avoid;
-  display: inline-block;
-  margin-bottom: var(--preview-gap, .55rem);
   min-width: 0;
   width: 100%;
 }
@@ -368,17 +398,25 @@
 }
 
 .mosaic-design-preview[data-frame-style="triple"] :is(.mosaic-design-preview__item img, .mosaic-design-preview__lightbox-figure img) {
-  box-shadow: inset 0 0 0 min(1px, var(--preview-frame-width)) var(--preview-background),
-    inset 0 0 0 min(2px, var(--preview-frame-width)) var(--preview-frame-color), var(--preview-shadow);
+  box-shadow: inset 0 0 0 min(1px, var(--preview-frame-width)) color-mix(in srgb, var(--preview-frame-color) 25%, #fff),
+    inset 0 0 0 min(3px, var(--preview-frame-width)) color-mix(in srgb, var(--preview-frame-color) 70%, #000),
+    inset 0 0 0 min(5px, var(--preview-frame-width)) var(--preview-frame-color), var(--preview-shadow);
+}
+
+.mosaic-design-preview[data-frame-style="doubleOuterStrong"] :is(.mosaic-design-preview__item img, .mosaic-design-preview__lightbox-figure img) {
+  box-shadow: inset 0 0 0 min(1px, var(--preview-frame-width)) color-mix(in srgb, var(--preview-frame-color) 30%, #fff), var(--preview-shadow);
 }
 
 .mosaic-design-preview[data-frame-style="doubleInnerStrong"] :is(.mosaic-design-preview__item img, .mosaic-design-preview__lightbox-figure img) {
-  box-shadow: inset 0 0 0 min(2px, var(--preview-frame-width)) var(--preview-frame-color), var(--preview-shadow);
+  border-width: min(1px, var(--preview-frame-width));
+  box-shadow: inset 0 0 0 min(1px, var(--preview-frame-width)) color-mix(in srgb, var(--preview-frame-color) 30%, #fff),
+    inset 0 0 0 min(6px, var(--preview-frame-width)) var(--preview-frame-color), var(--preview-shadow);
 }
 
 .mosaic-design-preview[data-frame-style="gallery"] :is(.mosaic-design-preview__item img, .mosaic-design-preview__lightbox-figure img) {
-  box-shadow: inset 0 0 0 min(1px, var(--preview-frame-width)) color-mix(in srgb, var(--preview-frame-color) 60%, #fff),
-    inset 0 0 0 min(2px, var(--preview-frame-width)) color-mix(in srgb, var(--preview-frame-color) 70%, #000), var(--preview-shadow);
+  box-shadow: inset 0 0 0 min(1px, var(--preview-frame-width)) color-mix(in srgb, var(--preview-frame-color) 20%, #fff),
+    inset 0 0 0 min(3px, var(--preview-frame-width)) color-mix(in srgb, var(--preview-frame-color) 72%, #000),
+    inset 0 0 0 min(6px, var(--preview-frame-width)) color-mix(in srgb, var(--preview-frame-color) 82%, var(--preview-background)), var(--preview-shadow);
 }
 
 .mosaic-design-preview__item img {
@@ -386,11 +424,11 @@
   object-fit: cover;
 }
 
-.mosaic-design-preview__item:nth-child(2) img {
+.mosaic-design-preview__item[data-preview-fixture="1"] img {
   aspect-ratio: 3 / 4;
 }
 
-.mosaic-design-preview__item:nth-child(3) img {
+.mosaic-design-preview__item[data-preview-fixture="2"] img {
   aspect-ratio: 1;
 }
 
@@ -508,6 +546,16 @@
 
   .mosaic-design-display-controls {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container (max-width: 599px) {
+  .mosaic-design-configurator__toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mosaic-design-preview__items {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
