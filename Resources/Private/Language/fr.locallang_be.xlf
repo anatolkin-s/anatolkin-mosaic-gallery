@@ -65,6 +65,16 @@
     <trans-unit id="flexform.frameStyle.solid"><source>Solid</source><target>Continu</target></trans-unit>
     <trans-unit id="flexform.frameStyle.dashed"><source>Dashed</source><target>En tirets</target></trans-unit>
     <trans-unit id="flexform.frameStyle.dotted"><source>Dotted</source><target>En pointillés</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.double"><source>Double</source><target>Double</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.groove"><source>Groove</source><target>Rainuré</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.ridge"><source>Ridge</source><target>Relief</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.triple"><source>Triple</source><target>Triple</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.doubleOuterStrong"><source>Double — strong outer line</source><target>Double — ligne extérieure forte</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.doubleInnerStrong"><source>Double — strong inner line</source><target>Double — ligne intérieure forte</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.gallery"><source>Gallery frame</source><target>Cadre de galerie</target></trans-unit>
+    <trans-unit id="flexform.captionColor"><source>Gallery caption color</source><target>Couleur de légende de galerie</target></trans-unit>
+    <trans-unit id="design.configurator.colorPicker"><source>Choose color</source><target>Choisir une couleur</target></trans-unit>
+    <trans-unit id="design.configurator.eyedropper"><source>Pick color from screen</source><target>Prélever une couleur à l’écran</target></trans-unit>
     <trans-unit id="flexform.borderRadius"><source>Corner radius (px)</source><target>Arrondi des angles (px)</target></trans-unit>
     <trans-unit id="flexform.shadow"><source>Shadow</source><target>Ombre</target></trans-unit>
     <trans-unit id="flexform.backgroundColor"><source>Background color</source><target>Couleur d’arrière-plan</target></trans-unit>

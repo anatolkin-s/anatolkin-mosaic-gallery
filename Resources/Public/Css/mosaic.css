@@ -138,6 +138,69 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
 }
 
+/* Semantic frame engine. Composite identifiers never reach border-style. */
+.mosaic-item > a {
+  border: 0 solid var(--frame-color, transparent);
+  border-radius: var(--radius, 0);
+  box-sizing: border-box;
+  display: block;
+  position: relative;
+}
+
+.mosaic-item > a img {
+  border: 0;
+  border-radius: inherit;
+}
+
+.mosaic-gallery[data-frame-style="solid"] .mosaic-item > a,
+.mosaic-gallery[data-frame-style="dashed"] .mosaic-item > a,
+.mosaic-gallery[data-frame-style="dotted"] .mosaic-item > a,
+.mosaic-gallery[data-frame-style="double"] .mosaic-item > a,
+.mosaic-gallery[data-frame-style="groove"] .mosaic-item > a,
+.mosaic-gallery[data-frame-style="ridge"] .mosaic-item > a {
+  border-color: var(--frame-color, transparent);
+  border-style: solid;
+  border-width: min(var(--frame-width, 0px), 12px);
+}
+
+.mosaic-gallery[data-frame-style="dashed"] .mosaic-item > a { border-style: dashed; }
+.mosaic-gallery[data-frame-style="dotted"] .mosaic-item > a { border-style: dotted; }
+.mosaic-gallery[data-frame-style="double"] .mosaic-item > a { border-style: double; }
+.mosaic-gallery[data-frame-style="groove"] .mosaic-item > a { border-style: groove; }
+.mosaic-gallery[data-frame-style="ridge"] .mosaic-item > a { border-style: ridge; }
+
+.mosaic-gallery[data-frame-style="triple"] .mosaic-item > a,
+.mosaic-gallery[data-frame-style="doubleOuterStrong"] .mosaic-item > a,
+.mosaic-gallery[data-frame-style="doubleInnerStrong"] .mosaic-item > a,
+.mosaic-gallery[data-frame-style="gallery"] .mosaic-item > a {
+  border-color: var(--frame-color, transparent);
+  border-style: solid;
+  border-width: var(--frame-width, 3px);
+  padding: 1px;
+}
+
+.mosaic-gallery[data-frame-style="triple"] .mosaic-item > a {
+  box-shadow: 0 0 0 1px var(--bg, #fff), 0 0 0 2px var(--frame-color, transparent);
+}
+
+.mosaic-gallery[data-frame-style="doubleOuterStrong"] .mosaic-item > a {
+  box-shadow: 0 0 0 2px var(--frame-color, transparent);
+}
+
+.mosaic-gallery[data-frame-style="doubleInnerStrong"] .mosaic-item > a {
+  border-width: 1px;
+  box-shadow: inset 0 0 0 var(--frame-width, 3px) var(--frame-color, transparent);
+}
+
+.mosaic-gallery[data-frame-style="gallery"] .mosaic-item > a {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--frame-color) 65%, #fff),
+    0 0 0 1px color-mix(in srgb, var(--frame-color) 70%, #000);
+}
+
+.mosaic-item figcaption {
+  color: var(--caption-color, inherit);
+}
+
 /* === Load more button (uses same frame variables as tiles) ============= */
 
 .mosaic-actions {
@@ -184,3 +247,12 @@
   transform: translateY(0);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
 }
+
+/* Final semantic button interpretation keeps composite styles valid and text readable. */
+.mosaic-gallery .mosaic-load-more { color: var(--caption-color, var(--frame-color, #333)); }
+.mosaic-gallery[data-load-more-frame="0"] .mosaic-load-more { border-style: solid; border-width: 1px; }
+.mosaic-gallery[data-load-more-frame="1"][data-frame-style="dashed"] .mosaic-load-more { border-style: dashed; }
+.mosaic-gallery[data-load-more-frame="1"][data-frame-style="dotted"] .mosaic-load-more { border-style: dotted; }
+.mosaic-gallery[data-load-more-frame="1"][data-frame-style="double"] .mosaic-load-more { border-style: double; }
+.mosaic-gallery[data-load-more-frame="1"][data-frame-style="groove"] .mosaic-load-more { border-style: groove; }
+.mosaic-gallery[data-load-more-frame="1"][data-frame-style="ridge"] .mosaic-load-more { border-style: ridge; }

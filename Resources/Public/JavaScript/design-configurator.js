@@ -17,6 +17,7 @@ const CUSTOM_FIELDS = {
   'settings.borderRadius': ['borderRadius', 'integer'],
   'settings.shadow': ['shadow', 'boolean'],
   'settings.backgroundColor': ['backgroundColor', 'string'],
+  'settings.captionColor': ['captionColor', 'string'],
   'settings.applyTo': ['applyTo', 'string'],
   'settings.lbOverlay': ['lightbox.overlay', 'string'],
   'settings.lbOverlayAlpha': ['lightbox.overlayAlpha', 'string'],
@@ -108,9 +109,9 @@ const controlValue = (control, base) => {
 
 const displayValue = (control, value) => {
   control.value = control.dataset.designKind === 'boolean' ? (value ? '1' : '0') : String(value);
-  const swatch = control.closest('[data-design-field]')?.querySelector('[data-design-swatch]');
-  if (swatch) {
-    swatch.style.backgroundColor = String(value);
+  const picker = control.closest('[data-design-field]')?.querySelector('[data-design-color-picker]');
+  if (picker && /^#[\da-f]{6}$/i.test(String(value))) {
+    picker.value = String(value);
   }
 };
 
@@ -148,7 +149,7 @@ const effectiveDesign = (base, document) => {
   return effective;
 };
 
-const fieldControl = (section) => section.querySelector(
+const fieldControl = (section) => section?.querySelector(
   'select, input[type="checkbox"], input.form-control, input[type="text"], input[type="number"]',
 );
 
@@ -193,9 +194,9 @@ const renderPreview = (editor, effective) => {
   const setProperty = (name, value) => preview.style.setProperty(name, value);
   setProperty('--preview-frame-color', effective.frameColor);
   setProperty('--preview-frame-width', `${effective.frameWidth}px`);
-  setProperty('--preview-frame-style', effective.frameStyle);
   setProperty('--preview-radius', `${effective.borderRadius}px`);
   setProperty('--preview-background', effective.backgroundColor);
+  setProperty('--preview-gallery-caption', effective.captionColor || 'inherit');
   setProperty('--preview-shadow', effective.shadow ? '0 6px 14px rgba(0, 0, 0, .22)' : 'none');
   setProperty('--preview-overlay', colorWithAlpha(effective.lightbox.overlay, effective.lightbox.overlayAlpha));
   setProperty('--preview-nav', effective.lightbox.navColor);
@@ -206,6 +207,7 @@ const renderPreview = (editor, effective) => {
     colorWithAlpha(effective.lightbox.captionBackground, effective.lightbox.captionBackgroundAlpha),
   );
   preview.dataset.applyBackground = effective.applyTo;
+  preview.dataset.frameStyle = effective.frameStyle;
   preview.dataset.captionAlign = effective.lightbox.captionAlign;
   preview.dataset.captionSize = effective.lightbox.captionSize;
   preview.dataset.captionStyle = effective.lightbox.captionStyle;
@@ -242,6 +244,17 @@ const initializeEditor = (editor) => {
     const section = event.target.closest('.form-section[data-id]');
     return Boolean(section && Object.prototype.hasOwnProperty.call(CUSTOM_FIELDS, section.dataset.id));
   };
+  const proxyControls = [...editor.querySelectorAll('[data-design-proxy]')];
+  const flexForm = sheet.parentElement;
+  const canonicalControl = (fieldName) => fieldControl(
+    flexForm.querySelector(`.form-section[data-id="${fieldName}"]`),
+  );
+  const canonicalValue = (control) => control?.type === 'checkbox'
+    ? (control.checked ? '1' : '0')
+    : (control?.value ?? '');
+  const displayState = () => Object.fromEntries(proxyControls.map(
+    (proxy) => [proxy.dataset.designProxy.replace('settings.', ''), proxy.value],
+  ));
 
   const publishState = () => {
     const preset = currentPreset();
@@ -255,6 +268,7 @@ const initializeEditor = (editor) => {
         preset,
         overrides: clone(document),
         effective,
+        display: displayState(),
       },
     }));
   };
@@ -307,6 +321,30 @@ const initializeEditor = (editor) => {
   };
 
   presetSelector.addEventListener('change', updateMode);
+  proxyControls.forEach((proxy) => {
+    const canonical = canonicalControl(proxy.dataset.designProxy);
+    if (!canonical) {
+      return;
+    }
+    proxy.value = canonicalValue(canonical);
+    proxy.addEventListener('change', () => {
+      if (canonical.type === 'checkbox') {
+        canonical.checked = proxy.value === '1';
+        canonical.value = canonical.checked ? '1' : '0';
+      } else {
+        canonical.value = proxy.value;
+      }
+      canonical.dispatchEvent(new Event('input', { bubbles: true }));
+      canonical.dispatchEvent(new Event('change', { bubbles: true }));
+      publishState();
+    });
+    const syncProxy = () => {
+      proxy.value = canonicalValue(canonical);
+      publishState();
+    };
+    canonical.addEventListener('change', syncProxy);
+    canonical.addEventListener('input', syncProxy);
+  });
   sheet.addEventListener('change', (event) => {
     if (currentPreset() === 'custom' && isCustomFieldEvent(event)) {
       publishState();
@@ -317,7 +355,17 @@ const initializeEditor = (editor) => {
       publishState();
     }
   });
-  editor.addEventListener('mosaic-design-change', (event) => renderPreview(editor, event.detail.effective));
+  editor.addEventListener('mosaic-design-change', (event) => {
+    renderPreview(editor, event.detail.effective);
+    const preview = editor.querySelector('[data-design-live-preview]');
+    if (!preview) return;
+    preview.style.setProperty('--preview-gap', `${event.detail.display.gap || 0}px`);
+    preview.dataset.showCaptions = event.detail.display.showCaptions;
+    preview.dataset.enableLightbox = event.detail.display.enableLightbox;
+    preview.dataset.enableLoadMore = event.detail.display.enableLoadMore;
+    preview.dataset.loadMoreFrame = event.detail.display.loadMoreUseFrameStyle;
+    preview.dataset.galleryCaptionAlign = event.detail.display.captionAlign;
+  });
   editor.addEventListener('change', (event) => {
     const control = event.target.closest('[data-design-control]');
     if (!control) {
@@ -325,6 +373,10 @@ const initializeEditor = (editor) => {
     }
     const path = control.dataset.designPath;
     const base = valueAtPath(currentBase(), path);
+    if (control.dataset.designKind === 'color' && !/^#[\da-f]{6}$/i.test(control.value)) {
+      displayValue(control, valueAtPath(document, path) ?? base);
+      return;
+    }
     const value = controlValue(control, base);
     displayValue(control, value);
     if (canonicalJson(value) === canonicalJson(base)) {
@@ -339,15 +391,23 @@ const initializeEditor = (editor) => {
 
   editor.addEventListener('input', (event) => {
     const control = event.target.closest('[data-design-control][data-design-kind="color"]');
-    if (control) {
-      const swatch = control.closest('[data-design-field]')?.querySelector('[data-design-swatch]');
-      if (swatch) {
-        swatch.style.backgroundColor = control.value;
-      }
+    if (control && /^#[\da-f]{6}$/i.test(control.value)) {
+      displayValue(control, control.value);
     }
   });
 
   editor.addEventListener('click', (event) => {
+    const eyedropper = event.target.closest('[data-design-eyedropper]');
+    if (eyedropper && window.EyeDropper) {
+      const control = eyedropper.closest('[data-design-field]')?.querySelector('[data-design-control]');
+      if (control) {
+        new window.EyeDropper().open().then(({ sRGBHex }) => {
+          control.value = sRGBHex;
+          control.dispatchEvent(new Event('change', { bubbles: true }));
+        }).catch(() => {});
+      }
+      return;
+    }
     const previewLoadMore = event.target.closest('[data-design-preview-load-more]');
     if (previewLoadMore) {
       editor.querySelectorAll('[data-design-preview-extra]').forEach((item) => {
@@ -374,6 +434,33 @@ const initializeEditor = (editor) => {
     }
   });
 
+  editor.querySelectorAll('[data-design-color-picker]').forEach((picker) => {
+    const control = picker.closest('[data-design-field]')?.querySelector('[data-design-control]');
+    picker.addEventListener('input', () => {
+      control.value = picker.value.toUpperCase();
+      control.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  });
+  if (window.EyeDropper) {
+    editor.querySelectorAll('[data-design-eyedropper]').forEach((button) => { button.hidden = false; });
+    customSections.filter((section) => ['settings.frameColor', 'settings.backgroundColor', 'settings.captionColor', 'settings.lbOverlay', 'settings.lbNavColor', 'settings.lbCloseColor', 'settings.lbCaptionColor', 'settings.lbCaptionBg'].includes(section.dataset.id)).forEach((section) => {
+      const control = fieldControl(section);
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'btn btn-default btn-sm mosaic-design-eyedropper';
+      button.textContent = '⌾';
+      button.title = editor.dataset.eyedropperLabel;
+      button.setAttribute('aria-label', editor.dataset.eyedropperLabel);
+      button.addEventListener('click', () => {
+        new window.EyeDropper().open().then(({ sRGBHex }) => {
+          control.value = sRGBHex;
+          control.dispatchEvent(new Event('input', { bubbles: true }));
+          control.dispatchEvent(new Event('change', { bubbles: true }));
+        }).catch(() => {});
+      });
+      control.parentElement?.append(button);
+    });
+  }
   updateMode();
 };
 

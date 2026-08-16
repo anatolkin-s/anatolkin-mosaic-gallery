@@ -286,6 +286,13 @@
                   <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameStyle.dotted</label>
                   <value>dotted</value>
                 </numIndex>
+                <numIndex index="4"><label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameStyle.double</label><value>double</value></numIndex>
+                <numIndex index="5"><label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameStyle.groove</label><value>groove</value></numIndex>
+                <numIndex index="6"><label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameStyle.ridge</label><value>ridge</value></numIndex>
+                <numIndex index="7"><label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameStyle.triple</label><value>triple</value></numIndex>
+                <numIndex index="8"><label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameStyle.doubleOuterStrong</label><value>doubleOuterStrong</value></numIndex>
+                <numIndex index="9"><label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameStyle.doubleInnerStrong</label><value>doubleInnerStrong</value></numIndex>
+                <numIndex index="10"><label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameStyle.gallery</label><value>gallery</value></numIndex>
               </items>
               <default>solid</default>
             </config>
@@ -318,6 +325,17 @@
               <default>#e5e5e5</default>
             </config>
           </settings.backgroundColor>
+
+          <settings.captionColor>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.captionColor</label>
+            <config>
+              <type>input</type>
+              <renderType>colorpicker</renderType>
+              <size>10</size>
+              <eval>trim</eval>
+              <default></default>
+            </config>
+          </settings.captionColor>
 
           <settings.applyTo>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.applyTo</label>

@@ -3,9 +3,11 @@
             --bg:{design.backgroundColor};
             --frame-color:{design.frameColor};
             --frame-width:{design.frameWidth}px;
-            --frame-style:{design.frameStyle};
-            --caption-align:{captionAlign};"
+            --caption-align:{captionAlign};
+            --caption-color:{design.captionColor};"
      data-apply-bg="{design.applyTo}"
+     data-frame-style="{design.frameStyle}"
+     data-load-more-frame="{f:if(condition: settings.loadMoreUseFrameStyle, then: 1, else: 0)}"
      data-shadow="{f:if(condition: design.shadow, then: 1, else: 0)}"
      data-lightbox="{f:if(condition: settings.enableLightbox, then: 1, else: 0)}"
      data-group="{galleryGroup}"

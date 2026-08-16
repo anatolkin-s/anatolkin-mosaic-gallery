@@ -65,6 +65,16 @@
     <trans-unit id="flexform.frameStyle.solid"><source>Solid</source><target>Сплошная</target></trans-unit>
     <trans-unit id="flexform.frameStyle.dashed"><source>Dashed</source><target>Штриховая</target></trans-unit>
     <trans-unit id="flexform.frameStyle.dotted"><source>Dotted</source><target>Пунктирная</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.double"><source>Double</source><target>Двойная</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.groove"><source>Groove</source><target>Вдавленная</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.ridge"><source>Ridge</source><target>Выпуклая</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.triple"><source>Triple</source><target>Тройная</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.doubleOuterStrong"><source>Double — strong outer line</source><target>Двойная — усиленная внешняя линия</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.doubleInnerStrong"><source>Double — strong inner line</source><target>Двойная — усиленная внутренняя линия</target></trans-unit>
+    <trans-unit id="flexform.frameStyle.gallery"><source>Gallery frame</source><target>Галерейная рама</target></trans-unit>
+    <trans-unit id="flexform.captionColor"><source>Gallery caption color</source><target>Цвет подписи галереи</target></trans-unit>
+    <trans-unit id="design.configurator.colorPicker"><source>Choose color</source><target>Выбрать цвет</target></trans-unit>
+    <trans-unit id="design.configurator.eyedropper"><source>Pick color from screen</source><target>Выбрать цвет с экрана</target></trans-unit>
     <trans-unit id="flexform.borderRadius"><source>Corner radius (px)</source><target>Радиус скругления (пикс.)</target></trans-unit>
     <trans-unit id="flexform.shadow"><source>Shadow</source><target>Тень</target></trans-unit>
     <trans-unit id="flexform.backgroundColor"><source>Background color</source><target>Цвет фона</target></trans-unit>

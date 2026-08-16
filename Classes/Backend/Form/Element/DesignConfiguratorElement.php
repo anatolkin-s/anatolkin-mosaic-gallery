@@ -25,12 +25,18 @@ final class DesignConfiguratorElement extends AbstractFormElement
         ['path' => 'frameStyle', 'label' => 'flexform.frameStyle', 'type' => 'select', 'options' => [
             'none' => 'flexform.frameStyle.none', 'solid' => 'flexform.frameStyle.solid',
             'dashed' => 'flexform.frameStyle.dashed', 'dotted' => 'flexform.frameStyle.dotted',
+            'double' => 'flexform.frameStyle.double', 'groove' => 'flexform.frameStyle.groove',
+            'ridge' => 'flexform.frameStyle.ridge', 'triple' => 'flexform.frameStyle.triple',
+            'doubleOuterStrong' => 'flexform.frameStyle.doubleOuterStrong',
+            'doubleInnerStrong' => 'flexform.frameStyle.doubleInnerStrong',
+            'gallery' => 'flexform.frameStyle.gallery',
         ]],
         ['path' => 'borderRadius', 'label' => 'flexform.borderRadius', 'type' => 'integer', 'step' => '1'],
         ['path' => 'shadow', 'label' => 'flexform.shadow', 'type' => 'boolean', 'options' => [
             '1' => 'flexform.designOverride.on', '0' => 'flexform.designOverride.off',
         ]],
         ['path' => 'backgroundColor', 'label' => 'flexform.backgroundColor', 'type' => 'color'],
+        ['path' => 'captionColor', 'label' => 'flexform.captionColor', 'type' => 'color'],
         ['path' => 'applyTo', 'label' => 'flexform.applyTo', 'type' => 'select', 'options' => [
             'container' => 'flexform.applyTo.container', 'tiles' => 'flexform.applyTo.tiles',
             'both' => 'flexform.applyTo.both',
@@ -110,8 +116,7 @@ final class DesignConfiguratorElement extends AbstractFormElement
             ENT_QUOTES,
         );
 
-        $html = $this->renderLabel($fieldId)
-            . '<div class="form-control-wrap mosaic-design-configurator" data-mosaic-design-configurator'
+        $html = '<div class="form-control-wrap mosaic-design-configurator" data-mosaic-design-configurator'
             . ' data-saved-preset="' . htmlspecialchars($savedPreset, ENT_QUOTES) . '"'
             . ' data-saved-overrides="' . $hiddenValue . '"'
             . ' data-preset-bases="' . $presetBasesJson . '"'
@@ -121,6 +126,7 @@ final class DesignConfiguratorElement extends AbstractFormElement
             . ' data-unsaved-label="' . $this->label('design.configurator.unsaved') . '"'
             . ' data-reset-all-template="' . $this->label('design.configurator.resetAll') . '"'
             . ' data-site-default-label="' . $this->label('design.configurator.siteDefault') . '"'
+            . ' data-eyedropper-label="' . $this->label('design.configurator.eyedropper') . '"'
             . ' data-modified-label="' . $this->label('design.configurator.modified') . '">'
             . '<input type="hidden" id="' . htmlspecialchars($fieldId, ENT_QUOTES) . '"'
             . ' name="' . htmlspecialchars($fieldName, ENT_QUOTES) . '" value="' . $hiddenValue . '"'
@@ -140,6 +146,7 @@ final class DesignConfiguratorElement extends AbstractFormElement
                     : $presetLabels[$previewPreset],
             ) . '</button></div>'
             . $this->renderPreview($fieldId)
+            . $this->renderDisplayControls()
             . '<div class="mosaic-design-configurator__grid" data-design-controls>';
 
         foreach (self::CONTROLS as $control) {
@@ -206,6 +213,23 @@ final class DesignConfiguratorElement extends AbstractFormElement
             . '</div></div></div></section>';
     }
 
+    private function renderDisplayControls(): string
+    {
+        $booleanOptions = '<option value="0">' . $this->label('flexform.designOverride.off') . '</option>'
+            . '<option value="1">' . $this->label('flexform.designOverride.on') . '</option>';
+        $field = static fn(string $id, string $label, string $control): string =>
+            '<label class="mosaic-design-display-controls__field"><span>' . $label . '</span>' . $control . '</label>';
+
+        return '<div class="mosaic-design-display-controls" data-design-display-controls>'
+            . $field('gap', $this->label('flexform.gap'), '<input type="number" min="0" class="form-control form-control-sm" data-design-proxy="settings.gap">')
+            . $field('showCaptions', $this->label('flexform.showCaptions'), '<select class="form-select form-select-sm" data-design-proxy="settings.showCaptions">' . $booleanOptions . '</select>')
+            . $field('captionAlign', $this->label('flexform.captionAlign'), '<select class="form-select form-select-sm" data-design-proxy="settings.captionAlign"><option value="left">' . $this->label('flexform.captionAlign.left') . '</option><option value="center">' . $this->label('flexform.captionAlign.center') . '</option><option value="right">' . $this->label('flexform.captionAlign.right') . '</option></select>')
+            . $field('enableLightbox', $this->label('flexform.enableLightbox'), '<select class="form-select form-select-sm" data-design-proxy="settings.enableLightbox">' . $booleanOptions . '</select>')
+            . $field('enableLoadMore', $this->label('flexform.enableLoadMore'), '<select class="form-select form-select-sm" data-design-proxy="settings.enableLoadMore">' . $booleanOptions . '</select>')
+            . $field('loadMoreUseFrameStyle', $this->label('flexform.loadMoreUseFrameStyle'), '<select class="form-select form-select-sm" data-design-proxy="settings.loadMoreUseFrameStyle">' . $booleanOptions . '</select>')
+            . '</div>';
+    }
+
     private function previewImageUrl(string $fileName): string
     {
         return PathUtility::getAbsoluteWebPath(GeneralUtility::getFileAbsFileName(
@@ -237,9 +261,18 @@ final class DesignConfiguratorElement extends AbstractFormElement
                 ? ' min="0"' . ($type === 'alpha' ? ' max="1"' : '')
                     . ' step="' . htmlspecialchars($control['step'] ?? '1', ENT_QUOTES) . '"'
                 : '';
-            $controlHtml = ($type === 'color' ? '<span class="mosaic-design-configurator__swatch" data-design-swatch></span>' : '')
+            $controlHtml = ($type === 'color'
+                ? '<input type="color" class="mosaic-design-configurator__picker" data-design-color-picker'
+                    . ' value="' . htmlspecialchars($value, ENT_QUOTES) . '" aria-label="'
+                    . $this->label('design.configurator.colorPicker') . '">'
+                : '')
                 . '<input type="' . $inputType . '" class="form-control form-control-sm" value="'
-                . htmlspecialchars($value, ENT_QUOTES) . '"' . $inputAttributes . $attributes . '>';
+                . htmlspecialchars($value, ENT_QUOTES) . '"' . $inputAttributes . $attributes . '>'
+                . ($type === 'color'
+                    ? '<button type="button" class="btn btn-default btn-sm" data-design-eyedropper hidden title="'
+                        . $this->label('design.configurator.eyedropper') . '" aria-label="'
+                        . $this->label('design.configurator.eyedropper') . '">⌾</button>'
+                    : '');
         }
 
         return '<div class="mosaic-design-configurator__field" data-design-field="'

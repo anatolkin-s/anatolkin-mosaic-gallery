@@ -96,7 +96,18 @@
 
     var frameColor = gv("--frame-color", "transparent");
     var frameWidth = gv("--frame-width", "0px");
-    var frameStyle = gv("--frame-style", "none");
+    var frameStyle = root.getAttribute("data-frame-style") || "none";
+    var nativeFrameStyles = ["solid", "dashed", "dotted", "double", "groove", "ridge"];
+    var compositeFrameStyles = ["triple", "doubleOuterStrong", "doubleInnerStrong", "gallery"];
+    var safeFrameStyle = nativeFrameStyles.indexOf(frameStyle) !== -1 ? frameStyle : "none";
+    var compositeFrame = compositeFrameStyles.indexOf(frameStyle) !== -1;
+    var compositeBorderWidth = frameStyle === "doubleInnerStrong" ? "1px" : frameWidth;
+    var compositeShadow = {
+      triple: "inset 0 0 0 1px " + frameColor + ",0 0 0 2px " + frameColor,
+      doubleOuterStrong: "0 0 0 3px " + frameColor,
+      doubleInnerStrong: "inset 0 0 0 " + frameWidth + " " + frameColor,
+      gallery: "inset 0 0 0 1px " + frameColor + ",0 0 0 1px " + frameColor
+    }[frameStyle] || "none";
 
     var radius = (function (v) {
       v = (v || "0").toString().trim();
@@ -152,9 +163,10 @@
       "}" +
       scope + ".glightbox-container .gslide-title + .gslide-desc{margin-top:0.3rem!important;}" +
       scope + ".glightbox-container .gslide-image img{" +
-      "border:" + frameWidth + " " + frameStyle + " " + frameColor + " !important;" +
+      "border:" + (compositeFrame ? compositeBorderWidth + " solid" : frameWidth + " " + safeFrameStyle) + " " + frameColor + " !important;" +
       "border-radius:" + radius + " !important;" +
       "background:" + tileBg + " !important;" +
+      (compositeFrame ? "box-shadow:" + compositeShadow + " !important;" : "") +
       "box-sizing:border-box;" +
       "}";
 

@@ -66,6 +66,16 @@
       <trans-unit id="flexform.frameStyle.solid"><source>Solid</source></trans-unit>
       <trans-unit id="flexform.frameStyle.dashed"><source>Dashed</source></trans-unit>
       <trans-unit id="flexform.frameStyle.dotted"><source>Dotted</source></trans-unit>
+      <trans-unit id="flexform.frameStyle.double"><source>Double</source></trans-unit>
+      <trans-unit id="flexform.frameStyle.groove"><source>Groove</source></trans-unit>
+      <trans-unit id="flexform.frameStyle.ridge"><source>Ridge</source></trans-unit>
+      <trans-unit id="flexform.frameStyle.triple"><source>Triple</source></trans-unit>
+      <trans-unit id="flexform.frameStyle.doubleOuterStrong"><source>Double — strong outer line</source></trans-unit>
+      <trans-unit id="flexform.frameStyle.doubleInnerStrong"><source>Double — strong inner line</source></trans-unit>
+      <trans-unit id="flexform.frameStyle.gallery"><source>Gallery frame</source></trans-unit>
+      <trans-unit id="flexform.captionColor"><source>Gallery caption color</source></trans-unit>
+      <trans-unit id="design.configurator.colorPicker"><source>Choose color</source></trans-unit>
+      <trans-unit id="design.configurator.eyedropper"><source>Pick color from screen</source></trans-unit>
       <trans-unit id="flexform.borderRadius"><source>Corner radius (px)</source></trans-unit>
       <trans-unit id="flexform.shadow"><source>Shadow</source></trans-unit>
       <trans-unit id="flexform.backgroundColor"><source>Background color</source></trans-unit>

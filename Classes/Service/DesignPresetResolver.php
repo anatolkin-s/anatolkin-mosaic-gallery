@@ -23,6 +23,7 @@ final class DesignPresetResolver
             'borderRadius' => 4,
             'shadow' => false,
             'backgroundColor' => '#F8F9FA',
+            'captionColor' => '#212529',
             'applyTo' => 'container',
             'lightbox' => [
                 'overlay' => '#212529',
@@ -45,6 +46,7 @@ final class DesignPresetResolver
             'borderRadius' => 8,
             'shadow' => false,
             'backgroundColor' => '#EEF2E8',
+            'captionColor' => '#35413A',
             'applyTo' => 'container',
             'lightbox' => [
                 'overlay' => '#35413A',
@@ -61,12 +63,13 @@ final class DesignPresetResolver
         ],
         self::PRESET_FRAMED => [
             'preset' => self::PRESET_FRAMED,
-            'frameColor' => '#A88467',
-            'frameWidth' => '2',
-            'frameStyle' => 'solid',
+            'frameColor' => '#9A744E',
+            'frameWidth' => '9',
+            'frameStyle' => 'gallery',
             'borderRadius' => 4,
             'shadow' => true,
             'backgroundColor' => '#F2E8D8',
+            'captionColor' => '#493A2E',
             'applyTo' => 'tiles',
             'lightbox' => [
                 'overlay' => '#3D332D',
@@ -84,11 +87,12 @@ final class DesignPresetResolver
         self::PRESET_DARK => [
             'preset' => self::PRESET_DARK,
             'frameColor' => '#718579',
-            'frameWidth' => '1',
+            'frameWidth' => '3',
             'frameStyle' => 'solid',
             'borderRadius' => 6,
             'shadow' => true,
             'backgroundColor' => '#2F3B35',
+            'captionColor' => '#EFECE4',
             'applyTo' => 'container',
             'lightbox' => [
                 'overlay' => '#111815',
@@ -117,6 +121,7 @@ final class DesignPresetResolver
      *     borderRadius: int,
      *     shadow: bool,
      *     backgroundColor: string,
+     *     captionColor: string,
      *     applyTo: string,
      *     lightbox: array{
      *         overlay: string,
@@ -216,7 +221,7 @@ final class DesignPresetResolver
      */
     private function applyOverrides(array $design, array $overrides): array
     {
-        foreach (['frameColor', 'frameWidth', 'frameStyle', 'borderRadius', 'shadow', 'backgroundColor', 'applyTo'] as $key) {
+        foreach (['frameColor', 'frameWidth', 'frameStyle', 'borderRadius', 'shadow', 'backgroundColor', 'captionColor', 'applyTo'] as $key) {
             if (array_key_exists($key, $overrides)) {
                 $design[$key] = $overrides[$key];
             }
@@ -247,6 +252,7 @@ final class DesignPresetResolver
             'borderRadius' => $settings['designOverrideBorderRadius'] ?? null,
             'shadow' => $settings['designOverrideShadow'] ?? null,
             'backgroundColor' => $settings['designOverrideBackgroundColor'] ?? null,
+            'captionColor' => $settings['designOverrideCaptionColor'] ?? null,
             'applyTo' => $settings['designOverrideApplyTo'] ?? null,
             'lightbox' => [
                 'overlay' => $settings['designOverrideLbOverlay'] ?? null,
@@ -282,7 +288,7 @@ final class DesignPresetResolver
     private function normalizeOverrideDocument(array $document): array
     {
         $normalized = [];
-        foreach (['frameColor', 'backgroundColor'] as $key) {
+        foreach (['frameColor', 'backgroundColor', 'captionColor'] as $key) {
             $value = (string)($document[$key] ?? '');
             if ($value !== '') {
                 $normalized[$key] = $value;
@@ -292,7 +298,10 @@ final class DesignPresetResolver
         if ($frameWidth !== null) {
             $normalized['frameWidth'] = $frameWidth;
         }
-        $this->copyEnum($normalized, 'frameStyle', $document, ['none', 'solid', 'dashed', 'dotted']);
+        $this->copyEnum($normalized, 'frameStyle', $document, [
+            'none', 'solid', 'dashed', 'dotted', 'double', 'groove', 'ridge',
+            'triple', 'doubleOuterStrong', 'doubleInnerStrong', 'gallery',
+        ]);
         $borderRadius = $this->normalizeNonNegativeInteger($document['borderRadius'] ?? null);
         if ($borderRadius !== null) {
             $normalized['borderRadius'] = $borderRadius;
@@ -412,6 +421,7 @@ final class DesignPresetResolver
             'borderRadius' => max(0, (int)($settings['borderRadius'] ?? 6)),
             'shadow' => (bool)($settings['shadow'] ?? false),
             'backgroundColor' => (string)($settings['backgroundColor'] ?? ''),
+            'captionColor' => (string)($settings['captionColor'] ?? ''),
             'applyTo' => (string)($settings['applyTo'] ?? ''),
             'lightbox' => [
                 'overlay' => (string)($settings['lbOverlay'] ?? ''),
