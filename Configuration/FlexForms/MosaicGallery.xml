@@ -90,7 +90,7 @@
             <config>
               <type>input</type>
               <eval>int</eval>
-              <default>6</default>
+              <default>12</default>
             </config>
           </settings.gap>
 
@@ -249,6 +249,17 @@
               <default>#b40000</default>
             </config>
           </settings.frameColor>
+
+          <settings.frameAccentColor>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameAccentColor</label>
+            <config>
+              <type>input</type>
+              <renderType>colorpicker</renderType>
+              <size>10</size>
+              <eval>trim</eval>
+              <default></default>
+            </config>
+          </settings.frameAccentColor>
 
           <settings.frameWidth>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameWidth</label>

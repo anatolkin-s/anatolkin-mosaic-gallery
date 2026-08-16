@@ -66,7 +66,8 @@ final class GalleryController extends ActionController
         $source    = (string)($this->settings['source'] ?? 'folder');
         $folderIn  = (string)($this->settings['folder'] ?? 'fileadmin/gallery/');
         $recursive = (bool)($this->settings['recursive'] ?? true);
-        $gap       = (int)($this->settings['gap'] ?? 12);
+        $gapValue  = trim((string)($this->settings['gap'] ?? ''));
+        $gap       = $gapValue === '' ? 12 : (int)$gapValue;
         $maxWidth  = max(200, (int)($this->settings['maxWidth'] ?? 1200));
         $sortBy    = (string)($this->settings['sortBy'] ?? 'name');   // name|mtime|random
         $sortDir   = (string)($this->settings['sortDir'] ?? 'asc');   // asc|desc

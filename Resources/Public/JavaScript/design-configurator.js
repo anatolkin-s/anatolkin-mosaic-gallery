@@ -12,6 +12,7 @@ const pathSegments = (path) => path.split('.');
 const normalizePreset = (value) => value === '' || value === 'custom' ? 'custom' : value;
 const CUSTOM_FIELDS = {
   'settings.frameColor': ['frameColor', 'string'],
+  'settings.frameAccentColor': ['frameAccentColor', 'string'],
   'settings.frameWidth': ['frameWidth', 'string'],
   'settings.frameStyle': ['frameStyle', 'string'],
   'settings.borderRadius': ['borderRadius', 'integer'],
@@ -30,6 +31,15 @@ const CUSTOM_FIELDS = {
   'settings.lbCaptionSize': ['lightbox.captionSize', 'string'],
   'settings.lbCaptionStyle': ['lightbox.captionStyle', 'string'],
 };
+const MULTI_COLOR_FRAME_STYLES = new Set([
+  'double',
+  'groove',
+  'ridge',
+  'triple',
+  'doubleOuterStrong',
+  'doubleInnerStrong',
+  'gallery',
+]);
 
 const valueAtPath = (document, path) => pathSegments(path).reduce(
   (value, segment) => value && typeof value === 'object' ? value[segment] : undefined,
@@ -192,6 +202,18 @@ const colorWithAlpha = (color, alpha) => {
   return `rgba(${Number.parseInt(match[1], 16)}, ${Number.parseInt(match[2], 16)}, ${Number.parseInt(match[3], 16)}, ${alpha})`;
 };
 
+const deriveAccentColor = (frameColor) => {
+  const match = /^#([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(frameColor);
+  if (!match) {
+    return frameColor;
+  }
+  const channels = match.slice(1).map((channel) => Number.parseInt(channel, 16));
+  const luminance = (0.2126 * channels[0]) + (0.7152 * channels[1]) + (0.0722 * channels[2]);
+  const target = luminance < 128 ? 255 : 0;
+  return `#${channels.map((channel) => Math.round((channel * 0.65) + (target * 0.35))
+    .toString(16).padStart(2, '0')).join('')}`.toUpperCase();
+};
+
 const renderPreview = (editor, effective) => {
   const preview = editor.querySelector('[data-design-live-preview]');
   if (!preview || !effective?.lightbox) {
@@ -199,6 +221,10 @@ const renderPreview = (editor, effective) => {
   }
   const setProperty = (name, value) => preview.style.setProperty(name, value);
   setProperty('--preview-frame-color', effective.frameColor);
+  setProperty(
+    '--preview-frame-accent',
+    effective.frameAccentColor || deriveAccentColor(effective.frameColor),
+  );
   setProperty('--preview-frame-width', `${effective.frameWidth}px`);
   setProperty('--preview-radius', `${effective.borderRadius}px`);
   setProperty('--preview-background', effective.backgroundColor);
@@ -288,12 +314,27 @@ const initializeEditor = (editor) => {
         && control.name.endsWith(`[${fieldName}][vDEF]`),
     ) ?? null;
   };
-  const canonicalValue = (control) => control?.type === 'checkbox'
+  const canonicalValue = (control, fieldName = '') => control?.type === 'checkbox'
     ? (control.checked ? '1' : '0')
-    : (control?.value ?? '');
+    : (fieldName === 'settings.gap' && String(control?.value ?? '').trim() === ''
+      ? '12'
+      : (control?.value ?? ''));
   const displayState = () => Object.fromEntries(proxyControls.map(
     (proxy) => [proxy.dataset.designProxy.replace('settings.', ''), proxy.value],
   ));
+  const updateAccentVisibility = (frameStyle) => {
+    const relevant = MULTI_COLOR_FRAME_STYLES.has(frameStyle);
+    const configuratorAccent = editor.querySelector('[data-design-field="frameAccentColor"]');
+    if (configuratorAccent) {
+      configuratorAccent.hidden = !relevant;
+    }
+    const customAccent = customSections.find(
+      (section) => section.dataset.id === 'settings.frameAccentColor',
+    );
+    if (customAccent && currentPreset() === 'custom') {
+      customAccent.hidden = !relevant;
+    }
+  };
 
   const publishState = () => {
     const preset = currentPreset();
@@ -301,6 +342,7 @@ const initializeEditor = (editor) => {
     const effective = preset === 'custom'
       ? customDesign(customSections)
       : (base ? effectiveDesign(base, overrides) : {});
+    updateAccentVisibility(effective.frameStyle);
     editor.dispatchEvent(new CustomEvent('mosaic-design-change', {
       bubbles: true,
       detail: {
@@ -365,7 +407,7 @@ const initializeEditor = (editor) => {
     if (!canonical) {
       return;
     }
-    proxy.value = canonicalValue(canonical);
+    proxy.value = canonicalValue(canonical, proxy.dataset.designProxy);
     proxy.addEventListener('change', () => {
       if (canonical.type === 'checkbox') {
         canonical.checked = proxy.value === '1';
@@ -378,7 +420,7 @@ const initializeEditor = (editor) => {
       publishState();
     });
     const syncProxy = () => {
-      proxy.value = canonicalValue(canonical);
+      proxy.value = canonicalValue(canonical, proxy.dataset.designProxy);
       publishState();
     };
     canonical.addEventListener('change', syncProxy);
@@ -489,7 +531,7 @@ const initializeEditor = (editor) => {
   });
   if (window.EyeDropper) {
     editor.querySelectorAll('[data-design-eyedropper]').forEach((button) => { button.hidden = false; });
-    customSections.filter((section) => ['settings.frameColor', 'settings.backgroundColor', 'settings.captionColor', 'settings.lbOverlay', 'settings.lbNavColor', 'settings.lbCloseColor', 'settings.lbCaptionColor', 'settings.lbCaptionBg'].includes(section.dataset.id)).forEach((section) => {
+    customSections.filter((section) => ['settings.frameColor', 'settings.frameAccentColor', 'settings.backgroundColor', 'settings.captionColor', 'settings.lbOverlay', 'settings.lbNavColor', 'settings.lbCloseColor', 'settings.lbCaptionColor', 'settings.lbCaptionBg'].includes(section.dataset.id)).forEach((section) => {
       const control = fieldControl(section);
       const button = window.document.createElement('button');
       button.type = 'button';

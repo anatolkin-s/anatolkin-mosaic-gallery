@@ -21,6 +21,7 @@ final class DesignConfiguratorElement extends AbstractFormElement
     /** @var list<array{path: string, label: string, type: string, options?: array<string, string>, step?: string}> */
     private const CONTROLS = [
         ['path' => 'frameColor', 'label' => 'flexform.frameColor', 'type' => 'color'],
+        ['path' => 'frameAccentColor', 'label' => 'flexform.frameAccentColor', 'type' => 'color'],
         ['path' => 'frameWidth', 'label' => 'flexform.frameWidth', 'type' => 'number', 'step' => '1'],
         ['path' => 'frameStyle', 'label' => 'flexform.frameStyle', 'type' => 'select', 'options' => [
             'none' => 'flexform.frameStyle.none', 'solid' => 'flexform.frameStyle.solid',

@@ -95,27 +95,33 @@
     }
 
     var frameColor = gv("--frame-color", "transparent");
+    var frameAccent = gv("--frame-accent", frameColor);
     var frameWidth = gv("--frame-width", "0px");
     var frameWidthValue = Math.max(0, parseFloat(frameWidth) || 0);
     var frameKeyline = Math.min(1, frameWidthValue) + "px";
-    var frameMidLine = Math.min(3, frameWidthValue) + "px";
-    var frameInnerLine = Math.min(5, frameWidthValue) + "px";
-    var frameStrongBand = Math.min(6, frameWidthValue) + "px";
+    var frameOuterStrongAccent = Math.min(2, frameWidthValue) + "px";
+    var frameTripleInner = Math.min(3, frameWidthValue) + "px";
+    var frameDoubleInner = Math.min(4, frameWidthValue) + "px";
+    var frameMiddleBand = Math.min(6, frameWidthValue) + "px";
+    var frameInnerStrong = Math.min(7, frameWidthValue) + "px";
+    var frameBudget = Math.min(12, frameWidthValue) + "px";
     var frameStyle = root.getAttribute("data-frame-style") || "none";
-    var nativeFrameStyles = ["solid", "dashed", "dotted", "double", "groove", "ridge"];
-    var compositeFrameStyles = ["triple", "doubleOuterStrong", "doubleInnerStrong", "gallery"];
+    var nativeFrameStyles = ["solid", "dashed", "dotted"];
+    var semanticFrameStyles = ["double", "groove", "ridge", "triple", "doubleOuterStrong", "doubleInnerStrong", "gallery"];
     var safeFrameStyle = nativeFrameStyles.indexOf(frameStyle) !== -1 ? frameStyle : "none";
-    var compositeFrame = compositeFrameStyles.indexOf(frameStyle) !== -1;
-    var compositeBorderWidth = frameStyle === "doubleInnerStrong" ? frameKeyline : frameWidth;
-    var compositeShadow = {
-      triple: "inset 0 0 0 " + frameKeyline + " color-mix(in srgb," + frameColor + " 25%,#fff),inset 0 0 0 " + frameMidLine + " color-mix(in srgb," + frameColor + " 70%,#000),inset 0 0 0 " + frameInnerLine + " " + frameColor,
-      doubleOuterStrong: "inset 0 0 0 " + frameKeyline + " color-mix(in srgb," + frameColor + " 30%,#fff)",
-      doubleInnerStrong: "inset 0 0 0 " + frameKeyline + " color-mix(in srgb," + frameColor + " 30%,#fff),inset 0 0 0 " + frameStrongBand + " " + frameColor,
-      gallery: "inset 0 0 0 " + frameKeyline + " color-mix(in srgb," + frameColor + " 20%,#fff),inset 0 0 0 " + frameMidLine + " color-mix(in srgb," + frameColor + " 72%,#000),inset 0 0 0 " + frameStrongBand + " color-mix(in srgb," + frameColor + " 82%,var(--mg-lightbox-tile-bg))"
+    var semanticFrame = semanticFrameStyles.indexOf(frameStyle) !== -1;
+    var semanticShadow = {
+      double: "inset 0 0 0 " + frameDoubleInner + " " + frameAccent + ",inset 0 0 0 " + frameBudget + " " + frameColor,
+      groove: "inset 0 0 0 " + frameKeyline + " color-mix(in srgb," + frameColor + " 75%,#000),inset 0 0 0 " + frameMiddleBand + " " + frameAccent + ",inset 0 0 0 " + frameBudget + " " + frameColor,
+      ridge: "inset 0 0 0 " + frameKeyline + " color-mix(in srgb," + frameAccent + " 65%,#fff),inset 0 0 0 " + frameMiddleBand + " " + frameColor + ",inset 0 0 0 " + frameBudget + " " + frameAccent,
+      triple: "inset 0 0 0 " + frameTripleInner + " " + frameColor + ",inset 0 0 0 " + frameMiddleBand + " " + frameAccent + ",inset 0 0 0 " + frameBudget + " " + frameColor,
+      doubleOuterStrong: "inset 0 0 0 " + frameOuterStrongAccent + " " + frameAccent + ",inset 0 0 0 " + frameBudget + " " + frameColor,
+      doubleInnerStrong: "inset 0 0 0 " + frameInnerStrong + " " + frameColor + ",inset 0 0 0 " + frameBudget + " " + frameAccent,
+      gallery: "inset 0 0 0 " + frameKeyline + " color-mix(in srgb," + frameColor + " 35%," + frameAccent + "),inset 0 0 0 " + frameDoubleInner + " " + frameAccent + ",inset 0 0 0 " + frameBudget + " " + frameColor
     }[frameStyle] || "none";
     if (frameWidthValue <= 0) {
       safeFrameStyle = "none";
-      compositeShadow = "none";
+      semanticShadow = "none";
     }
 
     var radius = (function (v) {
@@ -173,10 +179,10 @@
       scope + ".glightbox-container .gslide-title + .gslide-desc{margin-top:0.3rem!important;}" +
       scope + ".glightbox-container .gslide-image img{" +
       "--mg-lightbox-tile-bg:" + tileBg + ";" +
-      "border:" + (compositeFrame ? compositeBorderWidth : frameWidth) + " " + (compositeFrame && frameWidthValue > 0 ? "solid" : safeFrameStyle) + " " + frameColor + " !important;" +
+      "border:" + (semanticFrame ? "0 solid" : frameWidth + " " + safeFrameStyle) + " " + frameColor + " !important;" +
       "border-radius:" + radius + " !important;" +
       "background:" + tileBg + " !important;" +
-      (compositeFrame ? "box-shadow:" + compositeShadow + " !important;" : "") +
+      (semanticFrame ? "box-shadow:" + semanticShadow + " !important;" : "") +
       "box-sizing:border-box;" +
       "}";
 

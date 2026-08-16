@@ -18,6 +18,7 @@ final class DesignPresetResolver
         self::PRESET_BOOTSTRAP => [
             'preset' => self::PRESET_BOOTSTRAP,
             'frameColor' => '#DEE2E6',
+            'frameAccentColor' => '#ADB5BD',
             'frameWidth' => '1',
             'frameStyle' => 'solid',
             'borderRadius' => 4,
@@ -41,6 +42,7 @@ final class DesignPresetResolver
         self::PRESET_CLEAN => [
             'preset' => self::PRESET_CLEAN,
             'frameColor' => '#A8B8A0',
+            'frameAccentColor' => '#65785F',
             'frameWidth' => '1',
             'frameStyle' => 'solid',
             'borderRadius' => 8,
@@ -64,6 +66,7 @@ final class DesignPresetResolver
         self::PRESET_FRAMED => [
             'preset' => self::PRESET_FRAMED,
             'frameColor' => '#9A744E',
+            'frameAccentColor' => '#E4C98E',
             'frameWidth' => '9',
             'frameStyle' => 'gallery',
             'borderRadius' => 4,
@@ -87,6 +90,7 @@ final class DesignPresetResolver
         self::PRESET_DARK => [
             'preset' => self::PRESET_DARK,
             'frameColor' => '#718579',
+            'frameAccentColor' => '#B8C4BC',
             'frameWidth' => '3',
             'frameStyle' => 'solid',
             'borderRadius' => 6,
@@ -116,6 +120,7 @@ final class DesignPresetResolver
      *     requestedPreset: string,
      *     effectivePreset: string,
      *     frameColor: string,
+     *     frameAccentColor: string,
      *     frameWidth: string,
      *     frameStyle: string,
      *     borderRadius: int,
@@ -221,7 +226,7 @@ final class DesignPresetResolver
      */
     private function applyOverrides(array $design, array $overrides): array
     {
-        foreach (['frameColor', 'frameWidth', 'frameStyle', 'borderRadius', 'shadow', 'backgroundColor', 'captionColor', 'applyTo'] as $key) {
+        foreach (['frameColor', 'frameAccentColor', 'frameWidth', 'frameStyle', 'borderRadius', 'shadow', 'backgroundColor', 'captionColor', 'applyTo'] as $key) {
             if (array_key_exists($key, $overrides)) {
                 $design[$key] = $overrides[$key];
             }
@@ -247,6 +252,7 @@ final class DesignPresetResolver
 
         return $this->normalizeOverrideDocument([
             'frameColor' => $settings['designOverrideFrameColor'] ?? null,
+            'frameAccentColor' => $settings['designOverrideFrameAccentColor'] ?? null,
             'frameWidth' => $settings['designOverrideFrameWidth'] ?? null,
             'frameStyle' => $settings['designOverrideFrameStyle'] ?? null,
             'borderRadius' => $settings['designOverrideBorderRadius'] ?? null,
@@ -288,7 +294,7 @@ final class DesignPresetResolver
     private function normalizeOverrideDocument(array $document): array
     {
         $normalized = [];
-        foreach (['frameColor', 'backgroundColor', 'captionColor'] as $key) {
+        foreach (['frameColor', 'frameAccentColor', 'backgroundColor', 'captionColor'] as $key) {
             $value = (string)($document[$key] ?? '');
             if ($value !== '') {
                 $normalized[$key] = $value;
@@ -411,11 +417,17 @@ final class DesignPresetResolver
      */
     private function resolveCustom(array $settings, string $preset): array
     {
+        $frameColor = (string)($settings['frameColor'] ?? '');
+        $frameAccentColor = (string)($settings['frameAccentColor'] ?? '');
+
         return [
             'preset' => $preset,
             'requestedPreset' => $preset,
             'effectivePreset' => $preset,
-            'frameColor' => (string)($settings['frameColor'] ?? ''),
+            'frameColor' => $frameColor,
+            'frameAccentColor' => $frameAccentColor !== ''
+                ? $frameAccentColor
+                : $this->deriveAccentColor($frameColor),
             'frameWidth' => (string)($settings['frameWidth'] ?? ''),
             'frameStyle' => (string)($settings['frameStyle'] ?? ''),
             'borderRadius' => max(0, (int)($settings['borderRadius'] ?? 6)),
@@ -436,5 +448,22 @@ final class DesignPresetResolver
                 'captionStyle' => (string)($settings['lbCaptionStyle'] ?? 'regular'),
             ],
         ];
+    }
+
+    private function deriveAccentColor(string $frameColor): string
+    {
+        if (preg_match('/^#([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i', $frameColor, $matches) !== 1) {
+            return $frameColor;
+        }
+
+        $channels = [hexdec($matches[1]), hexdec($matches[2]), hexdec($matches[3])];
+        $luminance = (0.2126 * $channels[0]) + (0.7152 * $channels[1]) + (0.0722 * $channels[2]);
+        $target = $luminance < 128 ? 255 : 0;
+        $accent = array_map(
+            static fn(int $channel): int => (int)round(($channel * 0.65) + ($target * 0.35)),
+            $channels,
+        );
+
+        return sprintf('#%02X%02X%02X', $accent[0], $accent[1], $accent[2]);
     }
 }

@@ -59,6 +59,7 @@
     <trans-unit id="flexform.itemsPerPage"><source>Images shown initially</source><target>Anfangs angezeigte Bilder</target></trans-unit>
     <trans-unit id="flexform.loadStep"><source>Images revealed per step</source><target>Bilder pro Ladeschritt</target></trans-unit>
     <trans-unit id="flexform.frameColor"><source>Frame color</source><target>Rahmenfarbe</target></trans-unit>
+    <trans-unit id="flexform.frameAccentColor"><source>Frame accent color</source><target>Rahmen-Akzentfarbe</target></trans-unit>
     <trans-unit id="flexform.frameWidth"><source>Frame width (px)</source><target>Rahmenbreite (px)</target></trans-unit>
     <trans-unit id="flexform.frameStyle"><source>Frame style</source><target>Rahmenstil</target></trans-unit>
     <trans-unit id="flexform.frameStyle.none"><source>None</source><target>Keiner</target></trans-unit>
