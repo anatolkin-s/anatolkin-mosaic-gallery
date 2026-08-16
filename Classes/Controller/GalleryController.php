@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Anatolkin\MosaicGallery\Controller;
 
+use Anatolkin\MosaicGallery\Service\DesignPresetResolver;
 use Anatolkin\MosaicGallery\Service\GalleryMetadataOverrideResolver;
 use Anatolkin\MosaicGallery\Service\GalleryImageSorter;
 use Psr\Http\Message\ResponseInterface;
@@ -20,6 +21,11 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 final class GalleryController extends ActionController
 {
+    public function __construct(
+        private readonly DesignPresetResolver $designPresetResolver,
+    ) {
+    }
+
     public function listAction(): ResponseInterface
     {
         $assets = GeneralUtility::makeInstance(AssetCollector::class);
@@ -68,23 +74,7 @@ final class GalleryController extends ActionController
         $showCaptions   = (bool)($this->settings['showCaptions'] ?? true);
         $useFalCaptions = (bool)($this->settings['useFalCaptions'] ?? true);
 
-        $design = [
-            'frameColor' => (string)($this->settings['frameColor'] ?? ''),
-            'frameWidth' => (string)($this->settings['frameWidth'] ?? ''),
-            'frameStyle' => (string)($this->settings['frameStyle'] ?? ''),
-            'borderRadius' => max(0, (int)($this->settings['borderRadius'] ?? 6)),
-            'shadow' => (bool)($this->settings['shadow'] ?? false),
-            'backgroundColor' => (string)($this->settings['backgroundColor'] ?? ''),
-            'applyTo' => (string)($this->settings['applyTo'] ?? ''),
-            'lightbox' => [
-                'overlay' => (string)($this->settings['lbOverlay'] ?? ''),
-                'overlayAlpha' => (string)($this->settings['lbOverlayAlpha'] ?? ''),
-                'navColor' => (string)($this->settings['lbNavColor'] ?? ''),
-                'closeColor' => (string)($this->settings['lbCloseColor'] ?? ''),
-                'captionColor' => (string)($this->settings['lbCaptionColor'] ?? ''),
-                'captionBackground' => (string)($this->settings['lbCaptionBg'] ?? ''),
-            ],
-        ];
+        $design = $this->designPresetResolver->resolve($this->settings);
 
         $enableLoadMore = (bool)($this->settings['enableLoadMore'] ?? true);
         $itemsPerPage   = max(1, (int)($this->settings['itemsPerPage'] ?? 12));

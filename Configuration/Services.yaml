@@ -8,6 +8,8 @@ services:
 
   Anatolkin\MosaicGallery\Service\FolderImageProvider: ~
 
+  Anatolkin\MosaicGallery\Service\DesignPresetResolver: ~
+
   Anatolkin\MosaicGallery\Service\GalleryMetadataOverrideResolver: ~
 
   Anatolkin\MosaicGallery\Service\GalleryImageSorter: ~
