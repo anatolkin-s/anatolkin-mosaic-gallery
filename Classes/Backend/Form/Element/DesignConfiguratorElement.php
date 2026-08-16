@@ -146,6 +146,7 @@ final class DesignConfiguratorElement extends AbstractFormElement
         if ($type === 'select' || $type === 'boolean') {
             $controlHtml = '<select class="form-select form-select-sm"' . $attributes . '>';
             foreach ($control['options'] ?? [] as $optionValue => $labelKey) {
+                $optionValue = (string)$optionValue;
                 $controlHtml .= '<option value="' . htmlspecialchars($optionValue, ENT_QUOTES) . '"'
                     . ($optionValue === $value ? ' selected' : '') . '>' . $this->label($labelKey) . '</option>';
             }
