@@ -21,7 +21,7 @@
 
     <f:for each="{items}" as="it">
       <f:variable name="previewUrl" value="{f:uri.image(image: it.file, maxWidth: maxWidth)}" />
-      <figure class="mosaic-item {f:if(condition: it.hidden, then: is-hidden)}">
+      <figure class="mosaic-item {f:if(condition: it.hidden, then: 'is-hidden')}">
         <a href="{it.file.publicUrl}"
            class="{f:if(condition: settings.enableLightbox, then: 'glightbox', else: '')}"
            data-gallery="{galleryGroup}"
