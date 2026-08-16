@@ -1,4 +1,4 @@
-<div class="mosaic-gallery"
+<div class="mosaic-gallery is-layout-pending"
      style="--gap:{gap}px; --radius:{borderRadius}px;
             --bg:{settings.backgroundColor};
             --frame-color:{settings.frameColor};
@@ -20,13 +20,15 @@
     <div class="mosaic-sizer"></div>
 
     <f:for each="{items}" as="it">
+      <f:variable name="previewUrl" value="{f:uri.image(image: it.file, maxWidth: maxWidth)}" />
       <figure class="mosaic-item {f:if(condition: it.hidden, then: is-hidden)}">
         <a href="{it.file.publicUrl}"
            class="{f:if(condition: settings.enableLightbox, then: 'glightbox', else: '')}"
            data-gallery="{galleryGroup}"
            data-title="{it.caption}"
            target="{f:if(condition: settings.enableLightbox, then: '_self', else: '_blank')}">
-          <img src="{f:uri.image(image: it.file, maxWidth: maxWidth)}"
+          <img src="{f:if(condition: it.hidden, then: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=', else: previewUrl)}"
+               data-src="{f:if(condition: it.hidden, then: previewUrl)}"
                alt="{it.alt}" title="{it.caption}" loading="lazy" />
         </a>
         <f:if condition="{showCaptions}">
@@ -44,3 +46,9 @@
     </div>
   </f:if>
 </div>
+<noscript>
+  <style>
+    .mosaic-gallery.is-layout-pending .mosaic-grid,
+    .mosaic-gallery.is-layout-pending .mosaic-actions { visibility: visible; }
+  </style>
+</noscript>

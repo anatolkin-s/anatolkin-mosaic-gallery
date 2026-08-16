@@ -3,43 +3,66 @@
     var containers = document.querySelectorAll(".mosaic-gallery");
     if (!containers.length) return;
 
-    // Tiny imagesLoaded fallback if the library is not present
-    if (typeof window.imagesLoaded === "undefined") {
-      window.imagesLoaded = function (el, cb) {
-        try {
-          var imgs = el.querySelectorAll("img");
-          var left = imgs.length;
-          if (!left) {
-            cb();
-            return;
-          }
-          imgs.forEach(function (img) {
-            var done = function () {
-              if (--left === 0) {
-                cb();
-              }
-            };
-            if (img.complete) {
-              done();
-            } else {
-              img.addEventListener("load", done);
-              img.addEventListener("error", done);
-            }
-          });
-        } catch (e) {
-          cb();
-        }
+    function waitForImages(images, callback) {
+      var list = Array.prototype.slice.call(images || []);
+      var finished = false;
+      var finish = function () {
+        if (finished) return;
+        finished = true;
+        callback();
       };
+
+      if (!list.length) {
+        finish();
+        return;
+      }
+
+      if (typeof window.imagesLoaded === "function") {
+        try {
+          window.imagesLoaded(list, finish);
+          return;
+        } catch (e) {
+          // Fall through to native image events.
+        }
+      }
+
+      var remaining = list.length;
+      list.forEach(function (img) {
+        var done = function () {
+          img.removeEventListener("load", done);
+          img.removeEventListener("error", done);
+          remaining -= 1;
+          if (remaining === 0) finish();
+        };
+        if (img.complete) {
+          done();
+        } else {
+          img.addEventListener("load", done);
+          img.addEventListener("error", done);
+        }
+      });
     }
 
     containers.forEach(function (container) {
       var gap     = parseInt(container.style.getPropertyValue("--gap") || "12", 10);
       var step    = parseInt(container.getAttribute("data-step") || "0", 10);
-      var initial = parseInt(container.getAttribute("data-initial") || "0", 10);
       var enable  = container.getAttribute("data-lightbox") === "1";
       var group   = container.getAttribute("data-group") || "gallery";
       var grid    = container.querySelector(".mosaic-grid") || container;
       var lightbox = null;
+      var msnry = null;
+      var layoutFallbackTimer = null;
+
+      function markLayoutReady() {
+        if (layoutFallbackTimer) {
+          clearTimeout(layoutFallbackTimer);
+          layoutFallbackTimer = null;
+        }
+        container.classList.remove("is-layout-pending");
+        container.classList.add("is-layout-ready");
+      }
+
+      layoutFallbackTimer = setTimeout(markLayoutReady, 10000);
 
       function tryInitLightbox() {
         if (!enable) return;
@@ -60,35 +83,35 @@
         }, 150);
       }
 
-      imagesLoaded(grid, function () {
-        // JS hides extra items based on data-initial
-        var items = grid.querySelectorAll(".mosaic-item");
-        if (initial > 0 && initial < items.length) {
-          Array.prototype.forEach.call(items, function (el, idx) {
-            if (idx >= initial) {
-              el.classList.add("is-hidden");
-            }
-          });
+      var visibleImages = grid.querySelectorAll(".mosaic-item:not(.is-hidden) img");
+      waitForImages(visibleImages, function () {
+        if (typeof window.Masonry === "function") {
+          try {
+            var sizer = grid.querySelector(".mosaic-sizer") || grid.querySelector(".mosaic-item");
+            msnry = new window.Masonry(grid, {
+              itemSelector: ".mosaic-item",
+              columnWidth:  sizer,
+              percentPosition: true,
+              gutter: gap,
+              fitWidth: false  // Use the full container width.
+            });
+          } catch (e) {
+            msnry = null;
+          }
         }
 
-        var sizer = grid.querySelector(".mosaic-sizer") || grid.querySelector(".mosaic-item");
-        var msnry = new Masonry(grid, {
-          itemSelector: ".mosaic-item",
-          columnWidth:  sizer,
-          percentPosition: true,
-          gutter: gap,
-          fitWidth: false  // Use the full container width.
-        });
-
         function relayout() {
-          msnry.layout();
+          if (msnry) msnry.layout();
         }
 
         window.addEventListener("resize", relayout);
 
         var btn = container.querySelector(".mosaic-load-more");
         if (btn) {
+          var loading = false;
           btn.addEventListener("click", function () {
+            if (loading) return;
+
             var hidden = grid.querySelectorAll(".mosaic-item.is-hidden");
             if (!hidden.length) {
               btn.remove();
@@ -96,23 +119,49 @@
             }
 
             var reveal = Array.prototype.slice.call(hidden, 0, step || hidden.length);
+            var batchImages = [];
+            loading = true;
+            btn.disabled = true;
+            btn.setAttribute("aria-busy", "true");
+
             reveal.forEach(function (el) {
-              el.classList.remove("is-hidden");
+              Array.prototype.forEach.call(el.querySelectorAll("img[data-src]"), function (img) {
+                var deferredSrc = img.getAttribute("data-src");
+                if (deferredSrc) {
+                  img.loading = "eager";
+                  img.setAttribute("src", deferredSrc);
+                }
+                img.removeAttribute("data-src");
+              });
+              Array.prototype.push.apply(batchImages, el.querySelectorAll("img"));
             });
 
-            imagesLoaded(reveal, function () {
-              // no appended, just layout() again to avoid gaps
-              msnry.layout();
-              if (enable && lightbox && typeof lightbox.reload === "function") {
-                lightbox.reload();
+            waitForImages(batchImages, function () {
+              reveal.forEach(function (el) {
+                el.classList.remove("is-hidden");
+              });
+              try {
+                relayout();
+                if (enable && lightbox && typeof lightbox.reload === "function") {
+                  lightbox.reload();
+                }
+              } catch (e) {
+                // Keep the revealed batch usable if an optional layout integration fails.
+              }
+
+              loading = false;
+              if (!grid.querySelector(".mosaic-item.is-hidden")) {
+                btn.remove();
+              } else {
+                btn.disabled = false;
+                btn.removeAttribute("aria-busy");
               }
             });
-
-            if (!grid.querySelector(".mosaic-item.is-hidden")) {
-              btn.remove();
-            }
           });
         }
+
+        relayout();
+        markLayoutReady();
       });
     });
   });

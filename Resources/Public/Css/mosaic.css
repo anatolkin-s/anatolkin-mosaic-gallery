@@ -6,6 +6,11 @@
 }
 .mosaic-grid{ margin: 0 auto; }
 
+.mosaic-gallery.is-layout-pending .mosaic-grid,
+.mosaic-gallery.is-layout-pending .mosaic-actions{
+  visibility:hidden;
+}
+
 /* 3 / 2 / 1 columns layout with gutter = gap */
 .mosaic-grid .mosaic-sizer,
 .mosaic-grid .mosaic-item{
