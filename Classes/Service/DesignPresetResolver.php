@@ -13,30 +13,7 @@ final class DesignPresetResolver
     public const PRESET_DARK = 'dark';
     public const PRESET_CUSTOM = 'custom';
 
-    /**
-     * @var array<string, array{
-     *     preset: string,
-     *     frameColor: string,
-     *     frameWidth: string,
-     *     frameStyle: string,
-     *     borderRadius: int,
-     *     shadow: bool,
-     *     backgroundColor: string,
-     *     applyTo: string,
-     *     lightbox: array{
-     *         overlay: string,
-     *         overlayAlpha: string,
-     *         navColor: string,
-     *         closeColor: string,
-     *         captionColor: string,
-     *         captionBackground: string,
-     *         captionBackgroundAlpha: string,
-     *         captionAlign: string,
-     *         captionSize: string,
-     *         captionStyle: string
-     *     }
-     * }>
-     */
+    /** @var array<string, array<string, mixed>> */
     private const BUILT_IN_PRESETS = [
         self::PRESET_BOOTSTRAP => [
             'preset' => self::PRESET_BOOTSTRAP,
@@ -132,6 +109,8 @@ final class DesignPresetResolver
      * @param array<string, mixed> $settings
      * @return array{
      *     preset: string,
+     *     requestedPreset: string,
+     *     effectivePreset: string,
      *     frameColor: string,
      *     frameWidth: string,
      *     frameStyle: string,
@@ -160,54 +139,251 @@ final class DesignPresetResolver
         }
 
         $requestedPreset = (string)$settings['designPreset'];
-        if ($requestedPreset === self::PRESET_CUSTOM) {
+        if ($requestedPreset === '' || $requestedPreset === self::PRESET_CUSTOM) {
             return $this->resolveCustom($settings, self::PRESET_CUSTOM);
         }
 
         if ($requestedPreset === self::PRESET_SITE) {
-            $effectiveSitePreset = $sitePreset !== null && isset(self::BUILT_IN_PRESETS[$sitePreset])
+            $effectivePreset = $sitePreset !== null && isset(self::BUILT_IN_PRESETS[$sitePreset])
                 ? $sitePreset
                 : self::PRESET_BOOTSTRAP;
 
-            return self::BUILT_IN_PRESETS[$effectiveSitePreset];
+            return $this->applyOverrides(
+                $this->withPresetMetadata(self::BUILT_IN_PRESETS[$effectivePreset], $requestedPreset, $effectivePreset),
+                $settings
+            );
         }
 
         if (isset(self::BUILT_IN_PRESETS[$requestedPreset])) {
-            return self::BUILT_IN_PRESETS[$requestedPreset];
+            return $this->applyOverrides(
+                $this->withPresetMetadata(
+                    self::BUILT_IN_PRESETS[$requestedPreset],
+                    $requestedPreset,
+                    $requestedPreset
+                ),
+                $settings
+            );
         }
 
         return $this->resolveCustom($settings, self::PRESET_LEGACY);
     }
 
     /**
+     * @param array<string, mixed> $design
+     * @return array<string, mixed>
+     */
+    private function withPresetMetadata(
+        array $design,
+        string $requestedPreset,
+        string $effectivePreset
+    ): array {
+        $design['preset'] = $effectivePreset;
+        $design['requestedPreset'] = $requestedPreset;
+        $design['effectivePreset'] = $effectivePreset;
+
+        return $design;
+    }
+
+    /**
+     * @param array<string, mixed> $design
      * @param array<string, mixed> $settings
-     * @return array{
-     *     preset: string,
-     *     frameColor: string,
-     *     frameWidth: string,
-     *     frameStyle: string,
-     *     borderRadius: int,
-     *     shadow: bool,
-     *     backgroundColor: string,
-     *     applyTo: string,
-     *     lightbox: array{
-     *         overlay: string,
-     *         overlayAlpha: string,
-     *         navColor: string,
-     *         closeColor: string,
-     *         captionColor: string,
-     *         captionBackground: string,
-     *         captionBackgroundAlpha: string,
-     *         captionAlign: string,
-     *         captionSize: string,
-     *         captionStyle: string
-     *     }
-     * }
+     * @return array<string, mixed>
+     */
+    private function applyOverrides(array $design, array $settings): array
+    {
+        $this->applyStringOverride($design, 'frameColor', $settings, 'designOverrideFrameColor');
+
+        $frameWidth = $this->normalizeNonNegativeNumber($settings['designOverrideFrameWidth'] ?? null);
+        if ($frameWidth !== null) {
+            $design['frameWidth'] = $frameWidth;
+        }
+
+        $this->applyEnumOverride(
+            $design,
+            'frameStyle',
+            $settings,
+            'designOverrideFrameStyle',
+            ['none', 'solid', 'dashed', 'dotted']
+        );
+
+        $borderRadius = $this->normalizeNonNegativeInteger($settings['designOverrideBorderRadius'] ?? null);
+        if ($borderRadius !== null) {
+            $design['borderRadius'] = $borderRadius;
+        }
+
+        $shadow = (string)($settings['designOverrideShadow'] ?? '');
+        if ($shadow === '1') {
+            $design['shadow'] = true;
+        } elseif ($shadow === '0') {
+            $design['shadow'] = false;
+        }
+
+        $this->applyStringOverride($design, 'backgroundColor', $settings, 'designOverrideBackgroundColor');
+        $this->applyEnumOverride(
+            $design,
+            'applyTo',
+            $settings,
+            'designOverrideApplyTo',
+            ['container', 'tiles', 'both']
+        );
+
+        $this->applyStringOverride(
+            $design['lightbox'],
+            'overlay',
+            $settings,
+            'designOverrideLbOverlay'
+        );
+        $this->applyAlphaOverride(
+            $design['lightbox'],
+            'overlayAlpha',
+            $settings['designOverrideLbOverlayAlpha'] ?? null
+        );
+        $this->applyStringOverride(
+            $design['lightbox'],
+            'navColor',
+            $settings,
+            'designOverrideLbNavColor'
+        );
+        $this->applyStringOverride(
+            $design['lightbox'],
+            'closeColor',
+            $settings,
+            'designOverrideLbCloseColor'
+        );
+        $this->applyStringOverride(
+            $design['lightbox'],
+            'captionColor',
+            $settings,
+            'designOverrideLbCaptionColor'
+        );
+        $this->applyStringOverride(
+            $design['lightbox'],
+            'captionBackground',
+            $settings,
+            'designOverrideLbCaptionBg'
+        );
+        $this->applyAlphaOverride(
+            $design['lightbox'],
+            'captionBackgroundAlpha',
+            $settings['designOverrideLbCaptionBgAlpha'] ?? null
+        );
+        $this->applyEnumOverride(
+            $design['lightbox'],
+            'captionAlign',
+            $settings,
+            'designOverrideLbCaptionAlign',
+            ['left', 'center', 'right']
+        );
+        $this->applyEnumOverride(
+            $design['lightbox'],
+            'captionSize',
+            $settings,
+            'designOverrideLbCaptionSize',
+            ['small', 'normal', 'large']
+        );
+        $this->applyEnumOverride(
+            $design['lightbox'],
+            'captionStyle',
+            $settings,
+            'designOverrideLbCaptionStyle',
+            ['regular', 'italic', 'strong']
+        );
+
+        return $design;
+    }
+
+    /**
+     * @param array<string, mixed> $target
+     * @param array<string, mixed> $settings
+     */
+    private function applyStringOverride(
+        array &$target,
+        string $targetKey,
+        array $settings,
+        string $settingKey
+    ): void {
+        $value = (string)($settings[$settingKey] ?? '');
+        if ($value !== '') {
+            $target[$targetKey] = $value;
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $target
+     * @param array<string, mixed> $settings
+     * @param list<string> $allowedValues
+     */
+    private function applyEnumOverride(
+        array &$target,
+        string $targetKey,
+        array $settings,
+        string $settingKey,
+        array $allowedValues
+    ): void {
+        $value = (string)($settings[$settingKey] ?? '');
+        if (\in_array($value, $allowedValues, true)) {
+            $target[$targetKey] = $value;
+        }
+    }
+
+    /** @param array<string, mixed> $target */
+    private function applyAlphaOverride(array &$target, string $targetKey, mixed $value): void
+    {
+        $normalizedValue = $this->normalizeNumber($value);
+        if ($normalizedValue === null) {
+            return;
+        }
+
+        $target[$targetKey] = $this->formatNumber(min(1.0, max(0.0, $normalizedValue)));
+    }
+
+    private function normalizeNonNegativeNumber(mixed $value): ?string
+    {
+        $normalizedValue = $this->normalizeNumber($value);
+        if ($normalizedValue === null || $normalizedValue < 0) {
+            return null;
+        }
+
+        return $this->formatNumber($normalizedValue);
+    }
+
+    private function normalizeNonNegativeInteger(mixed $value): ?int
+    {
+        $value = (string)($value ?? '');
+        if ($value === '' || preg_match('/^\d+$/', $value) !== 1) {
+            return null;
+        }
+
+        return (int)$value;
+    }
+
+    private function normalizeNumber(mixed $value): ?float
+    {
+        $value = (string)($value ?? '');
+        if ($value === '' || !is_numeric($value)) {
+            return null;
+        }
+
+        $number = (float)$value;
+        return is_finite($number) ? $number : null;
+    }
+
+    private function formatNumber(float $value): string
+    {
+        $formattedValue = rtrim(rtrim(sprintf('%.12F', $value), '0'), '.');
+        return $formattedValue === '' || $formattedValue === '-0' ? '0' : $formattedValue;
+    }
+
+    /**
+     * @param array<string, mixed> $settings
+     * @return array<string, mixed>
      */
     private function resolveCustom(array $settings, string $preset): array
     {
         return [
             'preset' => $preset,
+            'requestedPreset' => $preset,
+            'effectivePreset' => $preset,
             'frameColor' => (string)($settings['frameColor'] ?? ''),
             'frameWidth' => (string)($settings['frameWidth'] ?? ''),
             'frameStyle' => (string)($settings['frameStyle'] ?? ''),
