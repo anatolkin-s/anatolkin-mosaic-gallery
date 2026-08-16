@@ -139,9 +139,11 @@ Configured site languages are discovered from TYPO3 Site Configuration. The five
 
 ## Compatibility and release status
 
-The 0.3.0 release targets TYPO3 13.4 and TYPO3 14.3. TYPO3 13.4 backward compatibility and the `list_type` to `CType` migration have been runtime tested. TYPO3 14.3 runtime validation is still in progress on the compatibility branch.
+Anatolkin Mosaic Gallery 0.3.0 targets TYPO3 13.4 and TYPO3 14.3. Runtime validation was completed successfully on TYPO3 13.4.34 and TYPO3 14.3.6. The `list_type` to `CType` migration was also runtime tested successfully.
 
-Existing folder galleries and legacy Quick captions remain supported. No automatic caption conversion is required; conversion to UID-linked metadata remains an explicit editor action.
+Existing folder galleries, the metadata editor, saving, Load More, and the lightbox were runtime-smoke-tested.
+
+Existing folder galleries and legacy Quick captions remain supported. Metadata conversion remains an explicit editor action and is not automatically required.
 
 ## License
 
