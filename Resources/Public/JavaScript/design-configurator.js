@@ -10,6 +10,25 @@ const parseDocument = (value) => {
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const pathSegments = (path) => path.split('.');
 const normalizePreset = (value) => value === '' || value === 'custom' ? 'custom' : value;
+const CUSTOM_FIELDS = {
+  'settings.frameColor': ['frameColor', 'string'],
+  'settings.frameWidth': ['frameWidth', 'string'],
+  'settings.frameStyle': ['frameStyle', 'string'],
+  'settings.borderRadius': ['borderRadius', 'integer'],
+  'settings.shadow': ['shadow', 'boolean'],
+  'settings.backgroundColor': ['backgroundColor', 'string'],
+  'settings.applyTo': ['applyTo', 'string'],
+  'settings.lbOverlay': ['lightbox.overlay', 'string'],
+  'settings.lbOverlayAlpha': ['lightbox.overlayAlpha', 'string'],
+  'settings.lbNavColor': ['lightbox.navColor', 'string'],
+  'settings.lbCloseColor': ['lightbox.closeColor', 'string'],
+  'settings.lbCaptionColor': ['lightbox.captionColor', 'string'],
+  'settings.lbCaptionBg': ['lightbox.captionBackground', 'string'],
+  'settings.lbCaptionBgAlpha': ['lightbox.captionBackgroundAlpha', 'string'],
+  'settings.lbCaptionAlign': ['lightbox.captionAlign', 'string'],
+  'settings.lbCaptionSize': ['lightbox.captionSize', 'string'],
+  'settings.lbCaptionStyle': ['lightbox.captionStyle', 'string'],
+};
 
 const valueAtPath = (document, path) => pathSegments(path).reduce(
   (value, segment) => value && typeof value === 'object' ? value[segment] : undefined,
@@ -129,6 +148,69 @@ const effectiveDesign = (base, document) => {
   return effective;
 };
 
+const fieldControl = (section) => section.querySelector(
+  'select, input[type="checkbox"], input.form-control, input[type="text"], input[type="number"]',
+);
+
+const customDesign = (sections) => {
+  const design = {
+    preset: 'custom',
+    requestedPreset: 'custom',
+    effectivePreset: 'custom',
+    lightbox: {},
+  };
+  sections.forEach((section) => {
+    const mapping = CUSTOM_FIELDS[section.dataset.id];
+    const control = mapping ? fieldControl(section) : null;
+    if (!control) {
+      return;
+    }
+    const [path, kind] = mapping;
+    let value = control.value;
+    if (kind === 'boolean') {
+      value = control.checked;
+    } else if (kind === 'integer') {
+      value = Math.max(0, Number.parseInt(value, 10) || 0);
+    }
+    setPath(design, path, value);
+  });
+  return design;
+};
+
+const colorWithAlpha = (color, alpha) => {
+  const match = /^#([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(color);
+  if (!match) {
+    return color;
+  }
+  return `rgba(${Number.parseInt(match[1], 16)}, ${Number.parseInt(match[2], 16)}, ${Number.parseInt(match[3], 16)}, ${alpha})`;
+};
+
+const renderPreview = (editor, effective) => {
+  const preview = editor.querySelector('[data-design-live-preview]');
+  if (!preview || !effective?.lightbox) {
+    return;
+  }
+  const setProperty = (name, value) => preview.style.setProperty(name, value);
+  setProperty('--preview-frame-color', effective.frameColor);
+  setProperty('--preview-frame-width', `${effective.frameWidth}px`);
+  setProperty('--preview-frame-style', effective.frameStyle);
+  setProperty('--preview-radius', `${effective.borderRadius}px`);
+  setProperty('--preview-background', effective.backgroundColor);
+  setProperty('--preview-shadow', effective.shadow ? '0 6px 14px rgba(0, 0, 0, .22)' : 'none');
+  setProperty('--preview-overlay', colorWithAlpha(effective.lightbox.overlay, effective.lightbox.overlayAlpha));
+  setProperty('--preview-nav', effective.lightbox.navColor);
+  setProperty('--preview-close', effective.lightbox.closeColor);
+  setProperty('--preview-caption', effective.lightbox.captionColor);
+  setProperty(
+    '--preview-caption-background',
+    colorWithAlpha(effective.lightbox.captionBackground, effective.lightbox.captionBackgroundAlpha),
+  );
+  preview.dataset.applyBackground = effective.applyTo;
+  preview.dataset.captionAlign = effective.lightbox.captionAlign;
+  preview.dataset.captionSize = effective.lightbox.captionSize;
+  preview.dataset.captionStyle = effective.lightbox.captionStyle;
+};
+
 const initializeEditor = (editor) => {
   if (editor.dataset.mosaicDesignInitialized === 'true') {
     return;
@@ -156,16 +238,23 @@ const initializeEditor = (editor) => {
   const currentPreset = () => normalizePreset(presetSelector.value);
   const presetLabel = (preset) => labels[preset] ?? preset;
   const currentBase = () => bases[currentPreset()] ?? null;
+  const isCustomFieldEvent = (event) => {
+    const section = event.target.closest('.form-section[data-id]');
+    return Boolean(section && Object.prototype.hasOwnProperty.call(CUSTOM_FIELDS, section.dataset.id));
+  };
 
   const publishState = () => {
     const preset = currentPreset();
     const base = currentBase();
+    const effective = preset === 'custom'
+      ? customDesign(customSections)
+      : (base ? effectiveDesign(base, document) : {});
     editor.dispatchEvent(new CustomEvent('mosaic-design-change', {
       bubbles: true,
       detail: {
         preset,
         overrides: clone(document),
-        effective: base ? effectiveDesign(base, document) : {},
+        effective,
       },
     }));
   };
@@ -184,14 +273,15 @@ const initializeEditor = (editor) => {
         : '';
     }
     if (modifications) {
-      modifications.textContent = count > 0
+      modifications.textContent = preset !== 'custom' && count > 0
         ? `${presetLabel(preset)} · ${count} ${editor.dataset.modifiedLabel.toLowerCase()}`
         : '';
     }
     if (resetAll) {
       const resetLabel = preset === 'site' ? editor.dataset.siteDefaultLabel : presetLabel(preset);
       resetAll.textContent = editor.dataset.resetAllTemplate.replace('%s', resetLabel);
-      resetAll.disabled = count === 0;
+      resetAll.hidden = preset === 'custom';
+      resetAll.disabled = preset === 'custom' || count === 0;
     }
   };
 
@@ -200,7 +290,8 @@ const initializeEditor = (editor) => {
     customSections.forEach((section) => {
       section.hidden = !custom;
     });
-    configuratorSection.hidden = custom;
+    configuratorSection.hidden = false;
+    editor.classList.toggle('is-custom', custom);
     if (!custom) {
       applyEffectiveValues(editor, currentBase(), document);
     }
@@ -216,6 +307,17 @@ const initializeEditor = (editor) => {
   };
 
   presetSelector.addEventListener('change', updateMode);
+  sheet.addEventListener('change', (event) => {
+    if (currentPreset() === 'custom' && isCustomFieldEvent(event)) {
+      publishState();
+    }
+  });
+  sheet.addEventListener('input', (event) => {
+    if (currentPreset() === 'custom' && isCustomFieldEvent(event)) {
+      publishState();
+    }
+  });
+  editor.addEventListener('mosaic-design-change', (event) => renderPreview(editor, event.detail.effective));
   editor.addEventListener('change', (event) => {
     const control = event.target.closest('[data-design-control]');
     if (!control) {
@@ -246,6 +348,14 @@ const initializeEditor = (editor) => {
   });
 
   editor.addEventListener('click', (event) => {
+    const previewLoadMore = event.target.closest('[data-design-preview-load-more]');
+    if (previewLoadMore) {
+      editor.querySelectorAll('[data-design-preview-extra]').forEach((item) => {
+        item.hidden = false;
+      });
+      previewLoadMore.hidden = true;
+      return;
+    }
     const resetField = event.target.closest('[data-design-reset-field]');
     if (resetField) {
       const control = resetField.closest('[data-design-field]')?.querySelector('[data-design-control]');

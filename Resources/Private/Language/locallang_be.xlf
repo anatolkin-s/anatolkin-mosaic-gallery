@@ -27,6 +27,11 @@
       <trans-unit id="design.configurator.reset"><source>Reset</source></trans-unit>
       <trans-unit id="design.configurator.resetAll"><source>Reset all to %s</source></trans-unit>
       <trans-unit id="design.configurator.siteDefault"><source>site default</source></trans-unit>
+      <trans-unit id="design.preview.title"><source>Live preview</source></trans-unit>
+      <trans-unit id="design.preview.help"><source>Changes are shown here before saving.</source></trans-unit>
+      <trans-unit id="design.preview.gallery"><source>Gallery</source></trans-unit>
+      <trans-unit id="design.preview.lightbox"><source>Lightbox</source></trans-unit>
+      <trans-unit id="design.preview.sampleCaption"><source>Sample caption</source></trans-unit>
       <trans-unit id="flexform.source"><source>Source</source></trans-unit>
       <trans-unit id="flexform.source.folder"><source>Folder (fileadmin)</source></trans-unit>
       <trans-unit id="flexform.folder"><source>Folder</source></trans-unit>

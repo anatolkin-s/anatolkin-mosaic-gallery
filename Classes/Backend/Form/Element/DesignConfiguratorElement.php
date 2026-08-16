@@ -8,12 +8,15 @@ use TYPO3\CMS\Backend\Form\Element\AbstractFormElement;
 use TYPO3\CMS\Core\Page\JavaScriptModuleInstruction;
 use TYPO3\CMS\Core\Service\FlexFormService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Core\Utility\StringUtility;
 
 final class DesignConfiguratorElement extends AbstractFormElement
 {
     private const LANGUAGE_FILE =
         'LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:';
+    private const FRONTEND_LANGUAGE_FILE =
+        'LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang.xlf:';
 
     /** @var list<array{path: string, label: string, type: string, options?: array<string, string>, step?: string}> */
     private const CONTROLS = [
@@ -136,7 +139,8 @@ final class DesignConfiguratorElement extends AbstractFormElement
                     ? $this->rawLabel('design.configurator.siteDefault')
                     : $presetLabels[$previewPreset],
             ) . '</button></div>'
-            . '<div class="mosaic-design-configurator__grid">';
+            . $this->renderPreview($fieldId)
+            . '<div class="mosaic-design-configurator__grid" data-design-controls>';
 
         foreach (self::CONTROLS as $control) {
             $path = $control['path'];
@@ -155,6 +159,58 @@ final class DesignConfiguratorElement extends AbstractFormElement
         );
 
         return $resultArray;
+    }
+
+    private function renderPreview(string $fieldId): string
+    {
+        $previewId = $fieldId . '-preview-title';
+        $caption = $this->label('design.preview.sampleCaption');
+        $images = [
+            $this->previewImageUrl('landscape.svg'),
+            $this->previewImageUrl('portrait.svg'),
+            $this->previewImageUrl('square.svg'),
+            $this->previewImageUrl('wide.svg'),
+            $this->previewImageUrl('contrast.svg'),
+        ];
+
+        $galleryItems = '';
+        foreach ($images as $index => $image) {
+            $galleryItems .= '<figure class="mosaic-design-preview__item"'
+                . ($index > 2 ? ' data-design-preview-extra hidden' : '') . '>'
+                . '<img src="' . htmlspecialchars($image, ENT_QUOTES) . '" alt="">'
+                . '<figcaption>' . $caption . '</figcaption></figure>';
+        }
+
+        return '<section class="mosaic-design-preview" data-design-live-preview aria-labelledby="'
+            . htmlspecialchars($previewId, ENT_QUOTES) . '">'
+            . '<div class="mosaic-design-preview__heading"><div><strong id="'
+            . htmlspecialchars($previewId, ENT_QUOTES) . '">' . $this->label('design.preview.title') . '</strong>'
+            . '<div class="form-text">' . $this->label('design.preview.help') . '</div></div></div>'
+            . '<div class="mosaic-design-preview__panels">'
+            . '<div class="mosaic-design-preview__panel mosaic-design-preview__gallery">'
+            . '<div class="mosaic-design-preview__panel-label">' . $this->label('design.preview.gallery') . '</div>'
+            . '<div class="mosaic-design-preview__gallery-surface" data-preview-gallery-surface>'
+            . '<div class="mosaic-design-preview__items">' . $galleryItems . '</div>'
+            . '<div class="mosaic-design-preview__actions"><button type="button" class="btn btn-default btn-sm"'
+            . ' data-design-preview-load-more>' . $this->frontendLabel('gallery.loadMore') . '</button></div>'
+            . '</div></div>'
+            . '<div class="mosaic-design-preview__panel mosaic-design-preview__lightbox">'
+            . '<div class="mosaic-design-preview__panel-label">' . $this->label('design.preview.lightbox') . '</div>'
+            . '<div class="mosaic-design-preview__lightbox-surface" data-preview-lightbox-surface>'
+            . '<span class="mosaic-design-preview__close" aria-hidden="true">×</span>'
+            . '<span class="mosaic-design-preview__nav mosaic-design-preview__nav--previous" aria-hidden="true">‹</span>'
+            . '<figure class="mosaic-design-preview__lightbox-figure"><img src="'
+            . htmlspecialchars($images[4], ENT_QUOTES) . '" alt=""><figcaption>' . $caption
+            . '</figcaption></figure>'
+            . '<span class="mosaic-design-preview__nav mosaic-design-preview__nav--next" aria-hidden="true">›</span>'
+            . '</div></div></div></section>';
+    }
+
+    private function previewImageUrl(string $fileName): string
+    {
+        return PathUtility::getAbsoluteWebPath(GeneralUtility::getFileAbsFileName(
+            'EXT:anatolkin_mosaic_gallery/Resources/Public/Backend/Images/DesignPreview/' . $fileName,
+        ));
     }
 
     /** @param array{path: string, label: string, type: string, options?: array<string, string>, step?: string} $control */
@@ -298,6 +354,11 @@ final class DesignConfiguratorElement extends AbstractFormElement
     private function label(string $key): string
     {
         return htmlspecialchars($this->rawLabel($key), ENT_QUOTES);
+    }
+
+    private function frontendLabel(string $key): string
+    {
+        return htmlspecialchars($this->getLanguageService()->sL(self::FRONTEND_LANGUAGE_FILE . $key), ENT_QUOTES);
     }
 
     private function rawLabel(string $key): string

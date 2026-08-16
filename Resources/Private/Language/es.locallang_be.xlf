@@ -26,6 +26,11 @@
     <trans-unit id="design.configurator.reset"><source>Reset</source><target>Restablecer</target></trans-unit>
     <trans-unit id="design.configurator.resetAll"><source>Reset all to %s</source><target>Restablecer todo a %s</target></trans-unit>
     <trans-unit id="design.configurator.siteDefault"><source>site default</source><target>valor predeterminado del sitio</target></trans-unit>
+    <trans-unit id="design.preview.title"><source>Live preview</source><target>Vista previa en vivo</target></trans-unit>
+    <trans-unit id="design.preview.help"><source>Changes are shown here before saving.</source><target>Los cambios se muestran aquí antes de guardar.</target></trans-unit>
+    <trans-unit id="design.preview.gallery"><source>Gallery</source><target>Galería</target></trans-unit>
+    <trans-unit id="design.preview.lightbox"><source>Lightbox</source><target>Visor</target></trans-unit>
+    <trans-unit id="design.preview.sampleCaption"><source>Sample caption</source><target>Leyenda de ejemplo</target></trans-unit>
     <trans-unit id="flexform.source"><source>Source</source><target>Origen</target></trans-unit>
     <trans-unit id="flexform.source.folder"><source>Folder (fileadmin)</source><target>Carpeta (fileadmin)</target></trans-unit>
     <trans-unit id="flexform.folder"><source>Folder</source><target>Carpeta</target></trans-unit>

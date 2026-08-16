@@ -26,6 +26,11 @@
     <trans-unit id="design.configurator.reset"><source>Reset</source><target>Сбросить</target></trans-unit>
     <trans-unit id="design.configurator.resetAll"><source>Reset all to %s</source><target>Сбросить всё до %s</target></trans-unit>
     <trans-unit id="design.configurator.siteDefault"><source>site default</source><target>настройки сайта</target></trans-unit>
+    <trans-unit id="design.preview.title"><source>Live preview</source><target>Предпросмотр в реальном времени</target></trans-unit>
+    <trans-unit id="design.preview.help"><source>Changes are shown here before saving.</source><target>Изменения отображаются здесь до сохранения.</target></trans-unit>
+    <trans-unit id="design.preview.gallery"><source>Gallery</source><target>Галерея</target></trans-unit>
+    <trans-unit id="design.preview.lightbox"><source>Lightbox</source><target>Лайтбокс</target></trans-unit>
+    <trans-unit id="design.preview.sampleCaption"><source>Sample caption</source><target>Пример подписи</target></trans-unit>
     <trans-unit id="flexform.source"><source>Source</source><target>Источник</target></trans-unit>
     <trans-unit id="flexform.source.folder"><source>Folder (fileadmin)</source><target>Папка (fileadmin)</target></trans-unit>
     <trans-unit id="flexform.folder"><source>Folder</source><target>Папка</target></trans-unit>
