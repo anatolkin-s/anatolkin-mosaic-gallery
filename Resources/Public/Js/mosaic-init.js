@@ -1,4 +1,110 @@
 (function () {
+  var activeThemeClassPrefix = "mg-glx-active-";
+
+  function clearActiveMosaicLightboxTheme() {
+    Array.prototype.slice.call(document.documentElement.classList).forEach(function (className) {
+      if (className.indexOf(activeThemeClassPrefix) === 0) {
+        document.documentElement.classList.remove(className);
+      }
+    });
+  }
+
+  function activateMosaicLightboxTheme(themeClass) {
+    clearActiveMosaicLightboxTheme();
+    document.documentElement.classList.add(themeClass);
+  }
+
+  function deactivateMosaicLightboxTheme(themeClass) {
+    document.documentElement.classList.remove(themeClass);
+  }
+
+  function hexToRgb(hex) {
+    if (!hex) return { r: 0, g: 0, b: 0 };
+    if (/^rgba?\(/i.test(hex)) {
+      var m = hex.match(/(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+      return { r: +(m && m[1] || 0), g: +(m && m[2] || 0), b: +(m && m[3] || 0) };
+    }
+    var s = String(hex).replace("#", "").trim();
+    if (s.length === 3) {
+      s = s.split("").map(function (c) { return c + c; }).join("");
+    }
+    var n = parseInt(s, 16);
+    if (isNaN(n)) return { r: 0, g: 0, b: 0 };
+    return {
+      r: (n >> 16) & 255,
+      g: (n >> 8) & 255,
+      b: n & 255
+    };
+  }
+
+  function toRgba(hex, a) {
+    if (!hex) return "rgba(0,0,0," + (a || 0.92) + ")";
+    if (/^rgba?\(/i.test(hex)) return hex;
+    var c = hexToRgb(hex);
+    var alpha = (typeof a === "number" ? a : parseFloat(a));
+    if (isNaN(alpha)) alpha = 0.92;
+    return "rgba(" + c.r + "," + c.g + "," + c.b + "," + alpha + ")";
+  }
+
+  function injectCss(id, css) {
+    if (document.getElementById(id)) return;
+    var st = document.createElement("style");
+    st.id = id;
+    st.type = "text/css";
+    st.textContent = css;
+    document.head.appendChild(st);
+  }
+
+  function prepareLightboxTheme(root, index) {
+    var ds = root.dataset;
+    var themeClass = activeThemeClassPrefix + index;
+    var scope = "html." + themeClass + " ";
+
+    var cs = getComputedStyle(root);
+    function gv(n, d) {
+      return (cs.getPropertyValue(n) || d).toString().trim();
+    }
+
+    var frameColor = gv("--frame-color", "transparent");
+    var frameWidth = gv("--frame-width", "0px");
+    var frameStyle = gv("--frame-style", "none");
+
+    var radius = (function (v) {
+      v = (v || "0").toString().trim();
+      return v.endsWith("px") ? v : (parseInt(v, 10) || 0) + "px";
+    })(gv("--radius", "0"));
+
+    var bgApply = (root.getAttribute("data-apply-bg") || "").toLowerCase();
+    var bgColor = gv("--bg", "transparent");
+    var tileBg = (bgApply === "tiles" || bgApply === "both") ? bgColor : "transparent";
+
+    var css =
+      scope + ".goverlay{background:" +
+      toRgba(ds.lbOverlay || "#000000", ds.lbOverlayAlpha || "0.92") +
+      "!important;}" +
+      scope + ".glightbox-clean .gclose path{fill:" +
+      (ds.lbClose || "#FFFFFF") +
+      "!important;}" +
+      scope + ".glightbox-clean .gnext path," + scope + ".glightbox-clean .gprev path{fill:" +
+      (ds.lbNav || "#FFFFFF") +
+      "!important;}" +
+      scope + ".glightbox-container .gslide-title," + scope + ".glightbox-container .gslide-desc{color:" +
+      (ds.lbCaption || "#FFFFFF") +
+      "!important;}" +
+      scope + ".glightbox-clean .gslide-description{background:" +
+      (ds.lbCaptionBg || "rgba(0,0,0,0.75)") +
+      "!important;}" +
+      scope + ".glightbox-container .gslide-image img{" +
+      "border:" + frameWidth + " " + frameStyle + " " + frameColor + " !important;" +
+      "border-radius:" + radius + " !important;" +
+      "background:" + tileBg + " !important;" +
+      "box-sizing:border-box;" +
+      "}";
+
+    injectCss("mg-glx-theme-" + index, css);
+    return themeClass;
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     var containers = document.querySelectorAll(".mosaic-gallery");
     if (!containers.length) return;
@@ -47,7 +153,7 @@
       });
     }
 
-    containers.forEach(function (container) {
+    containers.forEach(function (container, index) {
       var gap     = parseInt(container.style.getPropertyValue("--gap") || "12", 10);
       var step    = parseInt(container.getAttribute("data-step") || "0", 10);
       var enable  = container.getAttribute("data-lightbox") === "1";
@@ -55,6 +161,7 @@
       var grid    = container.querySelector(".mosaic-grid") || container;
       var lightbox = null;
       var msnry = null;
+      var themeClass = enable ? prepareLightboxTheme(container, index) : null;
 
       function markLayoutReady() {
         container.classList.remove("is-layout-pending");
@@ -64,8 +171,20 @@
       function tryInitLightbox() {
         if (!enable) return;
         if (window.GLightbox) {
-          lightbox = GLightbox({ selector: "a[data-gallery=\"" + group + "\"]" });
-          return true;
+          try {
+            lightbox = GLightbox({
+              selector: "a[data-gallery=\"" + group + "\"]",
+              onOpen: function () {
+                activateMosaicLightboxTheme(themeClass);
+              },
+              onClose: function () {
+                deactivateMosaicLightboxTheme(themeClass);
+              }
+            });
+            return true;
+          } catch (e) {
+            deactivateMosaicLightboxTheme(themeClass);
+          }
         }
         return false;
       }
@@ -161,97 +280,5 @@
         markLayoutReady();
       }, 10000);
     });
-  });
-})();
-
-/* === Lightbox theme and frame copied from gallery tiles === */
-(function () {
-  function hexToRgb(hex) {
-    if (!hex) return { r: 0, g: 0, b: 0 };
-    if (/^rgba?\(/i.test(hex)) {
-      var m = hex.match(/(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
-      return { r: +(m && m[1] || 0), g: +(m && m[2] || 0), b: +(m && m[3] || 0) };
-    }
-    var s = String(hex).replace("#", "").trim();
-    if (s.length === 3) {
-      s = s.split("").map(function (c) { return c + c; }).join("");
-    }
-    var n = parseInt(s, 16);
-    if (isNaN(n)) return { r: 0, g: 0, b: 0 };
-    return {
-      r: (n >> 16) & 255,
-      g: (n >> 8) & 255,
-      b: n & 255
-    };
-  }
-
-  function toRgba(hex, a) {
-    if (!hex) return "rgba(0,0,0," + (a || 0.92) + ")";
-    if (/^rgba?\(/i.test(hex)) return hex;
-    var c = hexToRgb(hex);
-    var alpha = (typeof a === "number" ? a : parseFloat(a));
-    if (isNaN(alpha)) alpha = 0.92;
-    return "rgba(" + c.r + "," + c.g + "," + c.b + "," + alpha + ")";
-  }
-
-  function injectCss(id, css) {
-    if (document.getElementById(id)) return;
-    var st = document.createElement("style");
-    st.id = id;
-    st.type = "text/css";
-    st.textContent = css;
-    document.head.appendChild(st);
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
-    document
-      .querySelectorAll(".mosaic-gallery[data-lightbox=\"1\"]")
-      .forEach(function (root, idx) {
-        var ds = root.dataset;
-        var group = ds.group || ("mg" + idx);
-
-        var cs = getComputedStyle(root);
-        function gv(n, d) {
-          return (cs.getPropertyValue(n) || d).toString().trim();
-        }
-
-        var frameColor = gv("--frame-color", "transparent");
-        var frameWidth = gv("--frame-width", "0px");
-        var frameStyle = gv("--frame-style", "none");
-
-        var radius = (function (v) {
-          v = (v || "0").toString().trim();
-          return v.endsWith("px") ? v : (parseInt(v, 10) || 0) + "px";
-        })(gv("--radius", "0"));
-
-        var bgApply = (root.getAttribute("data-apply-bg") || "").toLowerCase();
-        var bgColor = gv("--bg", "transparent");
-        var tileBg = (bgApply === "tiles" || bgApply === "both") ? bgColor : "transparent";
-
-        var css =
-          ".goverlay{background:" +
-          toRgba(ds.lbOverlay || "#000000", ds.lbOverlayAlpha || "0.92") +
-          "!important;}" +
-          ".glightbox-clean .gclose path{fill:" +
-          (ds.lbClose || "#FFFFFF") +
-          "!important;}" +
-          ".glightbox-clean .gnext path,.glightbox-clean .gprev path{fill:" +
-          (ds.lbNav || "#FFFFFF") +
-          "!important;}" +
-          ".glightbox-container .gslide-title,.glightbox-container .gslide-desc{color:" +
-          (ds.lbCaption || "#FFFFFF") +
-          "!important;}" +
-          ".glightbox-clean .gslide-description{background:" +
-          (ds.lbCaptionBg || "rgba(0,0,0,0.75)") +
-          "!important;}" +
-          ".glightbox-container .gslide-image img{" +
-          "border:" + frameWidth + " " + frameStyle + " " + frameColor + " !important;" +
-          "border-radius:" + radius + " !important;" +
-          "background:" + tileBg + " !important;" +
-          "box-sizing:border-box;" +
-          "}";
-
-        injectCss("mg-glx-theme-" + group, css);
-      });
   });
 })();
