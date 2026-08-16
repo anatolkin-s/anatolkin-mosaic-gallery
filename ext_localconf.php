@@ -6,9 +6,6 @@ defined('TYPO3') || die();
 use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
 use Anatolkin\MosaicGallery\Backend\Form\Element\MetadataOverridesElement;
 use Anatolkin\MosaicGallery\Controller\GalleryController;
-use TYPO3\CMS\Core\Imaging\IconRegistry;
-use TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 // Configure Extbase plugin
 ExtensionUtility::configurePlugin(
@@ -27,23 +24,3 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1755129600] = [
     'priority' => 40,
     'class' => MetadataOverridesElement::class,
 ];
-
-// Register backend icons (Extension Manager, plugin icon, etc.)
-(static function (): void {
-    /** @var IconRegistry $registry */
-    $registry = GeneralUtility::makeInstance(IconRegistry::class);
-
-    // Icon for the extension (Extension Manager, etc.)
-    $registry->registerIcon(
-        'mosaic-gallery-extension',
-        SvgIconProvider::class,
-        ['source' => 'EXT:anatolkin_mosaic_gallery/Resources/Public/Icons/Extension.svg']
-    );
-
-    // Icon for the content element / plugin
-    $registry->registerIcon(
-        'mosaic-gallery-plugin',
-        SvgIconProvider::class,
-        ['source' => 'EXT:anatolkin_mosaic_gallery/Resources/Public/Icons/PluginMosaic.svg']
-    );
-})();
