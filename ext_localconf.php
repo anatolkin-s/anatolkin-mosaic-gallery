@@ -4,6 +4,7 @@ declare(strict_types=1);
 defined('TYPO3') || die();
 
 use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
+use Anatolkin\MosaicGallery\Backend\Form\Element\DesignConfiguratorElement;
 use Anatolkin\MosaicGallery\Backend\Form\Element\MetadataOverridesElement;
 use Anatolkin\MosaicGallery\Controller\GalleryController;
 
@@ -23,4 +24,10 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1755129600] = [
     'nodeName' => 'mosaicGalleryMetadataOverrides',
     'priority' => 40,
     'class' => MetadataOverridesElement::class,
+];
+
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1755129601] = [
+    'nodeName' => 'mosaicGalleryDesignConfigurator',
+    'priority' => 40,
+    'class' => DesignConfiguratorElement::class,
 ];

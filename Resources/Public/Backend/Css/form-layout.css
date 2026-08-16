@@ -143,3 +143,67 @@
     grid-column: 1 / -1;
   }
 }
+
+/* Preset mode renders effective values through one JSON-backed FormEngine field. */
+.mosaic-design-configurator {
+  container-type: inline-size;
+}
+
+.mosaic-design-configurator__toolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem 1rem;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.mosaic-design-configurator__grid {
+  display: grid;
+  gap: .75rem 1rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.mosaic-design-configurator__field {
+  min-width: 0;
+}
+
+.mosaic-design-configurator__control {
+  align-items: center;
+  display: flex;
+  gap: .4rem;
+}
+
+.mosaic-design-configurator__control .form-control,
+.mosaic-design-configurator__control .form-select {
+  min-width: 0;
+}
+
+.mosaic-design-configurator__swatch {
+  border: 1px solid var(--typo3-component-border-color, #b6b6b6);
+  border-radius: .25rem;
+  flex: 0 0 1.75rem;
+  height: 1.75rem;
+}
+
+.mosaic-design-configurator [data-design-reset-field] {
+  flex: 0 0 auto;
+}
+
+@container (max-width: 999px) {
+  .mosaic-design-configurator__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@container (max-width: 749px) {
+  .mosaic-design-configurator__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container (max-width: 499px) {
+  .mosaic-design-configurator__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

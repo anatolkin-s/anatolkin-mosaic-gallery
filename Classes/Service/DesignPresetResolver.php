@@ -150,7 +150,7 @@ final class DesignPresetResolver
 
             return $this->applyOverrides(
                 $this->withPresetMetadata(self::BUILT_IN_PRESETS[$effectivePreset], $requestedPreset, $effectivePreset),
-                $settings
+                $this->resolveOverrideDocument($settings)
             );
         }
 
@@ -161,7 +161,7 @@ final class DesignPresetResolver
                     $requestedPreset,
                     $requestedPreset
                 ),
-                $settings
+                $this->resolveOverrideDocument($settings)
             );
         }
 
@@ -176,7 +176,8 @@ final class DesignPresetResolver
         array $design,
         string $requestedPreset,
         string $effectivePreset
-    ): array {
+    ): array
+    {
         $design['preset'] = $effectivePreset;
         $design['requestedPreset'] = $requestedPreset;
         $design['effectivePreset'] = $effectivePreset;
@@ -189,152 +190,149 @@ final class DesignPresetResolver
      * @param array<string, mixed> $settings
      * @return array<string, mixed>
      */
-    private function applyOverrides(array $design, array $settings): array
+    private function applyOverrides(array $design, array $overrides): array
     {
-        $this->applyStringOverride($design, 'frameColor', $settings, 'designOverrideFrameColor');
-
-        $frameWidth = $this->normalizeNonNegativeNumber($settings['designOverrideFrameWidth'] ?? null);
-        if ($frameWidth !== null) {
-            $design['frameWidth'] = $frameWidth;
+        foreach (['frameColor', 'frameWidth', 'frameStyle', 'borderRadius', 'shadow', 'backgroundColor', 'applyTo'] as $key) {
+            if (array_key_exists($key, $overrides)) {
+                $design[$key] = $overrides[$key];
+            }
         }
-
-        $this->applyEnumOverride(
-            $design,
-            'frameStyle',
-            $settings,
-            'designOverrideFrameStyle',
-            ['none', 'solid', 'dashed', 'dotted']
-        );
-
-        $borderRadius = $this->normalizeNonNegativeInteger($settings['designOverrideBorderRadius'] ?? null);
-        if ($borderRadius !== null) {
-            $design['borderRadius'] = $borderRadius;
+        foreach ($overrides['lightbox'] ?? [] as $key => $value) {
+            $design['lightbox'][$key] = $value;
         }
-
-        $shadow = (string)($settings['designOverrideShadow'] ?? '');
-        if ($shadow === '1') {
-            $design['shadow'] = true;
-        } elseif ($shadow === '0') {
-            $design['shadow'] = false;
-        }
-
-        $this->applyStringOverride($design, 'backgroundColor', $settings, 'designOverrideBackgroundColor');
-        $this->applyEnumOverride(
-            $design,
-            'applyTo',
-            $settings,
-            'designOverrideApplyTo',
-            ['container', 'tiles', 'both']
-        );
-
-        $this->applyStringOverride(
-            $design['lightbox'],
-            'overlay',
-            $settings,
-            'designOverrideLbOverlay'
-        );
-        $this->applyAlphaOverride(
-            $design['lightbox'],
-            'overlayAlpha',
-            $settings['designOverrideLbOverlayAlpha'] ?? null
-        );
-        $this->applyStringOverride(
-            $design['lightbox'],
-            'navColor',
-            $settings,
-            'designOverrideLbNavColor'
-        );
-        $this->applyStringOverride(
-            $design['lightbox'],
-            'closeColor',
-            $settings,
-            'designOverrideLbCloseColor'
-        );
-        $this->applyStringOverride(
-            $design['lightbox'],
-            'captionColor',
-            $settings,
-            'designOverrideLbCaptionColor'
-        );
-        $this->applyStringOverride(
-            $design['lightbox'],
-            'captionBackground',
-            $settings,
-            'designOverrideLbCaptionBg'
-        );
-        $this->applyAlphaOverride(
-            $design['lightbox'],
-            'captionBackgroundAlpha',
-            $settings['designOverrideLbCaptionBgAlpha'] ?? null
-        );
-        $this->applyEnumOverride(
-            $design['lightbox'],
-            'captionAlign',
-            $settings,
-            'designOverrideLbCaptionAlign',
-            ['left', 'center', 'right']
-        );
-        $this->applyEnumOverride(
-            $design['lightbox'],
-            'captionSize',
-            $settings,
-            'designOverrideLbCaptionSize',
-            ['small', 'normal', 'large']
-        );
-        $this->applyEnumOverride(
-            $design['lightbox'],
-            'captionStyle',
-            $settings,
-            'designOverrideLbCaptionStyle',
-            ['regular', 'italic', 'strong']
-        );
 
         return $design;
     }
 
     /**
-     * @param array<string, mixed> $target
      * @param array<string, mixed> $settings
+     * @return array<string, mixed>
      */
-    private function applyStringOverride(
-        array &$target,
-        string $targetKey,
-        array $settings,
-        string $settingKey
-    ): void {
-        $value = (string)($settings[$settingKey] ?? '');
-        if ($value !== '') {
-            $target[$targetKey] = $value;
+    public function resolveOverrideDocument(array $settings): array
+    {
+        if (array_key_exists('designOverrides', $settings)
+            && trim((string)$settings['designOverrides']) !== ''
+        ) {
+            return $this->decodeOverrideDocument((string)$settings['designOverrides']);
         }
+
+        return $this->normalizeOverrideDocument([
+            'frameColor' => $settings['designOverrideFrameColor'] ?? null,
+            'frameWidth' => $settings['designOverrideFrameWidth'] ?? null,
+            'frameStyle' => $settings['designOverrideFrameStyle'] ?? null,
+            'borderRadius' => $settings['designOverrideBorderRadius'] ?? null,
+            'shadow' => $settings['designOverrideShadow'] ?? null,
+            'backgroundColor' => $settings['designOverrideBackgroundColor'] ?? null,
+            'applyTo' => $settings['designOverrideApplyTo'] ?? null,
+            'lightbox' => [
+                'overlay' => $settings['designOverrideLbOverlay'] ?? null,
+                'overlayAlpha' => $settings['designOverrideLbOverlayAlpha'] ?? null,
+                'navColor' => $settings['designOverrideLbNavColor'] ?? null,
+                'closeColor' => $settings['designOverrideLbCloseColor'] ?? null,
+                'captionColor' => $settings['designOverrideLbCaptionColor'] ?? null,
+                'captionBackground' => $settings['designOverrideLbCaptionBg'] ?? null,
+                'captionBackgroundAlpha' => $settings['designOverrideLbCaptionBgAlpha'] ?? null,
+                'captionAlign' => $settings['designOverrideLbCaptionAlign'] ?? null,
+                'captionSize' => $settings['designOverrideLbCaptionSize'] ?? null,
+                'captionStyle' => $settings['designOverrideLbCaptionStyle'] ?? null,
+            ],
+        ]);
+    }
+
+    /** @return array<string, mixed> */
+    public function decodeOverrideDocument(string $json): array
+    {
+        try {
+            $document = json_decode($json, true, 16, JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
+            return [];
+        }
+
+        return is_array($document) ? $this->normalizeOverrideDocument($document) : [];
+    }
+
+    /**
+     * @param array<string, mixed> $document
+     * @return array<string, mixed>
+     */
+    private function normalizeOverrideDocument(array $document): array
+    {
+        $normalized = [];
+        foreach (['frameColor', 'backgroundColor'] as $key) {
+            $value = (string)($document[$key] ?? '');
+            if ($value !== '') {
+                $normalized[$key] = $value;
+            }
+        }
+        $frameWidth = $this->normalizeNonNegativeNumber($document['frameWidth'] ?? null);
+        if ($frameWidth !== null) {
+            $normalized['frameWidth'] = $frameWidth;
+        }
+        $this->copyEnum($normalized, 'frameStyle', $document, ['none', 'solid', 'dashed', 'dotted']);
+        $borderRadius = $this->normalizeNonNegativeInteger($document['borderRadius'] ?? null);
+        if ($borderRadius !== null) {
+            $normalized['borderRadius'] = $borderRadius;
+        }
+        if (is_bool($document['shadow'] ?? null)) {
+            $normalized['shadow'] = $document['shadow'];
+        } elseif (($document['shadow'] ?? null) === '1') {
+            $normalized['shadow'] = true;
+        } elseif (($document['shadow'] ?? null) === '0') {
+            $normalized['shadow'] = false;
+        }
+        $this->copyEnum($normalized, 'applyTo', $document, ['container', 'tiles', 'both']);
+
+        $lightbox = is_array($document['lightbox'] ?? null) ? $document['lightbox'] : [];
+        $normalizedLightbox = [];
+        foreach (['overlay', 'navColor', 'closeColor', 'captionColor', 'captionBackground'] as $key) {
+            $value = (string)($lightbox[$key] ?? '');
+            if ($value !== '') {
+                $normalizedLightbox[$key] = $value;
+            }
+        }
+        $this->copyAlpha($normalizedLightbox, 'overlayAlpha', $lightbox['overlayAlpha'] ?? null);
+        $this->copyAlpha(
+            $normalizedLightbox,
+            'captionBackgroundAlpha',
+            $lightbox['captionBackgroundAlpha'] ?? null
+        );
+        $this->copyEnum($normalizedLightbox, 'captionAlign', $lightbox, ['left', 'center', 'right']);
+        $this->copyEnum($normalizedLightbox, 'captionSize', $lightbox, ['small', 'normal', 'large']);
+        $this->copyEnum($normalizedLightbox, 'captionStyle', $lightbox, ['regular', 'italic', 'strong']);
+        if ($normalizedLightbox !== []) {
+            $normalized['lightbox'] = $normalizedLightbox;
+        }
+
+        return $normalized;
     }
 
     /**
      * @param array<string, mixed> $target
-     * @param array<string, mixed> $settings
+     * @param array<string, mixed> $source
      * @param list<string> $allowedValues
      */
-    private function applyEnumOverride(
+    private function copyEnum(
         array &$target,
-        string $targetKey,
-        array $settings,
-        string $settingKey,
+        string $key,
+        array $source,
         array $allowedValues
-    ): void {
-        $value = (string)($settings[$settingKey] ?? '');
+    ): void
+    {
+        $value = (string)($source[$key] ?? '');
         if (\in_array($value, $allowedValues, true)) {
-            $target[$targetKey] = $value;
+            $target[$key] = $value;
         }
     }
 
     /** @param array<string, mixed> $target */
-    private function applyAlphaOverride(array &$target, string $targetKey, mixed $value): void
+    private function copyAlpha(array &$target, string $key, mixed $value): void
     {
         $normalizedValue = $this->normalizeNumber($value);
         if ($normalizedValue === null) {
             return;
         }
 
-        $target[$targetKey] = $this->formatNumber(min(1.0, max(0.0, $normalizedValue)));
+        $target[$key] = $this->formatNumber(min(1.0, max(0.0, $normalizedValue)));
     }
 
     private function normalizeNonNegativeNumber(mixed $value): ?string
