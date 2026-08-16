@@ -204,8 +204,50 @@
         <sheetTitle>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.sheet.design</sheetTitle>
         <el>
 
+          <settings.designPreset>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.designPreset</label>
+            <description>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.designPreset.help</description>
+            <onChange>reload</onChange>
+            <config>
+              <type>select</type>
+              <renderType>selectSingle</renderType>
+              <items>
+                <numIndex index="0">
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.designPreset.legacy</label>
+                  <value></value>
+                </numIndex>
+                <numIndex index="1">
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.designPreset.site</label>
+                  <value>site</value>
+                </numIndex>
+                <numIndex index="2">
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.designPreset.bootstrap</label>
+                  <value>bootstrap</value>
+                </numIndex>
+                <numIndex index="3">
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.designPreset.clean</label>
+                  <value>clean</value>
+                </numIndex>
+                <numIndex index="4">
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.designPreset.framed</label>
+                  <value>framed</value>
+                </numIndex>
+                <numIndex index="5">
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.designPreset.dark</label>
+                  <value>dark</value>
+                </numIndex>
+                <numIndex index="6">
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.designPreset.custom</label>
+                  <value>custom</value>
+                </numIndex>
+              </items>
+              <default>site</default>
+            </config>
+          </settings.designPreset>
+
           <settings.frameColor>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameColor</label>
+            <displayCond><OR><numIndex index="0">FIELD:settings.designPreset:=:custom</numIndex><numIndex index="1">FIELD:settings.designPreset:=:</numIndex></OR></displayCond>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -217,6 +259,7 @@
 
           <settings.frameWidth>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameWidth</label>
+            <displayCond><OR><numIndex index="0">FIELD:settings.designPreset:=:custom</numIndex><numIndex index="1">FIELD:settings.designPreset:=:</numIndex></OR></displayCond>
             <config>
               <type>input</type>
               <eval>int</eval>
@@ -231,6 +274,7 @@
 
           <settings.frameStyle>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameStyle</label>
+            <displayCond><OR><numIndex index="0">FIELD:settings.designPreset:=:custom</numIndex><numIndex index="1">FIELD:settings.designPreset:=:</numIndex></OR></displayCond>
             <config>
               <type>select</type>
               <renderType>selectSingle</renderType>
@@ -258,6 +302,7 @@
 
           <settings.borderRadius>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.borderRadius</label>
+            <displayCond><OR><numIndex index="0">FIELD:settings.designPreset:=:custom</numIndex><numIndex index="1">FIELD:settings.designPreset:=:</numIndex></OR></displayCond>
             <config>
               <type>input</type>
               <eval>int</eval>
@@ -267,6 +312,7 @@
 
           <settings.shadow>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.shadow</label>
+            <displayCond><OR><numIndex index="0">FIELD:settings.designPreset:=:custom</numIndex><numIndex index="1">FIELD:settings.designPreset:=:</numIndex></OR></displayCond>
             <config>
               <type>check</type>
               <default>1</default>
@@ -275,6 +321,7 @@
 
           <settings.backgroundColor>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.backgroundColor</label>
+            <displayCond><OR><numIndex index="0">FIELD:settings.designPreset:=:custom</numIndex><numIndex index="1">FIELD:settings.designPreset:=:</numIndex></OR></displayCond>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -286,6 +333,7 @@
 
           <settings.applyTo>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.applyTo</label>
+            <displayCond><OR><numIndex index="0">FIELD:settings.designPreset:=:custom</numIndex><numIndex index="1">FIELD:settings.designPreset:=:</numIndex></OR></displayCond>
             <config>
               <type>select</type>
               <renderType>selectSingle</renderType>
@@ -309,6 +357,7 @@
 
           <settings.lbOverlay>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbOverlay</label>
+            <displayCond><OR><numIndex index="0">FIELD:settings.designPreset:=:custom</numIndex><numIndex index="1">FIELD:settings.designPreset:=:</numIndex></OR></displayCond>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -320,6 +369,7 @@
 
           <settings.lbOverlayAlpha>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbOverlayAlpha</label>
+            <displayCond><OR><numIndex index="0">FIELD:settings.designPreset:=:custom</numIndex><numIndex index="1">FIELD:settings.designPreset:=:</numIndex></OR></displayCond>
             <config>
               <type>input</type>
               <size>6</size>
@@ -330,6 +380,7 @@
 
           <settings.lbNavColor>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbNavColor</label>
+            <displayCond><OR><numIndex index="0">FIELD:settings.designPreset:=:custom</numIndex><numIndex index="1">FIELD:settings.designPreset:=:</numIndex></OR></displayCond>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -341,6 +392,7 @@
 
           <settings.lbCloseColor>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCloseColor</label>
+            <displayCond><OR><numIndex index="0">FIELD:settings.designPreset:=:custom</numIndex><numIndex index="1">FIELD:settings.designPreset:=:</numIndex></OR></displayCond>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -352,6 +404,7 @@
 
           <settings.lbCaptionColor>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionColor</label>
+            <displayCond><OR><numIndex index="0">FIELD:settings.designPreset:=:custom</numIndex><numIndex index="1">FIELD:settings.designPreset:=:</numIndex></OR></displayCond>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -363,6 +416,7 @@
 
           <settings.lbCaptionBg>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionBg</label>
+            <displayCond><OR><numIndex index="0">FIELD:settings.designPreset:=:custom</numIndex><numIndex index="1">FIELD:settings.designPreset:=:</numIndex></OR></displayCond>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -371,6 +425,66 @@
               <default>#b40000</default>
             </config>
           </settings.lbCaptionBg>
+
+          <settings.lbCaptionBgAlpha>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionBgAlpha</label>
+            <displayCond><OR><numIndex index="0">FIELD:settings.designPreset:=:custom</numIndex><numIndex index="1">FIELD:settings.designPreset:=:</numIndex></OR></displayCond>
+            <config>
+              <type>input</type>
+              <size>6</size>
+              <eval>trim,double2</eval>
+              <default>1.00</default>
+              <range>
+                <lower>0</lower>
+                <upper>1</upper>
+              </range>
+            </config>
+          </settings.lbCaptionBgAlpha>
+
+          <settings.lbCaptionAlign>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionAlign</label>
+            <displayCond><OR><numIndex index="0">FIELD:settings.designPreset:=:custom</numIndex><numIndex index="1">FIELD:settings.designPreset:=:</numIndex></OR></displayCond>
+            <config>
+              <type>select</type>
+              <renderType>selectSingle</renderType>
+              <items>
+                <numIndex index="0"><label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionAlign.left</label><value>left</value></numIndex>
+                <numIndex index="1"><label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionAlign.center</label><value>center</value></numIndex>
+                <numIndex index="2"><label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionAlign.right</label><value>right</value></numIndex>
+              </items>
+              <default>left</default>
+            </config>
+          </settings.lbCaptionAlign>
+
+          <settings.lbCaptionSize>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionSize</label>
+            <displayCond><OR><numIndex index="0">FIELD:settings.designPreset:=:custom</numIndex><numIndex index="1">FIELD:settings.designPreset:=:</numIndex></OR></displayCond>
+            <config>
+              <type>select</type>
+              <renderType>selectSingle</renderType>
+              <items>
+                <numIndex index="0"><label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionSize.small</label><value>small</value></numIndex>
+                <numIndex index="1"><label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionSize.normal</label><value>normal</value></numIndex>
+                <numIndex index="2"><label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionSize.large</label><value>large</value></numIndex>
+              </items>
+              <default>normal</default>
+            </config>
+          </settings.lbCaptionSize>
+
+          <settings.lbCaptionStyle>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionStyle</label>
+            <displayCond><OR><numIndex index="0">FIELD:settings.designPreset:=:custom</numIndex><numIndex index="1">FIELD:settings.designPreset:=:</numIndex></OR></displayCond>
+            <config>
+              <type>select</type>
+              <renderType>selectSingle</renderType>
+              <items>
+                <numIndex index="0"><label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionStyle.regular</label><value>regular</value></numIndex>
+                <numIndex index="1"><label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionStyle.italic</label><value>italic</value></numIndex>
+                <numIndex index="2"><label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionStyle.strong</label><value>strong</value></numIndex>
+              </items>
+              <default>regular</default>
+            </config>
+          </settings.lbCaptionStyle>
 
         </el>
       </ROOT>
