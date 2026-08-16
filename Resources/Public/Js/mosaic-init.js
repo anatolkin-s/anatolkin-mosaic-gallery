@@ -96,18 +96,24 @@
 
     var frameColor = gv("--frame-color", "transparent");
     var frameWidth = gv("--frame-width", "0px");
+    var frameWidthValue = Math.max(0, parseFloat(frameWidth) || 0);
+    var frameKeyline = Math.min(1, frameWidthValue) + "px";
+    var frameInnerLine = Math.min(2, frameWidthValue) + "px";
     var frameStyle = root.getAttribute("data-frame-style") || "none";
     var nativeFrameStyles = ["solid", "dashed", "dotted", "double", "groove", "ridge"];
     var compositeFrameStyles = ["triple", "doubleOuterStrong", "doubleInnerStrong", "gallery"];
     var safeFrameStyle = nativeFrameStyles.indexOf(frameStyle) !== -1 ? frameStyle : "none";
     var compositeFrame = compositeFrameStyles.indexOf(frameStyle) !== -1;
-    var compositeBorderWidth = frameStyle === "doubleInnerStrong" ? "1px" : frameWidth;
     var compositeShadow = {
-      triple: "inset 0 0 0 1px " + frameColor + ",0 0 0 2px " + frameColor,
-      doubleOuterStrong: "0 0 0 3px " + frameColor,
-      doubleInnerStrong: "inset 0 0 0 " + frameWidth + " " + frameColor,
-      gallery: "inset 0 0 0 1px " + frameColor + ",0 0 0 1px " + frameColor
+      triple: "inset 0 0 0 " + frameKeyline + " var(--mg-lightbox-tile-bg),inset 0 0 0 " + frameInnerLine + " " + frameColor,
+      doubleOuterStrong: "inset 0 0 0 " + frameKeyline + " " + frameColor,
+      doubleInnerStrong: "inset 0 0 0 " + frameInnerLine + " " + frameColor,
+      gallery: "inset 0 0 0 " + frameKeyline + " color-mix(in srgb," + frameColor + " 60%,#fff),inset 0 0 0 " + frameInnerLine + " color-mix(in srgb," + frameColor + " 70%,#000)"
     }[frameStyle] || "none";
+    if (frameWidthValue <= 0) {
+      safeFrameStyle = "none";
+      compositeShadow = "none";
+    }
 
     var radius = (function (v) {
       v = (v || "0").toString().trim();
@@ -163,7 +169,8 @@
       "}" +
       scope + ".glightbox-container .gslide-title + .gslide-desc{margin-top:0.3rem!important;}" +
       scope + ".glightbox-container .gslide-image img{" +
-      "border:" + (compositeFrame ? compositeBorderWidth + " solid" : frameWidth + " " + safeFrameStyle) + " " + frameColor + " !important;" +
+      "--mg-lightbox-tile-bg:" + tileBg + ";" +
+      "border:" + frameWidth + " " + (compositeFrame && frameWidthValue > 0 ? "solid" : safeFrameStyle) + " " + frameColor + " !important;" +
       "border-radius:" + radius + " !important;" +
       "background:" + tileBg + " !important;" +
       (compositeFrame ? "box-shadow:" + compositeShadow + " !important;" : "") +

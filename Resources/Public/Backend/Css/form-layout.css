@@ -363,21 +363,22 @@
 .mosaic-design-preview[data-frame-style="doubleInnerStrong"] :is(.mosaic-design-preview__item img, .mosaic-design-preview__lightbox-figure img),
 .mosaic-design-preview[data-frame-style="gallery"] :is(.mosaic-design-preview__item img, .mosaic-design-preview__lightbox-figure img) {
   border-style: solid;
-  border-width: var(--preview-frame-width);
-  box-shadow: inset 0 0 0 1px var(--preview-frame-color), 0 0 0 2px var(--preview-frame-color), var(--preview-shadow);
+  border-width: min(var(--preview-frame-width), 12px);
+  box-shadow: inset 0 0 0 min(1px, var(--preview-frame-width)) var(--preview-frame-color), var(--preview-shadow);
 }
 
-.mosaic-design-preview[data-frame-style="doubleOuterStrong"] :is(.mosaic-design-preview__item img, .mosaic-design-preview__lightbox-figure img) {
-  box-shadow: 0 0 0 3px var(--preview-frame-color), var(--preview-shadow);
+.mosaic-design-preview[data-frame-style="triple"] :is(.mosaic-design-preview__item img, .mosaic-design-preview__lightbox-figure img) {
+  box-shadow: inset 0 0 0 min(1px, var(--preview-frame-width)) var(--preview-background),
+    inset 0 0 0 min(2px, var(--preview-frame-width)) var(--preview-frame-color), var(--preview-shadow);
 }
 
 .mosaic-design-preview[data-frame-style="doubleInnerStrong"] :is(.mosaic-design-preview__item img, .mosaic-design-preview__lightbox-figure img) {
-  border-width: 1px;
-  box-shadow: inset 0 0 0 var(--preview-frame-width) var(--preview-frame-color), var(--preview-shadow);
+  box-shadow: inset 0 0 0 min(2px, var(--preview-frame-width)) var(--preview-frame-color), var(--preview-shadow);
 }
 
 .mosaic-design-preview[data-frame-style="gallery"] :is(.mosaic-design-preview__item img, .mosaic-design-preview__lightbox-figure img) {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--preview-frame-color) 60%, #fff), 0 0 0 1px color-mix(in srgb, var(--preview-frame-color) 70%, #000), var(--preview-shadow);
+  box-shadow: inset 0 0 0 min(1px, var(--preview-frame-width)) color-mix(in srgb, var(--preview-frame-color) 60%, #fff),
+    inset 0 0 0 min(2px, var(--preview-frame-width)) color-mix(in srgb, var(--preview-frame-color) 70%, #000), var(--preview-shadow);
 }
 
 .mosaic-design-preview__item img {
