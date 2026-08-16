@@ -3,7 +3,8 @@
             --bg:{design.backgroundColor};
             --frame-color:{design.frameColor};
             --frame-width:{design.frameWidth}px;
-            --frame-style:{design.frameStyle};"
+            --frame-style:{design.frameStyle};
+            --caption-align:{captionAlign};"
      data-apply-bg="{design.applyTo}"
      data-shadow="{f:if(condition: design.shadow, then: 1, else: 0)}"
      data-lightbox="{f:if(condition: settings.enableLightbox, then: 1, else: 0)}"
@@ -15,7 +16,11 @@
      data-lb-nav="{design.lightbox.navColor}"
      data-lb-close="{design.lightbox.closeColor}"
      data-lb-caption="{design.lightbox.captionColor}"
-     data-lb-caption-bg="{design.lightbox.captionBackground}">
+     data-lb-caption-bg="{design.lightbox.captionBackground}"
+     data-lb-caption-bg-alpha="{design.lightbox.captionBackgroundAlpha}"
+     data-lb-caption-align="{design.lightbox.captionAlign}"
+     data-lb-caption-size="{design.lightbox.captionSize}"
+     data-lb-caption-style="{design.lightbox.captionStyle}">
   <div class="mosaic-grid">
     <div class="mosaic-sizer"></div>
 

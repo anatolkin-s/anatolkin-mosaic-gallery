@@ -73,6 +73,10 @@ final class GalleryController extends ActionController
 
         $showCaptions   = (bool)($this->settings['showCaptions'] ?? true);
         $useFalCaptions = (bool)($this->settings['useFalCaptions'] ?? true);
+        $captionAlign   = (string)($this->settings['captionAlign'] ?? 'left');
+        if (!\in_array($captionAlign, ['left', 'center', 'right'], true)) {
+            $captionAlign = 'left';
+        }
 
         $design = $this->designPresetResolver->resolve($this->settings);
 
@@ -150,6 +154,7 @@ final class GalleryController extends ActionController
             'gap'            => $gap,
             'maxWidth'       => $maxWidth,
             'showCaptions'   => $showCaptions,
+            'captionAlign'   => $captionAlign,
             'design'         => $design,
             'enableLightbox' => $enableLightbox,
             'galleryGroup'   => $groupId,

@@ -46,6 +46,9 @@
   border: var(--frame-width,0px) var(--frame-style,solid) var(--frame-color,transparent);
   border-radius: var(--radius,6px);
 }
+.mosaic-item figcaption{
+  text-align: var(--caption-align,left);
+}
 
 /* Shadow & background (case-insensitive attribute selectors) */
 .mosaic-gallery[data-shadow="1"] .mosaic-item img{

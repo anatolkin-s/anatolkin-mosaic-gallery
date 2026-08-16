@@ -46,6 +46,35 @@
     return "rgba(" + c.r + "," + c.g + "," + c.b + "," + alpha + ")";
   }
 
+  function normalizeAlpha(value, fallback) {
+    if (value === null || typeof value === "undefined" || String(value).trim() === "") {
+      return fallback;
+    }
+    var alpha = Number(value);
+    if (isNaN(alpha)) return fallback;
+    return Math.min(1, Math.max(0, alpha));
+  }
+
+  function normalizeCaptionAlign(value) {
+    return ["left", "center", "right"].indexOf(value) !== -1 ? value : "left";
+  }
+
+  function resolveCaptionSize(value) {
+    return {
+      small: "0.875rem",
+      normal: "1rem",
+      large: "1.125rem"
+    }[value] || "1rem";
+  }
+
+  function resolveCaptionStyle(value) {
+    return {
+      regular: { fontStyle: "normal", fontWeight: "400" },
+      italic: { fontStyle: "italic", fontWeight: "400" },
+      strong: { fontStyle: "normal", fontWeight: "600" }
+    }[value] || { fontStyle: "normal", fontWeight: "400" };
+  }
+
   function injectCss(id, css) {
     if (document.getElementById(id)) return;
     var st = document.createElement("style");
@@ -77,6 +106,13 @@
     var bgApply = (root.getAttribute("data-apply-bg") || "").toLowerCase();
     var bgColor = gv("--bg", "transparent");
     var tileBg = (bgApply === "tiles" || bgApply === "both") ? bgColor : "transparent";
+    var captionBackground = toRgba(
+      ds.lbCaptionBg || "rgba(0,0,0,0.75)",
+      normalizeAlpha(ds.lbCaptionBgAlpha, 1)
+    );
+    var captionAlign = normalizeCaptionAlign(ds.lbCaptionAlign);
+    var captionSize = resolveCaptionSize(ds.lbCaptionSize);
+    var captionStyle = resolveCaptionStyle(ds.lbCaptionStyle);
 
     var css =
       scope + ".goverlay{background:" +
@@ -90,10 +126,18 @@
       "!important;}" +
       scope + ".glightbox-container .gslide-title," + scope + ".glightbox-container .gslide-desc{color:" +
       (ds.lbCaption || "#FFFFFF") +
-      "!important;}" +
+      "!important;" +
+      "text-align:" + captionAlign + "!important;" +
+      "font-size:" + captionSize + "!important;" +
+      "font-style:" + captionStyle.fontStyle + "!important;" +
+      "font-weight:" + captionStyle.fontWeight + "!important;" +
+      "line-height:1.35!important;" +
+      "margin:0!important;}" +
       scope + ".glightbox-clean .gslide-description{background:" +
-      (ds.lbCaptionBg || "rgba(0,0,0,0.75)") +
+      captionBackground +
       "!important;}" +
+      scope + ".glightbox-clean .gdesc-inner{padding:0.65rem 0.8rem!important;}" +
+      scope + ".glightbox-container .gslide-title + .gslide-desc{margin-top:0.3rem!important;}" +
       scope + ".glightbox-container .gslide-image img{" +
       "border:" + frameWidth + " " + frameStyle + " " + frameColor + " !important;" +
       "border-radius:" + radius + " !important;" +
