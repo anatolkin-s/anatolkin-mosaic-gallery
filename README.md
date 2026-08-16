@@ -102,7 +102,7 @@ Do not edit these database records manually.
 - Configurable image width, gap, frame, corner radius, background, and shadow
 - Optional GLightbox lightbox with configurable appearance
 - Optional visible captions
-- Configurable Load More button that reveals batches of already rendered images; it does not make AJAX requests
+- True progressive preview image loading: only the initial visible batch is requested on page load, and later previews are requested when their Load More batch is activated, without an AJAX endpoint or API
 - Per-gallery Image metadata editor with backend previews
 - Responsive backend editing layout
 - English, German, French, Spanish, and Russian extension interface translations
@@ -139,9 +139,11 @@ Configured site languages are discovered from TYPO3 Site Configuration. The five
 
 ## Compatibility and release status
 
-Anatolkin Mosaic Gallery 0.3.0 targets TYPO3 13.4 and TYPO3 14.3. Runtime validation was completed successfully on TYPO3 13.4.34 and TYPO3 14.3.6. The `list_type` to `CType` migration was also runtime tested successfully.
+Anatolkin Mosaic Gallery 0.3.1 targets TYPO3 13.4 and TYPO3 14.3. Runtime validation was completed successfully on TYPO3 13.4.34 and TYPO3 14.3.6.
 
-Existing folder galleries, the metadata editor, saving, Load More, and the lightbox were runtime-smoke-tested.
+Progressive loading, Masonry relayout, Load More completion, captions, and GLightbox were runtime-smoke-tested on both TYPO3 versions. The `list_type` to `CType` migration introduced in 0.3.0 was also runtime tested successfully.
+
+Updating from 0.3.0 to 0.3.1 requires no database migration.
 
 Existing folder galleries and legacy Quick captions remain supported. Metadata conversion remains an explicit editor action and is not automatically required.
 
