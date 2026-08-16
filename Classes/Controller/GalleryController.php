@@ -68,9 +68,23 @@ final class GalleryController extends ActionController
         $showCaptions   = (bool)($this->settings['showCaptions'] ?? true);
         $useFalCaptions = (bool)($this->settings['useFalCaptions'] ?? true);
 
-        $borderRadius = max(0, (int)($this->settings['borderRadius'] ?? 6));
-        $shadow       = (bool)($this->settings['shadow'] ?? false);
-        $background   = (string)($this->settings['background'] ?? '');
+        $design = [
+            'frameColor' => (string)($this->settings['frameColor'] ?? ''),
+            'frameWidth' => (string)($this->settings['frameWidth'] ?? ''),
+            'frameStyle' => (string)($this->settings['frameStyle'] ?? ''),
+            'borderRadius' => max(0, (int)($this->settings['borderRadius'] ?? 6)),
+            'shadow' => (bool)($this->settings['shadow'] ?? false),
+            'backgroundColor' => (string)($this->settings['backgroundColor'] ?? ''),
+            'applyTo' => (string)($this->settings['applyTo'] ?? ''),
+            'lightbox' => [
+                'overlay' => (string)($this->settings['lbOverlay'] ?? ''),
+                'overlayAlpha' => (string)($this->settings['lbOverlayAlpha'] ?? ''),
+                'navColor' => (string)($this->settings['lbNavColor'] ?? ''),
+                'closeColor' => (string)($this->settings['lbCloseColor'] ?? ''),
+                'captionColor' => (string)($this->settings['lbCaptionColor'] ?? ''),
+                'captionBackground' => (string)($this->settings['lbCaptionBg'] ?? ''),
+            ],
+        ];
 
         $enableLoadMore = (bool)($this->settings['enableLoadMore'] ?? true);
         $itemsPerPage   = max(1, (int)($this->settings['itemsPerPage'] ?? 12));
@@ -146,9 +160,7 @@ final class GalleryController extends ActionController
             'gap'            => $gap,
             'maxWidth'       => $maxWidth,
             'showCaptions'   => $showCaptions,
-            'borderRadius'   => $borderRadius,
-            'shadow'         => $shadow,
-            'background'     => $background,
+            'design'         => $design,
             'enableLightbox' => $enableLightbox,
             'galleryGroup'   => $groupId,
             'enableLoadMore' => $enableLoadMore,
