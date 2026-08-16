@@ -18,6 +18,9 @@
     <trans-unit id="flexform.designOverride.on"><source>On</source><target>Ein</target></trans-unit>
     <trans-unit id="flexform.designOverride.off"><source>Off</source><target>Aus</target></trans-unit>
     <trans-unit id="design.configurator.title"><source>Effective design</source><target>Effektive Gestaltung</target></trans-unit>
+    <trans-unit id="design.configurator.saved"><source>Saved design</source><target>Gespeicherte Gestaltung</target></trans-unit>
+    <trans-unit id="design.configurator.previewing"><source>Previewing</source><target>Vorschau</target></trans-unit>
+    <trans-unit id="design.configurator.unsaved"><source>Unsaved</source><target>Nicht gespeichert</target></trans-unit>
     <trans-unit id="design.configurator.modified"><source>Modified</source><target>Geändert</target></trans-unit>
     <trans-unit id="design.configurator.effective"><source>Effective</source><target>Effektiv</target></trans-unit>
     <trans-unit id="design.configurator.reset"><source>Reset</source><target>Zurücksetzen</target></trans-unit>

@@ -169,6 +169,30 @@ final class DesignPresetResolver
     }
 
     /**
+     * Returns canonical preset bases for backend draft switching.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function resolveAvailablePresetBases(?string $sitePreset = null): array
+    {
+        $bases = [];
+        foreach ([
+            self::PRESET_SITE,
+            self::PRESET_BOOTSTRAP,
+            self::PRESET_CLEAN,
+            self::PRESET_FRAMED,
+            self::PRESET_DARK,
+        ] as $preset) {
+            $bases[$preset] = $this->resolve([
+                'designPreset' => $preset,
+                'designOverrides' => '{}',
+            ], $sitePreset);
+        }
+
+        return $bases;
+    }
+
+    /**
      * @param array<string, mixed> $design
      * @return array<string, mixed>
      */

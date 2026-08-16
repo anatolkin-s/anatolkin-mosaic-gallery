@@ -64,53 +64,77 @@ final class DesignConfiguratorElement extends AbstractFormElement
 
         $resolver = GeneralUtility::makeInstance(DesignPresetResolver::class);
         $overrides = $resolver->resolveOverrideDocument($settings);
-        $baseSettings = $settings;
-        $baseSettings['designOverrides'] = '{}';
-        $base = $resolver->resolve($baseSettings);
-        foreach (self::CONTROLS as $control) {
-            $path = $control['path'];
-            if ($this->hasPath($overrides, $path)
-                && $this->valueAtPath($overrides, $path) === $this->valueAtPath($base, $path)
-            ) {
-                $this->removePath($overrides, $path);
+        $presetBases = $resolver->resolveAvailablePresetBases();
+        $savedPreset = (string)($settings['designPreset'] ?? '');
+        $savedPreset = $savedPreset === '' ? DesignPresetResolver::PRESET_CUSTOM : $savedPreset;
+        if ($savedPreset !== DesignPresetResolver::PRESET_CUSTOM && !isset($presetBases[$savedPreset])) {
+            $savedPreset = DesignPresetResolver::PRESET_CUSTOM;
+        }
+        $previewPreset = isset($presetBases[$savedPreset]) ? $savedPreset : DesignPresetResolver::PRESET_BOOTSTRAP;
+        $base = $presetBases[$previewPreset];
+        if (isset($presetBases[$savedPreset])) {
+            foreach (self::CONTROLS as $control) {
+                $path = $control['path'];
+                if ($this->hasPath($overrides, $path)
+                    && $this->valueAtPath($overrides, $path) === $this->valueAtPath($base, $path)
+                ) {
+                    $this->removePath($overrides, $path);
+                }
             }
         }
-        $settings['designOverrides'] = (string)json_encode($overrides, JSON_UNESCAPED_SLASHES);
-        $effective = $resolver->resolve($settings);
-        $requestedPreset = (string)($effective['requestedPreset'] ?? DesignPresetResolver::PRESET_BOOTSTRAP);
-        $presetLabel = $this->presetLabel($requestedPreset);
-        $effectiveLabel = $this->presetLabel((string)($effective['effectivePreset'] ?? $requestedPreset));
+        $effective = $resolver->resolve([
+            'designPreset' => $previewPreset,
+            'designOverrides' => (string)json_encode($overrides, JSON_UNESCAPED_SLASHES),
+        ]);
+        $presetLabels = [];
+        foreach (array_keys($presetBases) as $preset) {
+            $presetLabels[$preset] = $this->presetLabel($preset);
+        }
+        $presetLabels[DesignPresetResolver::PRESET_CUSTOM] = $this->presetLabel(DesignPresetResolver::PRESET_CUSTOM);
+        $savedLabel = $presetLabels[$savedPreset] ?? $presetLabels[DesignPresetResolver::PRESET_CUSTOM];
         $modifiedCount = $this->countLeaves($overrides);
 
         $hiddenValue = htmlspecialchars(
             (string)json_encode($overrides, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
             ENT_QUOTES,
         );
-        $status = $presetLabel . ($modifiedCount > 0
-            ? ' · ' . $this->rawLabel('design.configurator.modified') . ' (' . $modifiedCount . ')'
-            : '');
+        $presetBasesJson = htmlspecialchars(
+            (string)json_encode($presetBases, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            ENT_QUOTES,
+        );
+        $presetLabelsJson = htmlspecialchars(
+            (string)json_encode($presetLabels, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            ENT_QUOTES,
+        );
 
         $html = $this->renderLabel($fieldId)
             . '<div class="form-control-wrap mosaic-design-configurator" data-mosaic-design-configurator'
-            . ' data-preset-label="' . htmlspecialchars($presetLabel, ENT_QUOTES) . '"'
+            . ' data-saved-preset="' . htmlspecialchars($savedPreset, ENT_QUOTES) . '"'
+            . ' data-saved-overrides="' . $hiddenValue . '"'
+            . ' data-preset-bases="' . $presetBasesJson . '"'
+            . ' data-preset-labels="' . $presetLabelsJson . '"'
+            . ' data-saved-label="' . $this->label('design.configurator.saved') . '"'
+            . ' data-previewing-label="' . $this->label('design.configurator.previewing') . '"'
+            . ' data-unsaved-label="' . $this->label('design.configurator.unsaved') . '"'
+            . ' data-reset-all-template="' . $this->label('design.configurator.resetAll') . '"'
+            . ' data-site-default-label="' . $this->label('design.configurator.siteDefault') . '"'
             . ' data-modified-label="' . $this->label('design.configurator.modified') . '">'
             . '<input type="hidden" id="' . htmlspecialchars($fieldId, ENT_QUOTES) . '"'
             . ' name="' . htmlspecialchars($fieldName, ENT_QUOTES) . '" value="' . $hiddenValue . '"'
             . ' data-formengine-input-name="' . htmlspecialchars($fieldName, ENT_QUOTES) . '"'
             . ' data-design-storage>'
             . '<div class="mosaic-design-configurator__toolbar">'
-            . '<div><strong data-design-status>' . htmlspecialchars($status, ENT_QUOTES) . '</strong>'
-            . ($requestedPreset === DesignPresetResolver::PRESET_SITE
-                ? '<div class="form-text">' . $this->label('design.configurator.effective') . ': '
-                    . htmlspecialchars($effectiveLabel, ENT_QUOTES) . '</div>'
-                : '')
-            . '</div><button type="button" class="btn btn-default btn-sm" data-design-reset-all'
+            . '<div data-design-status><strong>' . $this->label('design.configurator.saved') . ': '
+            . '<span data-design-saved>' . htmlspecialchars($savedLabel, ENT_QUOTES) . '</span></strong>'
+            . '<div class="form-text" data-design-preview hidden></div>'
+            . '<div class="form-text" data-design-modifications></div></div>'
+            . '<button type="button" class="btn btn-default btn-sm" data-design-reset-all'
             . ($modifiedCount === 0 ? ' disabled' : '') . '>'
             . $this->formatLabel(
                 'design.configurator.resetAll',
-                $requestedPreset === DesignPresetResolver::PRESET_SITE
+                $previewPreset === DesignPresetResolver::PRESET_SITE
                     ? $this->rawLabel('design.configurator.siteDefault')
-                    : $presetLabel,
+                    : $presetLabels[$previewPreset],
             ) . '</button></div>'
             . '<div class="mosaic-design-configurator__grid">';
 

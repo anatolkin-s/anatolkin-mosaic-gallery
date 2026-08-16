@@ -115,6 +115,14 @@
 
 /* Design: frame/gallery surface followed by lightbox appearance. */
 .tab-content > .tab-pane.active:has(> .form-section[data-id="settings.frameColor"])
+  > .form-section:is(
+    [data-id="settings.designPreset"],
+    [data-id="settings.designOverrides"]
+  ) {
+  grid-column: 1 / -1;
+}
+
+.tab-content > .tab-pane.active:has(> .form-section[data-id="settings.frameColor"])
   > .form-section[data-id="settings.applyTo"] {
   grid-column: span 6;
 }

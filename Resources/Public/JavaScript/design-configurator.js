@@ -7,7 +7,14 @@ const parseDocument = (value) => {
   }
 };
 
+const clone = (value) => JSON.parse(JSON.stringify(value));
 const pathSegments = (path) => path.split('.');
+const normalizePreset = (value) => value === '' || value === 'custom' ? 'custom' : value;
+
+const valueAtPath = (document, path) => pathSegments(path).reduce(
+  (value, segment) => value && typeof value === 'object' ? value[segment] : undefined,
+  document,
+);
 
 const setPath = (document, path, value) => {
   const segments = pathSegments(path);
@@ -48,21 +55,29 @@ const countLeaves = (document) => Object.values(document).reduce(
   0,
 );
 
-const baseValue = (control) => JSON.parse(control.dataset.designBaseValue);
+const canonicalJson = (value) => JSON.stringify(value, (key, item) => {
+  if (!item || typeof item !== 'object' || Array.isArray(item)) {
+    return item;
+  }
+  return Object.keys(item).sort().reduce((result, itemKey) => {
+    result[itemKey] = item[itemKey];
+    return result;
+  }, {});
+});
 
-const controlValue = (control) => {
+const controlValue = (control, base) => {
   switch (control.dataset.designKind) {
     case 'boolean':
       return control.value === '1';
     case 'integer': {
       const value = Number.parseInt(control.value, 10);
-      return Number.isInteger(value) && value >= 0 ? value : baseValue(control);
+      return Number.isInteger(value) && value >= 0 ? value : base;
     }
     case 'number':
     case 'alpha': {
       const value = Number(control.value);
       if (!Number.isFinite(value) || value < 0) {
-        return baseValue(control);
+        return base;
       }
       const clamped = control.dataset.designKind === 'alpha' ? Math.min(1, value) : value;
       return String(clamped);
@@ -80,37 +95,38 @@ const displayValue = (control, value) => {
   }
 };
 
-const updateStatus = (editor, document) => {
-  const count = countLeaves(document);
-  const status = editor.querySelector('[data-design-status]');
-  if (status) {
-    status.textContent = count > 0
-      ? `${editor.dataset.presetLabel} · ${editor.dataset.modifiedLabel} (${count})`
-      : editor.dataset.presetLabel;
-  }
-  const resetAll = editor.querySelector('[data-design-reset-all]');
-  if (resetAll) {
-    resetAll.disabled = count === 0;
-  }
-};
-
-const persist = (editor, document) => {
-  const storage = editor.querySelector('[data-design-storage]');
-  if (!storage) {
-    return;
-  }
-  storage.value = JSON.stringify(document);
-  storage.dispatchEvent(new Event('change', { bubbles: true }));
-  updateStatus(editor, document);
-};
-
 const updateFieldState = (control, modified) => {
   const reset = control.closest('[data-design-field]')?.querySelector('[data-design-reset-field]');
   if (reset) {
     reset.disabled = !modified;
     reset.hidden = !modified;
   }
-  displayValue(control, controlValue(control));
+};
+
+const applyEffectiveValues = (editor, base, document) => {
+  editor.querySelectorAll('[data-design-control]').forEach((control) => {
+    const path = control.dataset.designPath;
+    const baseValue = valueAtPath(base, path);
+    const overrideValue = valueAtPath(document, path);
+    const modified = overrideValue !== undefined;
+    control.dataset.designBaseValue = JSON.stringify(baseValue);
+    displayValue(control, modified ? overrideValue : baseValue);
+    updateFieldState(control, modified);
+  });
+};
+
+const effectiveDesign = (base, document) => {
+  const effective = clone(base);
+  const merge = (target, source) => Object.entries(source).forEach(([key, value]) => {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      target[key] = target[key] && typeof target[key] === 'object' ? target[key] : {};
+      merge(target[key], value);
+    } else {
+      target[key] = value;
+    }
+  });
+  merge(effective, document);
+  return effective;
 };
 
 const initializeEditor = (editor) => {
@@ -118,32 +134,105 @@ const initializeEditor = (editor) => {
     return;
   }
   editor.dataset.mosaicDesignInitialized = 'true';
+
   const storage = editor.querySelector('[data-design-storage]');
-  if (!storage) {
+  const sheet = editor.closest('.tab-pane');
+  const presetSection = sheet?.querySelector(':scope > .form-section[data-id="settings.designPreset"]');
+  const configuratorSection = editor.closest('.form-section[data-id="settings.designOverrides"]');
+  const presetSelector = presetSection?.querySelector('select');
+  if (!storage || !sheet || !presetSelector || !configuratorSection) {
     return;
   }
-  let document = parseDocument(storage.value);
-  editor.querySelectorAll('[data-design-control]').forEach((control) => {
-    displayValue(control, controlValue(control));
-  });
-  updateStatus(editor, document);
 
+  const customSections = [...sheet.querySelectorAll(':scope > .form-section')].filter(
+    (section) => section !== presetSection && section !== configuratorSection,
+  );
+  const bases = parseDocument(editor.dataset.presetBases);
+  const labels = parseDocument(editor.dataset.presetLabels);
+  const savedPreset = normalizePreset(editor.dataset.savedPreset);
+  const savedDocument = parseDocument(editor.dataset.savedOverrides);
+  let document = parseDocument(storage.value);
+
+  const currentPreset = () => normalizePreset(presetSelector.value);
+  const presetLabel = (preset) => labels[preset] ?? preset;
+  const currentBase = () => bases[currentPreset()] ?? null;
+
+  const publishState = () => {
+    const preset = currentPreset();
+    const base = currentBase();
+    editor.dispatchEvent(new CustomEvent('mosaic-design-change', {
+      bubbles: true,
+      detail: {
+        preset,
+        overrides: clone(document),
+        effective: base ? effectiveDesign(base, document) : {},
+      },
+    }));
+  };
+
+  const updateStatus = () => {
+    const preset = currentPreset();
+    const count = countLeaves(document);
+    const dirty = preset !== savedPreset || canonicalJson(document) !== canonicalJson(savedDocument);
+    const preview = editor.querySelector('[data-design-preview]');
+    const modifications = editor.querySelector('[data-design-modifications]');
+    const resetAll = editor.querySelector('[data-design-reset-all]');
+    if (preview) {
+      preview.hidden = !dirty;
+      preview.textContent = dirty
+        ? `${editor.dataset.previewingLabel}: ${presetLabel(preset)} · ${editor.dataset.unsavedLabel}`
+        : '';
+    }
+    if (modifications) {
+      modifications.textContent = count > 0
+        ? `${presetLabel(preset)} · ${count} ${editor.dataset.modifiedLabel.toLowerCase()}`
+        : '';
+    }
+    if (resetAll) {
+      const resetLabel = preset === 'site' ? editor.dataset.siteDefaultLabel : presetLabel(preset);
+      resetAll.textContent = editor.dataset.resetAllTemplate.replace('%s', resetLabel);
+      resetAll.disabled = count === 0;
+    }
+  };
+
+  const updateMode = () => {
+    const custom = currentPreset() === 'custom';
+    customSections.forEach((section) => {
+      section.hidden = !custom;
+    });
+    configuratorSection.hidden = custom;
+    if (!custom) {
+      applyEffectiveValues(editor, currentBase(), document);
+    }
+    updateStatus();
+    publishState();
+  };
+
+  const persist = () => {
+    storage.value = JSON.stringify(document);
+    storage.dispatchEvent(new Event('change', { bubbles: true }));
+    updateStatus();
+    publishState();
+  };
+
+  presetSelector.addEventListener('change', updateMode);
   editor.addEventListener('change', (event) => {
     const control = event.target.closest('[data-design-control]');
     if (!control) {
       return;
     }
-    const value = controlValue(control);
-    const base = baseValue(control);
+    const path = control.dataset.designPath;
+    const base = valueAtPath(currentBase(), path);
+    const value = controlValue(control, base);
     displayValue(control, value);
-    if (JSON.stringify(value) === JSON.stringify(base)) {
-      deletePath(document, control.dataset.designPath);
+    if (canonicalJson(value) === canonicalJson(base)) {
+      deletePath(document, path);
       updateFieldState(control, false);
     } else {
-      setPath(document, control.dataset.designPath, value);
+      setPath(document, path, value);
       updateFieldState(control, true);
     }
-    persist(editor, document);
+    persist();
   });
 
   editor.addEventListener('input', (event) => {
@@ -162,21 +251,20 @@ const initializeEditor = (editor) => {
       const control = resetField.closest('[data-design-field]')?.querySelector('[data-design-control]');
       if (control) {
         deletePath(document, control.dataset.designPath);
-        displayValue(control, baseValue(control));
+        displayValue(control, valueAtPath(currentBase(), control.dataset.designPath));
         updateFieldState(control, false);
-        persist(editor, document);
+        persist();
       }
       return;
     }
     if (event.target.closest('[data-design-reset-all]')) {
       document = {};
-      editor.querySelectorAll('[data-design-control]').forEach((control) => {
-        displayValue(control, baseValue(control));
-        updateFieldState(control, false);
-      });
-      persist(editor, document);
+      applyEffectiveValues(editor, currentBase(), document);
+      persist();
     }
   });
+
+  updateMode();
 };
 
 document.querySelectorAll('[data-mosaic-design-configurator]').forEach(initializeEditor);
