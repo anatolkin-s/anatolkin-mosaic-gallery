@@ -3,12 +3,14 @@
     var containers = document.querySelectorAll(".mosaic-gallery");
     if (!containers.length) return;
 
-    function waitForImages(images, callback) {
+    function waitForImages(images, callback, timeoutMs) {
       var list = Array.prototype.slice.call(images || []);
       var finished = false;
+      var timeoutId = null;
       var finish = function () {
         if (finished) return;
         finished = true;
+        if (timeoutId) clearTimeout(timeoutId);
         callback();
       };
 
@@ -16,6 +18,8 @@
         finish();
         return;
       }
+
+      timeoutId = setTimeout(finish, timeoutMs || 10000);
 
       if (typeof window.imagesLoaded === "function") {
         try {
@@ -51,18 +55,11 @@
       var grid    = container.querySelector(".mosaic-grid") || container;
       var lightbox = null;
       var msnry = null;
-      var layoutFallbackTimer = null;
 
       function markLayoutReady() {
-        if (layoutFallbackTimer) {
-          clearTimeout(layoutFallbackTimer);
-          layoutFallbackTimer = null;
-        }
         container.classList.remove("is-layout-pending");
         container.classList.add("is-layout-ready");
       }
-
-      layoutFallbackTimer = setTimeout(markLayoutReady, 10000);
 
       function tryInitLightbox() {
         if (!enable) return;
@@ -156,13 +153,13 @@
                 btn.disabled = false;
                 btn.removeAttribute("aria-busy");
               }
-            });
+            }, 10000);
           });
         }
 
         relayout();
         markLayoutReady();
-      });
+      }, 10000);
     });
   });
 })();

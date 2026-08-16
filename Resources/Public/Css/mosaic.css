@@ -9,6 +9,11 @@
 .mosaic-gallery.is-layout-pending .mosaic-grid,
 .mosaic-gallery.is-layout-pending .mosaic-actions{
   visibility:hidden;
+  animation:mosaic-layout-fail-open 0s linear 10s forwards;
+}
+
+@keyframes mosaic-layout-fail-open{
+  to{ visibility:visible; }
 }
 
 /* 3 / 2 / 1 columns layout with gutter = gap */

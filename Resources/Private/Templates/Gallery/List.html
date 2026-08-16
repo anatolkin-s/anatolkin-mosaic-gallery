@@ -29,7 +29,8 @@
            target="{f:if(condition: settings.enableLightbox, then: '_self', else: '_blank')}">
           <img src="{f:if(condition: it.hidden, then: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=', else: previewUrl)}"
                data-src="{f:if(condition: it.hidden, then: previewUrl)}"
-               alt="{it.alt}" title="{it.caption}" loading="lazy" />
+               alt="{it.alt}" title="{it.caption}"
+               loading="{f:if(condition: it.hidden, then: 'lazy', else: 'eager')}" />
         </a>
         <f:if condition="{showCaptions}">
           <f:if condition="{it.caption}">
