@@ -31,6 +31,27 @@ const CUSTOM_FIELDS = {
   'settings.lbCaptionSize': ['lightbox.captionSize', 'string'],
   'settings.lbCaptionStyle': ['lightbox.captionStyle', 'string'],
 };
+const CUSTOM_FIELD_GROUPS = {
+  'settings.captionColor': 'gallery',
+  'settings.applyTo': 'gallery',
+  'settings.frameColor': 'frame',
+  'settings.frameAccentColor': 'frame',
+  'settings.frameWidth': 'frame',
+  'settings.frameStyle': 'frame',
+  'settings.borderRadius': 'frame',
+  'settings.shadow': 'frame',
+  'settings.backgroundColor': 'frame',
+  'settings.lbOverlay': 'lightbox',
+  'settings.lbOverlayAlpha': 'lightbox',
+  'settings.lbNavColor': 'lightbox',
+  'settings.lbCloseColor': 'lightbox',
+  'settings.lbCaptionColor': 'lightbox',
+  'settings.lbCaptionBg': 'lightbox',
+  'settings.lbCaptionBgAlpha': 'lightbox',
+  'settings.lbCaptionAlign': 'lightbox',
+  'settings.lbCaptionSize': 'lightbox',
+  'settings.lbCaptionStyle': 'lightbox',
+};
 const MULTI_COLOR_FRAME_STYLES = new Set([
   'double',
   'groove',
@@ -255,6 +276,37 @@ const renderPreview = (editor, effective) => {
   preview.dataset.captionStyle = effective.lightbox.captionStyle;
 };
 
+const consolidateWorkspaces = (editor) => {
+  const imagesSheet = editor.closest('.tab-pane');
+  const tabContent = imagesSheet?.parentElement;
+  const layoutSheet = [...(tabContent?.querySelectorAll(':scope > .tab-pane') ?? [])].find(
+    (pane) => pane.querySelector(':scope > .form-section[data-id="settings.source"]'),
+  );
+  if (!imagesSheet || !layoutSheet || imagesSheet === layoutSheet) {
+    return imagesSheet;
+  }
+
+  layoutSheet.classList.add('mosaic-layout-sheet');
+  imagesSheet.classList.add('mosaic-images-sheet');
+
+  const designSections = [...imagesSheet.querySelectorAll(':scope > .form-section')];
+  designSections.forEach((section) => layoutSheet.append(section));
+
+  const form = editor.closest('form');
+  const metadataEditor = form?.querySelector('[data-mosaic-metadata-editor]');
+  const metadataSection = metadataEditor?.closest('.form-section');
+  const captionsSection = layoutSheet.querySelector(':scope > .form-section[data-id="settings.captions"]');
+  if (metadataSection) {
+    imagesSheet.append(metadataSection);
+  }
+  if (captionsSection) {
+    captionsSection.classList.add('mosaic-legacy-captions');
+    imagesSheet.append(captionsSection);
+  }
+
+  return layoutSheet;
+};
+
 const initializeEditor = (editor) => {
   if (editor.dataset.mosaicDesignInitialized === 'true') {
     return;
@@ -262,7 +314,7 @@ const initializeEditor = (editor) => {
   editor.dataset.mosaicDesignInitialized = 'true';
 
   const storage = editor.querySelector('[data-design-storage]');
-  const sheet = editor.closest('.tab-pane');
+  const sheet = consolidateWorkspaces(editor);
   const presetSection = sheet?.querySelector(':scope > .form-section[data-id="settings.designPreset"]');
   const configuratorSection = editor.closest('.form-section[data-id="settings.designOverrides"]');
   const presetSelector = presetSection?.querySelector('select');
@@ -271,12 +323,19 @@ const initializeEditor = (editor) => {
   }
 
   const customSections = [...sheet.querySelectorAll(':scope > .form-section')].filter(
-    (section) => section !== presetSection && section !== configuratorSection,
+    (section) => Object.prototype.hasOwnProperty.call(CUSTOM_FIELDS, section.dataset.id),
   );
   const presetSlot = editor.querySelector('[data-design-preset-slot]');
   if (presetSlot) {
     presetSlot.append(presetSection);
   }
+  customSections.forEach((section) => {
+    const group = CUSTOM_FIELD_GROUPS[section.dataset.id];
+    const slot = editor.querySelector(`[data-design-custom-group="${group}"]`);
+    if (slot) {
+      slot.append(section);
+    }
+  });
   const bases = parseDocument(editor.dataset.presetBases);
   const labels = parseDocument(editor.dataset.presetLabels);
   const controlPaths = (() => {
@@ -416,6 +475,11 @@ const initializeEditor = (editor) => {
     const canonical = canonicalControl(proxy.dataset.designProxy);
     if (!canonical) {
       return;
+    }
+    const canonicalSection = canonical.closest('.form-section');
+    if (canonicalSection) {
+      canonicalSection.hidden = true;
+      canonicalSection.classList.add('mosaic-proxy-storage-field');
     }
     proxy.value = canonicalValue(canonical, proxy.dataset.designProxy);
     proxy.addEventListener('change', () => {

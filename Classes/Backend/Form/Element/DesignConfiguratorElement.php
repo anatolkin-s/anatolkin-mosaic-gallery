@@ -20,10 +20,10 @@ final class DesignConfiguratorElement extends AbstractFormElement
 
     /** @var list<array{path: string, label: string, type: string, options?: array<string, string>, step?: string}> */
     private const CONTROLS = [
-        ['path' => 'frameColor', 'label' => 'flexform.frameColor', 'type' => 'color'],
-        ['path' => 'frameAccentColor', 'label' => 'flexform.frameAccentColor', 'type' => 'color'],
-        ['path' => 'frameWidth', 'label' => 'flexform.frameWidth', 'type' => 'number', 'step' => '1'],
-        ['path' => 'frameStyle', 'label' => 'flexform.frameStyle', 'type' => 'select', 'options' => [
+        ['path' => 'frameColor', 'label' => 'design.field.primary', 'type' => 'color'],
+        ['path' => 'frameAccentColor', 'label' => 'design.field.accent', 'type' => 'color'],
+        ['path' => 'frameWidth', 'label' => 'design.field.width', 'type' => 'number', 'step' => '1'],
+        ['path' => 'frameStyle', 'label' => 'design.field.style', 'type' => 'select', 'options' => [
             'none' => 'flexform.frameStyle.none', 'solid' => 'flexform.frameStyle.solid',
             'dashed' => 'flexform.frameStyle.dashed', 'dotted' => 'flexform.frameStyle.dotted',
             'double' => 'flexform.frameStyle.double', 'groove' => 'flexform.frameStyle.groove',
@@ -32,35 +32,50 @@ final class DesignConfiguratorElement extends AbstractFormElement
             'doubleInnerStrong' => 'flexform.frameStyle.doubleInnerStrong',
             'gallery' => 'flexform.frameStyle.gallery',
         ]],
-        ['path' => 'borderRadius', 'label' => 'flexform.borderRadius', 'type' => 'integer', 'step' => '1'],
-        ['path' => 'shadow', 'label' => 'flexform.shadow', 'type' => 'boolean', 'options' => [
+        ['path' => 'borderRadius', 'label' => 'design.field.radius', 'type' => 'integer', 'step' => '1'],
+        ['path' => 'shadow', 'label' => 'design.field.shadow', 'type' => 'boolean', 'options' => [
             '1' => 'flexform.designOverride.on', '0' => 'flexform.designOverride.off',
         ]],
-        ['path' => 'backgroundColor', 'label' => 'flexform.backgroundColor', 'type' => 'color'],
-        ['path' => 'captionColor', 'label' => 'flexform.captionColor', 'type' => 'color'],
-        ['path' => 'applyTo', 'label' => 'flexform.applyTo', 'type' => 'select', 'options' => [
+        ['path' => 'backgroundColor', 'label' => 'design.field.background', 'type' => 'color'],
+        ['path' => 'captionColor', 'label' => 'design.field.captionColor', 'type' => 'color'],
+        ['path' => 'applyTo', 'label' => 'design.field.backgroundTarget', 'type' => 'select', 'options' => [
             'container' => 'flexform.applyTo.container', 'tiles' => 'flexform.applyTo.tiles',
             'both' => 'flexform.applyTo.both',
         ]],
-        ['path' => 'lightbox.overlay', 'label' => 'flexform.lbOverlay', 'type' => 'color'],
-        ['path' => 'lightbox.overlayAlpha', 'label' => 'flexform.lbOverlayAlpha', 'type' => 'alpha', 'step' => '0.01'],
-        ['path' => 'lightbox.navColor', 'label' => 'flexform.lbNavColor', 'type' => 'color'],
-        ['path' => 'lightbox.closeColor', 'label' => 'flexform.lbCloseColor', 'type' => 'color'],
-        ['path' => 'lightbox.captionColor', 'label' => 'flexform.lbCaptionColor', 'type' => 'color'],
-        ['path' => 'lightbox.captionBackground', 'label' => 'flexform.lbCaptionBg', 'type' => 'color'],
-        ['path' => 'lightbox.captionBackgroundAlpha', 'label' => 'flexform.lbCaptionBgAlpha', 'type' => 'alpha', 'step' => '0.01'],
-        ['path' => 'lightbox.captionAlign', 'label' => 'flexform.lbCaptionAlign', 'type' => 'select', 'options' => [
+        ['path' => 'lightbox.overlay', 'label' => 'design.field.overlay', 'type' => 'color'],
+        ['path' => 'lightbox.overlayAlpha', 'label' => 'design.field.opacity', 'type' => 'alpha', 'step' => '0.01'],
+        ['path' => 'lightbox.navColor', 'label' => 'design.field.navigation', 'type' => 'color'],
+        ['path' => 'lightbox.closeColor', 'label' => 'design.field.close', 'type' => 'color'],
+        ['path' => 'lightbox.captionColor', 'label' => 'design.field.captionColor', 'type' => 'color'],
+        ['path' => 'lightbox.captionBackground', 'label' => 'design.field.captionBackground', 'type' => 'color'],
+        ['path' => 'lightbox.captionBackgroundAlpha', 'label' => 'design.field.backgroundOpacity', 'type' => 'alpha', 'step' => '0.01'],
+        ['path' => 'lightbox.captionAlign', 'label' => 'design.field.alignment', 'type' => 'select', 'options' => [
             'left' => 'flexform.lbCaptionAlign.left', 'center' => 'flexform.lbCaptionAlign.center',
             'right' => 'flexform.lbCaptionAlign.right',
         ]],
-        ['path' => 'lightbox.captionSize', 'label' => 'flexform.lbCaptionSize', 'type' => 'select', 'options' => [
+        ['path' => 'lightbox.captionSize', 'label' => 'design.field.size', 'type' => 'select', 'options' => [
             'small' => 'flexform.lbCaptionSize.small', 'normal' => 'flexform.lbCaptionSize.normal',
             'large' => 'flexform.lbCaptionSize.large',
         ]],
-        ['path' => 'lightbox.captionStyle', 'label' => 'flexform.lbCaptionStyle', 'type' => 'select', 'options' => [
+        ['path' => 'lightbox.captionStyle', 'label' => 'design.field.style', 'type' => 'select', 'options' => [
             'regular' => 'flexform.lbCaptionStyle.regular', 'italic' => 'flexform.lbCaptionStyle.italic',
             'strong' => 'flexform.lbCaptionStyle.strong',
         ]],
+    ];
+
+    /** @var array<string, list<string>> */
+    private const CONTROL_GROUPS = [
+        'gallery' => ['captionColor', 'applyTo'],
+        'frame' => [
+            'frameColor', 'frameAccentColor', 'frameWidth', 'frameStyle',
+            'borderRadius', 'shadow', 'backgroundColor',
+        ],
+        'lightbox' => [
+            'lightbox.overlay', 'lightbox.overlayAlpha', 'lightbox.navColor', 'lightbox.closeColor',
+            'lightbox.captionColor', 'lightbox.captionBackground', 'lightbox.captionBackgroundAlpha',
+            'lightbox.captionAlign', 'lightbox.captionSize', 'lightbox.captionStyle',
+        ],
+        'loadMore' => [],
     ];
 
     public function render(): array
@@ -154,18 +169,8 @@ final class DesignConfiguratorElement extends AbstractFormElement
                     : $presetLabels[$previewPreset],
             ) . '</button></div>'
             . $this->renderPreview($fieldId)
-            . $this->renderDisplayControls()
-            . '<div class="mosaic-design-configurator__grid" data-design-controls>';
-
-        foreach (self::CONTROLS as $control) {
-            $path = $control['path'];
-            $baseValue = $this->valueAtPath($base, $path);
-            $effectiveValue = $this->valueAtPath($effective, $path);
-            $isModified = $this->hasPath($overrides, $path);
-            $html .= $this->renderControl($control, $baseValue, $effectiveValue, $isModified);
-        }
-
-        $html .= '</div></div>';
+            . $this->renderControlGroups($base, $effective, $overrides)
+            . '</div>';
         $resultArray['html'] = $html;
         $resultArray['stylesheetFiles'][] =
             'EXT:anatolkin_mosaic_gallery/Resources/Public/Backend/Css/form-layout.css';
@@ -235,21 +240,52 @@ final class DesignConfiguratorElement extends AbstractFormElement
             . '</div></div></div></section>';
     }
 
-    private function renderDisplayControls(): string
+    /** @param array<string, mixed> $base @param array<string, mixed> $effective @param array<string, mixed> $overrides */
+    private function renderControlGroups(array $base, array $effective, array $overrides): string
+    {
+        $controls = [];
+        foreach (self::CONTROLS as $control) {
+            $controls[$control['path']] = $control;
+        }
+
+        $html = '<div class="mosaic-design-configurator__groups">';
+        foreach (self::CONTROL_GROUPS as $group => $paths) {
+            $html .= '<section class="mosaic-design-configurator__group" data-design-group="' . $group . '">'
+                . '<h3>' . $this->label('design.group.' . $group) . '</h3>'
+                . '<div class="mosaic-design-configurator__grid" data-design-controls>'
+                . $this->renderDisplayControls($group);
+            foreach ($paths as $path) {
+                $control = $controls[$path];
+                $html .= $this->renderControl(
+                    $control,
+                    $this->valueAtPath($base, $path),
+                    $this->valueAtPath($effective, $path),
+                    $this->hasPath($overrides, $path),
+                );
+            }
+            $html .= '</div><div class="mosaic-design-configurator__custom" data-design-custom-group="'
+                . $group . '"></div></section>';
+        }
+        return $html . '</div>';
+    }
+
+    private function renderDisplayControls(string $group): string
     {
         $booleanOptions = '<option value="0">' . $this->label('flexform.designOverride.off') . '</option>'
             . '<option value="1">' . $this->label('flexform.designOverride.on') . '</option>';
-        $field = static fn(string $id, string $label, string $control): string =>
-            '<label class="mosaic-design-display-controls__field"><span>' . $label . '</span>' . $control . '</label>';
+        $field = fn(string $labelKey, string $control): string =>
+            '<label class="mosaic-design-display-controls__field"><span>'
+            . $this->label($labelKey) . '</span>' . $control . '</label>';
 
-        return '<div class="mosaic-design-display-controls" data-design-display-controls>'
-            . $field('gap', $this->label('flexform.gap'), '<input type="number" min="0" class="form-control form-control-sm" data-design-proxy="settings.gap">')
-            . $field('showCaptions', $this->label('flexform.showCaptions'), '<select class="form-select form-select-sm" data-design-proxy="settings.showCaptions">' . $booleanOptions . '</select>')
-            . $field('captionAlign', $this->label('flexform.captionAlign'), '<select class="form-select form-select-sm" data-design-proxy="settings.captionAlign"><option value="left">' . $this->label('flexform.captionAlign.left') . '</option><option value="center">' . $this->label('flexform.captionAlign.center') . '</option><option value="right">' . $this->label('flexform.captionAlign.right') . '</option></select>')
-            . $field('enableLightbox', $this->label('flexform.enableLightbox'), '<select class="form-select form-select-sm" data-design-proxy="settings.enableLightbox">' . $booleanOptions . '</select>')
-            . $field('enableLoadMore', $this->label('flexform.enableLoadMore'), '<select class="form-select form-select-sm" data-design-proxy="settings.enableLoadMore">' . $booleanOptions . '</select>')
-            . $field('loadMoreUseFrameStyle', $this->label('flexform.loadMoreUseFrameStyle'), '<select class="form-select form-select-sm" data-design-proxy="settings.loadMoreUseFrameStyle">' . $booleanOptions . '</select>')
-            . '</div>';
+        return match ($group) {
+            'gallery' => $field('design.field.gap', '<input type="number" min="0" class="form-control form-control-sm" data-design-proxy="settings.gap">')
+                . $field('design.field.captions', '<select class="form-select form-select-sm" data-design-proxy="settings.showCaptions">' . $booleanOptions . '</select>')
+                . $field('design.field.alignment', '<select class="form-select form-select-sm" data-design-proxy="settings.captionAlign"><option value="left">' . $this->label('flexform.captionAlign.left') . '</option><option value="center">' . $this->label('flexform.captionAlign.center') . '</option><option value="right">' . $this->label('flexform.captionAlign.right') . '</option></select>'),
+            'lightbox' => $field('design.field.enabled', '<select class="form-select form-select-sm" data-design-proxy="settings.enableLightbox">' . $booleanOptions . '</select>'),
+            'loadMore' => $field('design.field.enabled', '<select class="form-select form-select-sm" data-design-proxy="settings.enableLoadMore">' . $booleanOptions . '</select>')
+                . $field('design.field.buttonFrame', '<select class="form-select form-select-sm" data-design-proxy="settings.loadMoreUseFrameStyle">' . $booleanOptions . '</select>'),
+            default => '',
+        };
     }
 
     private function previewImageUrl(string $fileName): string

@@ -175,6 +175,71 @@
   }
 }
 
+/* Unified workspaces preserve canonical storage while presenting one Layout and one Images surface. */
+.tab-content > .tab-pane.active.mosaic-layout-sheet {
+  column-gap: 1rem;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  row-gap: .75rem;
+}
+
+.tab-content > .tab-pane.active.mosaic-layout-sheet
+  > .form-section:is([data-id="settings.source"], [data-id="settings.recursive"]) {
+  grid-column: span 3;
+}
+
+.tab-content > .tab-pane.active.mosaic-layout-sheet > .form-section[data-id="settings.folder"] {
+  grid-column: span 6;
+}
+
+.tab-content > .tab-pane.active.mosaic-layout-sheet
+  > .form-section:is(
+    [data-id="settings.sortBy"],
+    [data-id="settings.sortDir"],
+    [data-id="settings.maxWidth"],
+    [data-id="settings.itemsPerPage"],
+    [data-id="settings.loadStep"],
+    [data-id="settings.useFalCaptions"]
+  ) {
+  border-top: 0;
+  grid-column: span 2;
+  padding-top: 0;
+}
+
+.tab-content > .tab-pane.active.mosaic-layout-sheet > .form-section[data-id="settings.designOverrides"] {
+  grid-column: 1 / -1;
+}
+
+.mosaic-images-sheet > .form-section {
+  margin-bottom: 1rem;
+}
+
+.mosaic-images-sheet > .mosaic-legacy-captions {
+  background: var(--typo3-surface-container-low, rgba(0, 0, 0, .025));
+  border: 1px solid var(--typo3-component-border-color, #d7d7d7);
+  border-radius: .25rem;
+  padding: 1rem;
+}
+
+@container (max-width: 1099px) {
+  .tab-content > .tab-pane.active.mosaic-layout-sheet
+    > .form-section:is(
+      [data-id="settings.sortBy"],
+      [data-id="settings.sortDir"],
+      [data-id="settings.maxWidth"],
+      [data-id="settings.itemsPerPage"],
+      [data-id="settings.loadStep"],
+      [data-id="settings.useFalCaptions"]
+    ) {
+    grid-column: span 4;
+  }
+}
+
+@container (max-width: 699px) {
+  .tab-content > .tab-pane.active.mosaic-layout-sheet > .form-section {
+    grid-column: 1 / -1 !important;
+  }
+}
+
 /* Preset mode renders effective values through one JSON-backed FormEngine field. */
 .mosaic-design-configurator {
   container-type: inline-size;
@@ -220,6 +285,41 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.mosaic-design-configurator__groups {
+  align-items: start;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
+.mosaic-design-configurator__group {
+  border: 1px solid var(--typo3-component-border-color, #d7d7d7);
+  border-radius: .25rem;
+  min-width: 0;
+  padding: 1rem;
+}
+
+.mosaic-design-configurator__group > h3 {
+  font-size: 1rem;
+  margin: 0 0 .75rem;
+}
+
+.mosaic-design-configurator__custom {
+  display: none;
+}
+
+.mosaic-design-configurator.is-custom .mosaic-design-configurator__custom {
+  display: grid;
+  gap: .75rem 1rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.mosaic-design-configurator__custom > .form-section {
+  margin: 0;
+  min-width: 0;
+}
+
 .mosaic-design-configurator__field {
   min-width: 0;
 }
@@ -251,15 +351,6 @@
   width: 2rem;
 }
 
-.mosaic-design-display-controls {
-  border-bottom: 1px solid var(--typo3-component-border-color, #d7d7d7);
-  display: grid;
-  gap: .55rem .75rem;
-  grid-template-columns: repeat(6, minmax(7rem, 1fr));
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-}
-
 .mosaic-design-display-controls__field {
   font-size: .75rem;
   margin: 0;
@@ -275,7 +366,7 @@
   flex: 0 0 auto;
 }
 
-.mosaic-design-configurator.is-custom [data-design-controls] {
+.mosaic-design-configurator.is-custom [data-design-controls] > .mosaic-design-configurator__field {
   display: none;
 }
 
@@ -586,13 +677,14 @@
 }
 
 @container (max-width: 799px) {
+  .mosaic-design-configurator__groups {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .mosaic-design-preview__panels {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .mosaic-design-display-controls {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @container (max-width: 599px) {
@@ -612,13 +704,15 @@
 }
 
 @container (max-width: 749px) {
-  .mosaic-design-configurator__grid {
+  .mosaic-design-configurator__grid,
+  .mosaic-design-configurator.is-custom .mosaic-design-configurator__custom {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @container (max-width: 499px) {
-  .mosaic-design-configurator__grid {
+  .mosaic-design-configurator__grid,
+  .mosaic-design-configurator.is-custom .mosaic-design-configurator__custom {
     grid-template-columns: minmax(0, 1fr);
   }
 }

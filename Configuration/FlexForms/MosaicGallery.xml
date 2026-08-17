@@ -186,7 +186,7 @@
           </settings.loadStep>
 
           <settings.captions>
-            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.captions</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:images.quickCaptions</label>
             <description>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.captions.help</description>
             <config>
               <type>text</type>
@@ -240,7 +240,7 @@
           </settings.designPreset>
 
           <settings.frameColor>
-            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameColor</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.primary</label>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -251,7 +251,7 @@
           </settings.frameColor>
 
           <settings.frameAccentColor>
-            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameAccentColor</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.accent</label>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -262,7 +262,7 @@
           </settings.frameAccentColor>
 
           <settings.frameWidth>
-            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameWidth</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.width</label>
             <config>
               <type>input</type>
               <eval>int</eval>
@@ -276,7 +276,7 @@
           </settings.frameWidth>
 
           <settings.frameStyle>
-            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.frameStyle</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.style</label>
             <config>
               <type>select</type>
               <renderType>selectSingle</renderType>
@@ -310,7 +310,7 @@
           </settings.frameStyle>
 
           <settings.borderRadius>
-            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.borderRadius</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.radius</label>
             <config>
               <type>input</type>
               <eval>int</eval>
@@ -319,7 +319,7 @@
           </settings.borderRadius>
 
           <settings.shadow>
-            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.shadow</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.shadow</label>
             <config>
               <type>check</type>
               <default>1</default>
@@ -327,7 +327,7 @@
           </settings.shadow>
 
           <settings.backgroundColor>
-            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.backgroundColor</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.background</label>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -338,7 +338,7 @@
           </settings.backgroundColor>
 
           <settings.captionColor>
-            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.captionColor</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.captionColor</label>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -349,7 +349,7 @@
           </settings.captionColor>
 
           <settings.applyTo>
-            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.applyTo</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.backgroundTarget</label>
             <config>
               <type>select</type>
               <renderType>selectSingle</renderType>
@@ -372,7 +372,7 @@
           </settings.applyTo>
 
           <settings.lbOverlay>
-            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbOverlay</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.overlay</label>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -383,7 +383,7 @@
           </settings.lbOverlay>
 
           <settings.lbOverlayAlpha>
-            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbOverlayAlpha</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.opacity</label>
             <config>
               <type>input</type>
               <size>6</size>
@@ -393,7 +393,7 @@
           </settings.lbOverlayAlpha>
 
           <settings.lbNavColor>
-            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbNavColor</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.navigation</label>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -404,7 +404,7 @@
           </settings.lbNavColor>
 
           <settings.lbCloseColor>
-            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCloseColor</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.close</label>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -415,7 +415,7 @@
           </settings.lbCloseColor>
 
           <settings.lbCaptionColor>
-            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionColor</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.captionColor</label>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -426,7 +426,7 @@
           </settings.lbCaptionColor>
 
           <settings.lbCaptionBg>
-            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionBg</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.captionBackground</label>
             <config>
               <type>input</type>
               <renderType>colorpicker</renderType>
@@ -437,7 +437,7 @@
           </settings.lbCaptionBg>
 
           <settings.lbCaptionBgAlpha>
-            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionBgAlpha</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.backgroundOpacity</label>
             <config>
               <type>input</type>
               <size>6</size>
@@ -451,7 +451,7 @@
           </settings.lbCaptionBgAlpha>
 
           <settings.lbCaptionAlign>
-            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionAlign</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.alignment</label>
             <config>
               <type>select</type>
               <renderType>selectSingle</renderType>
@@ -465,7 +465,7 @@
           </settings.lbCaptionAlign>
 
           <settings.lbCaptionSize>
-            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionSize</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.size</label>
             <config>
               <type>select</type>
               <renderType>selectSingle</renderType>
@@ -479,7 +479,7 @@
           </settings.lbCaptionSize>
 
           <settings.lbCaptionStyle>
-            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.lbCaptionStyle</label>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.style</label>
             <config>
               <type>select</type>
               <renderType>selectSingle</renderType>
