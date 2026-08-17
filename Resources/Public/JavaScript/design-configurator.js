@@ -349,7 +349,12 @@ const consolidateWorkspaces = (editor) => {
   }
   if (captionsSection) {
     captionsSection.classList.add('mosaic-legacy-captions');
-    imagesSheet.append(captionsSection);
+    const legacyDetails = document.createElement('details');
+    legacyDetails.className = 'mosaic-legacy-captions-disclosure';
+    const legacySummary = document.createElement('summary');
+    legacySummary.textContent = captionsSection.querySelector('.form-label')?.textContent.trim() ?? '';
+    legacyDetails.append(legacySummary, captionsSection);
+    imagesSheet.append(legacyDetails);
   }
 
   const header = document.createElement('div');

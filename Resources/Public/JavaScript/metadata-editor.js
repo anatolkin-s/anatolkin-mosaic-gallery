@@ -22,6 +22,48 @@ const updateInputState = (row, property) => {
   }
 };
 
+const updateSummary = (editor, row, property) => {
+  const mode = row.querySelector(`[data-mosaic-mode][data-mosaic-property="${property}"]`);
+  const value = row.querySelector(`[data-mosaic-value][data-mosaic-property="${property}"]`);
+  const badge = row.querySelector(`[data-mosaic-summary-badge="${property}"]`);
+  const summaryValue = row.querySelector(`[data-mosaic-summary-value="${property}"]`);
+  if (!mode || !value || !badge || !summaryValue) {
+    return;
+  }
+  const labels = {
+    custom: editor.dataset.mosaicCustomLabel,
+    empty: editor.dataset.mosaicDecorativeLabel,
+    inherit: editor.dataset.mosaicInheritLabel,
+  };
+  badge.textContent = labels[mode.value] ?? labels.inherit;
+  summaryValue.textContent = property === 'caption' && mode.value === 'custom' ? value.value : '';
+};
+
+const applyView = (editor, view) => {
+  const allowedViews = new Set(['grid', 'list', 'table']);
+  const nextView = allowedViews.has(view) ? view : 'table';
+  editor.dataset.mosaicImagesView = nextView;
+  editor.querySelectorAll('[data-mosaic-images-view-button]').forEach((button) => {
+    button.setAttribute('aria-pressed', button.dataset.mosaicImagesViewButton === nextView ? 'true' : 'false');
+  });
+};
+
+const readPreferredView = () => {
+  try {
+    return localStorage.getItem('anatolkin-mosaic-gallery.metadata-view') ?? 'table';
+  } catch (error) {
+    return 'table';
+  }
+};
+
+const storePreferredView = (view) => {
+  try {
+    localStorage.setItem('anatolkin-mosaic-gallery.metadata-view', view);
+  } catch (error) {
+    // A blocked browser preference must not affect metadata editing.
+  }
+};
+
 const persistRow = (editor, row) => {
   const storage = editor.querySelector('[data-mosaic-metadata-storage]');
   if (!storage) {
@@ -81,6 +123,7 @@ const convertLegacyCaptions = (editor) => {
         modeControl.value = 'custom';
         valueControl.value = value;
         valueControl.disabled = false;
+        updateSummary(editor, row, 'caption');
       }
     }
     entry.fileUid = uid;
@@ -107,9 +150,12 @@ const initializeEditor = (editor) => {
     return;
   }
   editor.dataset.mosaicMetadataInitialized = 'true';
+  applyView(editor, readPreferredView());
   editor.querySelectorAll('[data-mosaic-file-uid]').forEach((row) => {
     updateInputState(row, 'caption');
     updateInputState(row, 'alt');
+    updateSummary(editor, row, 'caption');
+    updateSummary(editor, row, 'alt');
   });
   editor.addEventListener('change', (event) => {
     const control = event.target.closest('[data-mosaic-property]');
@@ -118,16 +164,38 @@ const initializeEditor = (editor) => {
       return;
     }
     updateInputState(row, control.dataset.mosaicProperty);
+    updateSummary(editor, row, control.dataset.mosaicProperty);
     persistRow(editor, row);
   });
   editor.addEventListener('input', (event) => {
     const control = event.target.closest('[data-mosaic-value]');
     const row = control?.closest('[data-mosaic-file-uid]');
     if (control && row) {
+      updateSummary(editor, row, control.dataset.mosaicProperty);
       persistRow(editor, row);
     }
   });
   editor.addEventListener('click', (event) => {
+    const viewButton = event.target.closest('[data-mosaic-images-view-button]');
+    if (viewButton) {
+      const view = viewButton.dataset.mosaicImagesViewButton;
+      applyView(editor, view);
+      storePreferredView(view);
+      return;
+    }
+    const editButton = event.target.closest('[data-mosaic-edit-metadata]');
+    if (editButton) {
+      const row = editButton.closest('[data-mosaic-file-uid]');
+      const expanded = row?.classList.toggle('is-metadata-expanded') ?? false;
+      editButton.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      editButton.textContent = expanded ? editor.dataset.mosaicHideLabel : editor.dataset.mosaicEditLabel;
+      return;
+    }
+    if (event.target.closest('.mosaic-metadata-help__button')) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
     if (event.target.closest('[data-mosaic-convert-legacy]')) {
       convertLegacyCaptions(editor);
     }

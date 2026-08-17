@@ -59,19 +59,20 @@ final class MetadataOverridesElement extends AbstractFormElement
             (string)json_encode($legacyCaptionLines, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
             ENT_QUOTES,
         );
+        [$languageSummary, $languageHelp] = $this->renderLanguageContext($languageContext);
         $html = $this->renderLabel($fieldId)
             . '<div class="form-control-wrap" data-mosaic-metadata-editor'
-            . ' data-mosaic-legacy-captions="' . $legacyCaptionLinesJson . '">'
+            . ' data-mosaic-legacy-captions="' . $legacyCaptionLinesJson . '"'
+            . ' data-mosaic-edit-label="' . $this->label('metadata.view.edit') . '"'
+            . ' data-mosaic-hide-label="' . $this->label('metadata.view.hide') . '"'
+            . ' data-mosaic-inherit-label="' . $this->label('metadata.inherit') . '"'
+            . ' data-mosaic-custom-label="' . $this->label('metadata.custom') . '"'
+            . ' data-mosaic-decorative-label="' . $this->label('metadata.decorative') . '">'
             . '<input type="hidden" id="' . htmlspecialchars($fieldId, ENT_QUOTES) . '"'
             . ' name="' . htmlspecialchars($fieldName, ENT_QUOTES) . '"'
             . ' value="' . $hiddenValue . '" data-formengine-input-name="' . htmlspecialchars($fieldName, ENT_QUOTES) . '"'
             . ' data-mosaic-metadata-storage>'
-            . '<div class="alert alert-info"><strong>' . $this->label('metadata.help.title') . '</strong>'
-            . ' <span class="badge text-bg-primary">' . $this->label('metadata.recommended') . '</span>'
-            . $this->renderLanguageContext($languageContext)
-            . '<p class="mb-1">' . $this->label('metadata.help.gallerySpecific') . '</p>'
-            . '<p class="mb-1">' . $this->label('metadata.help.filelist') . '</p>'
-            . '<p class="mb-0">' . $this->label('metadata.help.multilingual') . '</p></div>'
+            . $this->renderWorkspaceHeader(count($images), $languageSummary, $languageHelp)
             . $this->renderConversionUi(
                 $legacyCaptions,
                 $legacyCaptionsConverted,
@@ -88,17 +89,17 @@ final class MetadataOverridesElement extends AbstractFormElement
         } elseif ($images === []) {
             $html .= '<p class="form-text">' . $this->label('metadata.noImages') . '</p>';
         } else {
-            $html .= '<div class="table-fit"><table class="table table-striped table-hover">'
-                . '<thead><tr><th></th><th>' . $this->label('metadata.filename') . '</th>'
-                . '<th>' . $this->label('metadata.caption') . '</th>'
-                . '<th>' . $this->label('metadata.alternative') . '</th></tr></thead><tbody>';
+            $html .= '<div class="mosaic-metadata-table-head" aria-hidden="true"><span></span><span>'
+                . $this->label('metadata.filename') . '</span><span>' . $this->label('metadata.caption')
+                . '</span><span>' . $this->label('metadata.alternative') . '</span></div>'
+                . '<div class="mosaic-metadata-items">';
 
             foreach ($images as $file) {
                 $uid = $file->getUid();
                 $entry = $storedDocument['files'][(string)$uid] ?? [];
                 $caption = $this->normalizeProperty($entry['caption'] ?? null, ['inherit', 'custom']);
                 $alt = $this->normalizeProperty($entry['alt'] ?? null, ['inherit', 'custom', 'empty']);
-                $html .= $this->renderRow(
+                $html .= $this->renderItem(
                     $uid,
                     (string)$file->getName(),
                     (string)$file->getIdentifier(),
@@ -107,7 +108,7 @@ final class MetadataOverridesElement extends AbstractFormElement
                     $alt,
                 );
             }
-            $html .= '</tbody></table></div>';
+            $html .= '</div>';
         }
 
         $html .= '</div>';
@@ -337,48 +338,75 @@ final class MetadataOverridesElement extends AbstractFormElement
      *     siteLanguages: list<SiteLanguage>,
      *     availableLanguageIds: array<int, true>|null
      * } $context
+     * @return array{0: string, 1: string}
      */
-    private function renderLanguageContext(array $context): string
+    private function renderLanguageContext(array $context): array
     {
-        $html = '<div class="mt-2 mb-2"><strong>'
-            . $this->formatLabel('metadata.language.current', $context['languageTitle'])
-            . '</strong></div>';
+        $summary = '<span class="mosaic-metadata-workspace__language">'
+            . $this->formatLabel('metadata.language.current', $context['languageTitle']) . '</span>';
+        $help = '';
 
         if ($context['isAll']) {
-            $html .= '<div class="alert alert-warning mb-2">'
-                . $this->label('metadata.language.allWarning') . '</div>';
+            $help .= '<p>' . $this->label('metadata.language.allWarning') . '</p>';
         } elseif ($context['isDefault']) {
-            $html .= '<p class="mb-2">'
-                . $this->formatLabel('metadata.language.default', $context['languageTitle']) . '</p>';
+            $help .= '<p>' . $this->formatLabel('metadata.language.default', $context['languageTitle']) . '</p>';
         } elseif ($context['isTranslation']) {
-            $html .= '<p class="mb-2">'
-                . $this->formatLabel('metadata.language.translated', $context['languageTitle']) . '</p>';
+            $help .= '<p>' . $this->formatLabel('metadata.language.translated', $context['languageTitle']) . '</p>';
         } else {
-            $html .= '<p class="mb-2">'
-                . $this->formatLabel('metadata.language.currentRecord', $context['languageTitle']) . '</p>';
+            $help .= '<p>' . $this->formatLabel('metadata.language.currentRecord', $context['languageTitle']) . '</p>';
         }
 
         if (!$context['isAll'] && $context['siteLanguages'] !== [] && $context['availableLanguageIds'] !== null) {
-            $html .= '<div class="d-flex flex-wrap gap-1 align-items-center mb-1"><span>'
+            $summary .= '<span class="mosaic-metadata-workspace__translations"><span>'
                 . $this->label('metadata.language.translations') . '</span>';
             foreach ($context['siteLanguages'] as $siteLanguage) {
                 $isAvailable = isset($context['availableLanguageIds'][$siteLanguage->getLanguageId()]);
                 $statusLabel = $isAvailable
                     ? $this->label('metadata.language.available')
                     : $this->label('metadata.language.missing');
-                $html .= '<span class="badge ' . ($isAvailable ? 'text-bg-success' : 'text-bg-secondary') . '"'
-                    . ' title="' . $statusLabel . '">'
+                $summary .= '<span class="badge ' . ($isAvailable ? 'text-bg-success' : 'text-bg-secondary') . '"'
+                    . ' aria-label="' . $statusLabel . '">'
                     . htmlspecialchars($siteLanguage->getTitle(), ENT_QUOTES)
                     . ' ' . ($isAvailable ? '&#10003;' : '&mdash;') . '</span>';
             }
-            $html .= '</div><p class="mb-0 small">'
-                . $this->label('metadata.language.translationWorkflow') . '</p>';
+            $summary .= '</span>';
+            $help .= '<p>' . $this->label('metadata.language.translationWorkflow') . '</p>';
         } elseif (!$context['isAll'] && $context['siteLanguages'] !== []) {
-            $html .= '<p class="mb-0 small">'
-                . $this->label('metadata.language.statusUnavailable') . '</p>';
+            $help .= '<p>' . $this->label('metadata.language.statusUnavailable') . '</p>';
         }
 
-        return $html;
+        return [$summary, $help];
+    }
+
+    private function renderWorkspaceHeader(int $imageCount, string $languageSummary, string $languageHelp): string
+    {
+        $helpId = StringUtility::getUniqueId('mosaic-metadata-help-');
+        $help = '<p>' . $this->label('metadata.help.gallerySpecific') . '</p>'
+            . '<p>' . $this->label('metadata.help.filelist') . '</p>'
+            . '<p>' . $this->label('metadata.help.multilingual') . '</p>' . $languageHelp;
+
+        return '<div class="mosaic-metadata-workspace" data-mosaic-images-view="table">'
+            . '<div class="mosaic-metadata-workspace__top"><div><strong>' . $this->label('metadata.title') . '</strong> '
+            . '<span class="badge text-bg-primary">' . $this->label('metadata.recommended') . '</span></div>'
+            . '<div class="btn-group btn-group-sm" role="toolbar" aria-label="' . $this->label('metadata.view.label') . '">'
+            . $this->renderViewButton('grid', 'metadata.view.grid')
+            . $this->renderViewButton('list', 'metadata.view.list')
+            . $this->renderViewButton('table', 'metadata.view.table') . '</div></div>'
+            . '<div class="mosaic-metadata-workspace__summary"><span>'
+            . $this->formatLabel('metadata.imageCount', (string)$imageCount) . '</span>'
+            . $languageSummary
+            . '<span class="mosaic-metadata-help"><button type="button" class="mosaic-metadata-help__button"'
+            . ' aria-label="' . $this->label('metadata.help.open') . '" aria-describedby="'
+            . htmlspecialchars($helpId, ENT_QUOTES) . '">&#9432;</button>'
+            . '<span id="' . htmlspecialchars($helpId, ENT_QUOTES) . '" class="mosaic-metadata-help__popup" role="tooltip">'
+            . $help . '</span></span></div></div>';
+    }
+
+    private function renderViewButton(string $view, string $labelKey): string
+    {
+        return '<button type="button" class="btn btn-default" data-mosaic-images-view-button="' . $view . '"'
+            . ' aria-pressed="' . ($view === 'table' ? 'true' : 'false') . '">'
+            . $this->label($labelKey) . '</button>';
     }
 
     /** @return array{0: string, 1: bool, 2: string, 3: string, 4: string, 5: bool} */
@@ -443,7 +471,8 @@ final class MetadataOverridesElement extends AbstractFormElement
     ): string
     {
         if ($converted) {
-            return '<div class="alert alert-success">' . $this->label('metadata.conversion.complete') . '</div>';
+            return '<div class="alert alert-success mosaic-metadata-status">'
+                . $this->label('metadata.conversion.complete') . '</div>';
         }
         if (trim($legacyCaptions) === '') {
             return '';
@@ -466,7 +495,7 @@ final class MetadataOverridesElement extends AbstractFormElement
             . '<p class="mb-2">' . $this->label('metadata.conversion.savedSettings') . '</p>'
             . '<button type="button" class="btn btn-default btn-sm" data-mosaic-convert-legacy>'
             . $this->label('metadata.conversion.action') . '</button></div></div>'
-            . '<div class="alert alert-success d-none" data-mosaic-conversion-status'
+            . '<div class="alert alert-success mosaic-metadata-status d-none" data-mosaic-conversion-status'
             . ' data-success-text="' . $this->label('metadata.conversion.complete') . '"'
             . ' data-extra-text="' . $this->label('metadata.conversion.extraLines') . '"'
             . ' data-unmatched-line-count="' . $unmatchedLineCount . '"></div>';
@@ -507,25 +536,51 @@ final class MetadataOverridesElement extends AbstractFormElement
     }
 
     /** @param array{mode: string, value: string} $caption @param array{mode: string, value: string} $alt */
-    private function renderRow(int $uid, string $name, string $identifier, string $publicUrl, array $caption, array $alt): string
+    private function renderItem(int $uid, string $name, string $identifier, string $publicUrl, array $caption, array $alt): string
     {
         $escapedName = htmlspecialchars($name, ENT_QUOTES);
         $escapedIdentifier = htmlspecialchars($identifier, ENT_QUOTES);
-        $thumbnail = $publicUrl === '' ? '' : '<img src="' . htmlspecialchars($publicUrl, ENT_QUOTES)
-            . '" alt="" style="width:80px;height:60px;object-fit:cover">';
+        $thumbnail = $publicUrl === '' ? '' : '<img src="' . htmlspecialchars($publicUrl, ENT_QUOTES) . '" alt="">';
 
-        return '<tr data-mosaic-file-uid="' . $uid . '"><td>' . $thumbnail . '</td>'
-            . '<td><strong>' . $escapedName . '</strong><br><small>' . $escapedIdentifier . '</small></td>'
-            . '<td>' . $this->renderControl('caption', $caption, false) . '</td>'
-            . '<td>' . $this->renderControl('alt', $alt, true) . '</td></tr>';
+        return '<article class="mosaic-metadata-item" data-mosaic-file-uid="' . $uid . '">'
+            . '<div class="mosaic-metadata-item__media">' . $thumbnail . '</div>'
+            . '<div class="mosaic-metadata-item__identity"><strong>' . $escapedName . '</strong>'
+            . '<small>' . $escapedIdentifier . '</small></div>'
+            . $this->renderPropertyCell('caption', $caption, false)
+            . $this->renderPropertyCell('alt', $alt, true)
+            . '<button type="button" class="btn btn-default btn-sm mosaic-metadata-item__edit"'
+            . ' data-mosaic-edit-metadata aria-expanded="false">' . $this->label('metadata.view.edit') . '</button>'
+            . '</article>';
+    }
+
+    /** @param array{mode: string, value: string} $property */
+    private function renderPropertyCell(string $propertyName, array $property, bool $allowEmpty): string
+    {
+        $label = $propertyName === 'caption' ? $this->label('metadata.caption') : $this->label('metadata.alternative');
+        $modeLabel = match ($property['mode']) {
+            'custom' => $this->label('metadata.custom'),
+            'empty' => $this->label('metadata.decorative'),
+            default => $this->label('metadata.inherit'),
+        };
+        $summaryValue = $propertyName === 'caption' && $property['mode'] === 'custom'
+            ? htmlspecialchars($property['value'], ENT_QUOTES)
+            : '';
+
+        return '<div class="mosaic-metadata-item__property mosaic-metadata-item__property--' . $propertyName . '">'
+            . '<div class="mosaic-metadata-item__summary"><span class="mosaic-metadata-item__summary-label">'
+            . $label . ':</span> <span class="badge text-bg-secondary" data-mosaic-summary-badge="'
+            . $propertyName . '">' . $modeLabel . '</span><span class="mosaic-metadata-item__summary-value"'
+            . ' data-mosaic-summary-value="' . $propertyName . '">' . $summaryValue . '</span></div>'
+            . '<div class="mosaic-metadata-item__controls" aria-label="' . $label . '">'
+            . $this->renderControl($propertyName, $property, $allowEmpty) . '</div></div>';
     }
 
     private function getPreviewUrl(File $file): string
     {
         try {
             $preview = $file->process(ProcessedFile::CONTEXT_IMAGEPREVIEW, [
-                'width' => 80,
-                'height' => 60,
+                'width' => 240,
+                'height' => 180,
             ]);
 
             return (string)($preview->getPublicUrl() ?? '');
