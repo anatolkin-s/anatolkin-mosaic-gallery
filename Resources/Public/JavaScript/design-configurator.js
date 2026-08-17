@@ -226,6 +226,16 @@ const renderPreview = (editor, effective) => {
     effective.frameAccentColor || deriveAccentColor(effective.frameColor),
   );
   setProperty('--preview-frame-width', `${effective.frameWidth}px`);
+  const frameWidth = Math.max(0, Number(effective.frameWidth) || 0);
+  setProperty('--preview-frame-band-key', `${frameWidth === 0 ? 0 : Math.min(frameWidth, Math.max(1, frameWidth * 0.1))}px`);
+  setProperty('--preview-frame-band-quarter', `${frameWidth * 0.25}px`);
+  setProperty('--preview-frame-band-third', `${frameWidth / 3}px`);
+  setProperty('--preview-frame-band-forty', `${frameWidth * 0.4}px`);
+  setProperty('--preview-frame-band-forty-five', `${frameWidth * 0.45}px`);
+  setProperty('--preview-frame-band-sixty', `${frameWidth * 0.6}px`);
+  setProperty('--preview-frame-band-two-thirds', `${frameWidth * 2 / 3}px`);
+  setProperty('--preview-frame-band-three-quarters', `${frameWidth * 0.75}px`);
+  setProperty('--preview-frame-band-total', `${frameWidth}px`);
   setProperty('--preview-radius', `${effective.borderRadius}px`);
   setProperty('--preview-background', effective.backgroundColor);
   setProperty('--preview-gallery-caption', effective.captionColor || 'inherit');

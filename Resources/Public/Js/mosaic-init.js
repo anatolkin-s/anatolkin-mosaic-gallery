@@ -84,6 +84,17 @@
     document.head.appendChild(st);
   }
 
+  function ensureLightboxFrameWrappers(root) {
+    var scope = root && typeof root.querySelectorAll === "function" ? root : document;
+    scope.querySelectorAll(".gslide-image img").forEach(function (image) {
+      if (image.parentElement && image.parentElement.classList.contains("mg-glx-frame")) return;
+      var frame = document.createElement("span");
+      frame.className = "mg-glx-frame";
+      image.parentNode.insertBefore(frame, image);
+      frame.appendChild(image);
+    });
+  }
+
   function prepareLightboxTheme(root, index) {
     var ds = root.dataset;
     var themeClass = activeThemeClassPrefix + index;
@@ -98,26 +109,28 @@
     var frameAccent = gv("--frame-accent", frameColor);
     var frameWidth = gv("--frame-width", "0px");
     var frameWidthValue = Math.max(0, parseFloat(frameWidth) || 0);
-    var frameKeyline = Math.min(1, frameWidthValue) + "px";
-    var frameOuterStrongAccent = Math.min(2, frameWidthValue) + "px";
-    var frameTripleInner = Math.min(3, frameWidthValue) + "px";
-    var frameDoubleInner = Math.min(4, frameWidthValue) + "px";
-    var frameMiddleBand = Math.min(6, frameWidthValue) + "px";
-    var frameInnerStrong = Math.min(7, frameWidthValue) + "px";
-    var frameBudget = Math.min(12, frameWidthValue) + "px";
+    var frameKeyline = (frameWidthValue === 0 ? 0 : Math.min(frameWidthValue, Math.max(1, frameWidthValue * 0.1))) + "px";
+    var frameQuarter = (frameWidthValue * 0.25) + "px";
+    var frameThird = (frameWidthValue / 3) + "px";
+    var frameForty = (frameWidthValue * 0.4) + "px";
+    var frameFortyFive = (frameWidthValue * 0.45) + "px";
+    var frameSixty = (frameWidthValue * 0.6) + "px";
+    var frameTwoThirds = (frameWidthValue * 2 / 3) + "px";
+    var frameThreeQuarters = (frameWidthValue * 0.75) + "px";
+    var frameBudget = frameWidthValue + "px";
     var frameStyle = root.getAttribute("data-frame-style") || "none";
     var nativeFrameStyles = ["solid", "dashed", "dotted"];
     var semanticFrameStyles = ["double", "groove", "ridge", "triple", "doubleOuterStrong", "doubleInnerStrong", "gallery"];
     var safeFrameStyle = nativeFrameStyles.indexOf(frameStyle) !== -1 ? frameStyle : "none";
     var semanticFrame = semanticFrameStyles.indexOf(frameStyle) !== -1;
     var semanticShadow = {
-      double: "inset 0 0 0 " + frameDoubleInner + " " + frameAccent + ",inset 0 0 0 " + frameBudget + " " + frameColor,
-      groove: "inset 0 0 0 " + frameKeyline + " color-mix(in srgb," + frameColor + " 75%,#000),inset 0 0 0 " + frameMiddleBand + " " + frameAccent + ",inset 0 0 0 " + frameBudget + " " + frameColor,
-      ridge: "inset 0 0 0 " + frameKeyline + " color-mix(in srgb," + frameAccent + " 65%,#fff),inset 0 0 0 " + frameMiddleBand + " " + frameColor + ",inset 0 0 0 " + frameBudget + " " + frameAccent,
-      triple: "inset 0 0 0 " + frameTripleInner + " " + frameColor + ",inset 0 0 0 " + frameMiddleBand + " " + frameAccent + ",inset 0 0 0 " + frameBudget + " " + frameColor,
-      doubleOuterStrong: "inset 0 0 0 " + frameOuterStrongAccent + " " + frameAccent + ",inset 0 0 0 " + frameBudget + " " + frameColor,
-      doubleInnerStrong: "inset 0 0 0 " + frameInnerStrong + " " + frameColor + ",inset 0 0 0 " + frameBudget + " " + frameAccent,
-      gallery: "inset 0 0 0 " + frameKeyline + " color-mix(in srgb," + frameColor + " 35%," + frameAccent + "),inset 0 0 0 " + frameDoubleInner + " " + frameAccent + ",inset 0 0 0 " + frameBudget + " " + frameColor
+      double: "inset 0 0 0 " + frameFortyFive + " " + frameAccent + ",inset 0 0 0 " + frameBudget + " " + frameColor,
+      groove: "inset 0 0 0 " + frameKeyline + " color-mix(in srgb," + frameColor + " 75%,#000),inset 0 0 0 " + frameSixty + " " + frameAccent + ",inset 0 0 0 " + frameBudget + " " + frameColor,
+      ridge: "inset 0 0 0 " + frameKeyline + " color-mix(in srgb," + frameAccent + " 65%,#fff),inset 0 0 0 " + frameSixty + " " + frameColor + ",inset 0 0 0 " + frameBudget + " " + frameAccent,
+      triple: "inset 0 0 0 " + frameThird + " " + frameColor + ",inset 0 0 0 " + frameTwoThirds + " " + frameAccent + ",inset 0 0 0 " + frameBudget + " " + frameColor,
+      doubleOuterStrong: "inset 0 0 0 " + frameThreeQuarters + " " + frameColor + ",inset 0 0 0 " + frameBudget + " " + frameAccent,
+      doubleInnerStrong: "inset 0 0 0 " + frameQuarter + " " + frameAccent + ",inset 0 0 0 " + frameBudget + " " + frameColor,
+      gallery: "inset 0 0 0 " + frameKeyline + " color-mix(in srgb," + frameColor + " 35%," + frameAccent + "),inset 0 0 0 " + frameForty + " " + frameAccent + ",inset 0 0 0 " + frameBudget + " " + frameColor
     }[frameStyle] || "none";
     if (frameWidthValue <= 0) {
       safeFrameStyle = "none";
@@ -177,14 +190,36 @@
       captionLabelMargins +
       "}" +
       scope + ".glightbox-container .gslide-title + .gslide-desc{margin-top:0.3rem!important;}" +
-      scope + ".glightbox-container .gslide-image img{" +
+      scope + ".glightbox-container .gslide-image .mg-glx-frame{" +
       "--mg-lightbox-tile-bg:" + tileBg + ";" +
+      "display:inline-flex;" +
+      "line-height:0;" +
+      "margin:auto;" +
+      "max-width:100%;" +
+      "position:relative;" +
       "border:" + (semanticFrame ? "0 solid" : frameWidth + " " + safeFrameStyle) + " " + frameColor + " !important;" +
       "border-radius:" + radius + " !important;" +
       "background:" + tileBg + " !important;" +
-      (semanticFrame ? "box-shadow:" + semanticShadow + " !important;" : "") +
       "box-sizing:border-box;" +
-      "}";
+      "}" +
+      scope + ".glightbox-container .gslide-image .mg-glx-frame img{" +
+      "border:0!important;" +
+      "border-radius:inherit!important;" +
+      "background:transparent!important;" +
+      "box-sizing:border-box;" +
+      "display:block;" +
+      "margin:0!important;" +
+      "max-width:100%;" +
+      "}" +
+      (semanticFrame ? scope + ".glightbox-container .gslide-image .mg-glx-frame::after{" +
+      "content:\"\";" +
+      "position:absolute;" +
+      "inset:0;" +
+      "pointer-events:none;" +
+      "border-radius:inherit;" +
+      "box-shadow:" + semanticShadow + " !important;" +
+      "}"
+      : "");
 
     injectCss("mg-glx-theme-" + index, css);
     return themeClass;
@@ -261,10 +296,14 @@
               selector: "a[data-gallery=\"" + group + "\"]",
               onOpen: function () {
                 activateMosaicLightboxTheme(themeClass);
+                ensureLightboxFrameWrappers(document);
               },
               onClose: function () {
                 deactivateMosaicLightboxTheme(themeClass);
               }
+            });
+            lightbox.on("slide_after_load", function (data) {
+              ensureLightboxFrameWrappers(data && data.slideNode ? data.slideNode : document);
             });
             return true;
           } catch (e) {

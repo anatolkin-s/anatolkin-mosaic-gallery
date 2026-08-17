@@ -80,6 +80,7 @@ final class GalleryController extends ActionController
         }
 
         $design = $this->designPresetResolver->resolve($this->settings);
+        $frameBands = $this->resolveFrameBands($design['frameWidth']);
 
         $enableLoadMore = (bool)($this->settings['enableLoadMore'] ?? true);
         $itemsPerPage   = max(1, (int)($this->settings['itemsPerPage'] ?? 12));
@@ -157,6 +158,7 @@ final class GalleryController extends ActionController
             'showCaptions'   => $showCaptions,
             'captionAlign'   => $captionAlign,
             'design'         => $design,
+            'frameBands'     => $frameBands,
             'enableLightbox' => $enableLightbox,
             'galleryGroup'   => $groupId,
             'enableLoadMore' => $enableLoadMore,
@@ -166,6 +168,29 @@ final class GalleryController extends ActionController
         ]);
 
         return $this->htmlResponse();
+    }
+
+    /** @return array{key: string, quarter: string, third: string, forty: string, fortyFive: string, sixty: string, twoThirds: string, threeQuarters: string, total: string} */
+    private function resolveFrameBands(mixed $frameWidth): array
+    {
+        $width = max(0.0, (float)$frameWidth);
+
+        return [
+            'key' => $this->formatFrameBand($width === 0.0 ? 0.0 : min($width, max(1.0, $width * 0.1))),
+            'quarter' => $this->formatFrameBand($width * 0.25),
+            'third' => $this->formatFrameBand($width / 3),
+            'forty' => $this->formatFrameBand($width * 0.4),
+            'fortyFive' => $this->formatFrameBand($width * 0.45),
+            'sixty' => $this->formatFrameBand($width * 0.6),
+            'twoThirds' => $this->formatFrameBand($width * 2 / 3),
+            'threeQuarters' => $this->formatFrameBand($width * 0.75),
+            'total' => $this->formatFrameBand($width),
+        ];
+    }
+
+    private function formatFrameBand(float $width): string
+    {
+        return rtrim(rtrim(sprintf('%.4F', $width), '0'), '.');
     }
 
     private function resolveContentUid(): int

@@ -193,7 +193,8 @@ final class DesignConfiguratorElement extends AbstractFormElement
         foreach ($images as $index => $image) {
             $item = '<figure class="mosaic-design-preview__item" data-preview-fixture="' . $index . '"'
                 . ($index > 2 ? ' data-design-preview-extra hidden' : '') . '>'
-                . '<img src="' . htmlspecialchars($image, ENT_QUOTES) . '" alt="">'
+                . '<span class="mosaic-design-preview__frame"><img src="'
+                . htmlspecialchars($image, ENT_QUOTES) . '" alt=""></span>'
                 . '<figcaption>' . $caption . '</figcaption></figure>';
             if ($index < 3) {
                 $galleryColumns[$index] = $item;
@@ -226,8 +227,9 @@ final class DesignConfiguratorElement extends AbstractFormElement
             . '<div class="mosaic-design-preview__lightbox-surface" data-preview-lightbox-surface>'
             . '<span class="mosaic-design-preview__close" aria-hidden="true">×</span>'
             . '<span class="mosaic-design-preview__nav mosaic-design-preview__nav--previous" aria-hidden="true">‹</span>'
-            . '<figure class="mosaic-design-preview__lightbox-figure"><img src="'
-            . htmlspecialchars($images[4], ENT_QUOTES) . '" alt=""><figcaption>' . $caption
+            . '<figure class="mosaic-design-preview__lightbox-figure">'
+            . '<span class="mosaic-design-preview__frame"><img src="'
+            . htmlspecialchars($images[4], ENT_QUOTES) . '" alt=""></span><figcaption>' . $caption
             . '</figcaption></figure>'
             . '<span class="mosaic-design-preview__nav mosaic-design-preview__nav--next" aria-hidden="true">›</span>'
             . '</div></div></div></section>';
