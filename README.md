@@ -2,7 +2,7 @@
 
 ## Overview
 
-Anatolkin Mosaic Gallery is a TYPO3 extension for responsive masonry-style image galleries. Images come from one TYPO3 Fileadmin folder, with optional inclusion of its subfolders. Editors configure each gallery through a content element and can open images in an optional GLightbox-based lightbox.
+Anatolkin Mosaic Gallery is a TYPO3 extension for responsive FAL image galleries. Images come from one TYPO3 Fileadmin folder, with optional inclusion of its subfolders. Editors can choose from multiple gallery layouts, customize gallery and lightbox appearance, manage per-image Caption and Alternative text overrides, and open images in an optional GLightbox-based lightbox.
 
 ## Requirements
 
@@ -98,14 +98,36 @@ Do not edit these database records manually.
 - Fileadmin folder image source with optional recursive subfolder inclusion
 - Filename and modification-time sorting, including ascending and descending directions
 - Random display ordering
-- Responsive mosaic layout using Masonry and imagesLoaded
-- Configurable image width, gap, frame, corner radius, background, and shadow
-- Optional GLightbox lightbox with configurable appearance
-- Optional visible captions
-- True progressive preview image loading: only the initial visible batch is requested on page load, and later previews are requested when their Load More batch is activated, without an AJAX endpoint or API
-- Per-gallery Image metadata editor with backend previews
-- Responsive backend editing layout
+- Five responsive gallery layouts: Masonry, Mosaic, Patterned Mosaic, Justified Rows, and Uniform Grid
+- Configurable Patterned Mosaic density on wide screens
+- Configurable image width, gap, frames, frame accents, corner radius, background, shadow, captions, and layout behavior
+- Design presets with gallery-specific overrides and a live Gallery/Lightbox design preview
+- Optional GLightbox lightbox with per-gallery scoped appearance controls
+- Configurable gallery and Lightbox caption presentation
+- Progressive image loading with configurable initial batch, Load More step, and Lightbox refresh
+- Per-gallery UID-linked Caption and Alternative text metadata overrides
+- Images workspace with Grid, List, and Table metadata views
+- Multilingual metadata workflow integrated with TYPO3 content localization
+- Compact responsive backend configuration
 - English, German, French, Spanish, and Russian extension interface translations
+## What's new in 0.4.0
+
+Version 0.4.0 substantially expands gallery presentation and backend editing while preserving existing gallery compatibility.
+
+Highlights include:
+
+- Masonry, Mosaic, Patterned Mosaic, Justified Rows, and Uniform Grid layouts
+- Adaptive Patterned Mosaic density with preserved image proportions
+- Design presets with gallery-specific overrides
+- Live Gallery and Lightbox design preview
+- Expanded frame, caption, background, and Lightbox styling controls
+- Compact responsive Layout workspace
+- Images workspace with Grid, List, and Table metadata views
+- UID-linked Caption and Alternative text overrides
+- Improved multilingual metadata workflow
+- Per-gallery scoped Lightbox theming
+
+Existing galleries without a layout setting continue to use Masonry. Updating from 0.3.1 to 0.4.0 requires no database migration.
 
 ## Image metadata behavior
 
@@ -139,14 +161,11 @@ Configured site languages are discovered from TYPO3 Site Configuration. The five
 
 ## Compatibility and release status
 
-Anatolkin Mosaic Gallery 0.3.1 targets TYPO3 13.4 and TYPO3 14.3. Runtime validation was completed successfully on TYPO3 13.4.34 and TYPO3 14.3.6.
+Anatolkin Mosaic Gallery 0.4.0 targets TYPO3 13.4 and TYPO3 14.3.
 
-Progressive loading, Masonry relayout, Load More completion, captions, and GLightbox were runtime-smoke-tested on both TYPO3 versions. The `list_type` to `CType` migration introduced in 0.3.0 was also runtime tested successfully.
+Existing folder galleries, legacy Quick captions, and the `list_type` to `CType` migration path introduced in 0.3.0 remain supported. Existing galleries without the newer layout and design settings continue to use backward-compatible defaults.
 
-Updating from 0.3.0 to 0.3.1 requires no database migration.
-
-Existing folder galleries and legacy Quick captions remain supported. Metadata conversion remains an explicit editor action and is not automatically required.
-
+Updating from 0.3.1 to 0.4.0 requires no database migration. Metadata conversion remains an explicit editor action and is not automatically required.
 ## License
 
 Anatolkin Mosaic Gallery is released under the [GNU General Public License v2.0 or later](LICENSE).
