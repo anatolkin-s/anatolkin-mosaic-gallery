@@ -109,6 +109,10 @@
                   <value>mosaic</value>
                 </numIndex>
                 <numIndex index="2">
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.layoutMode.justified</label>
+                  <value>justified</value>
+                </numIndex>
+                <numIndex index="3">
                   <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.layoutMode.grid</label>
                   <value>grid</value>
                 </numIndex>

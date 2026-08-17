@@ -39,7 +39,7 @@
 
     <f:for each="{items}" as="it">
       <f:variable name="previewUrl" value="{f:uri.image(image: it.file, maxWidth: maxWidth)}" />
-      <figure class="mosaic-item {f:if(condition: it.hidden, then: 'is-hidden')}" data-layout-span="{it.layoutSpan}">
+      <figure class="mosaic-item {f:if(condition: it.hidden, then: 'is-hidden')}" data-layout-span="{it.layoutSpan}" data-aspect-ratio="{it.aspectRatio}">
         <a href="{it.file.publicUrl}"
            class="{f:if(condition: settings.enableLightbox, then: 'glightbox', else: '')}"
            data-gallery="{galleryGroup}"

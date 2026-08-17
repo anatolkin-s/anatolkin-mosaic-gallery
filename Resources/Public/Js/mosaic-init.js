@@ -76,7 +76,61 @@
   }
 
   function normalizeLayoutMode(value) {
-    return ["masonry", "mosaic", "grid"].indexOf(value) !== -1 ? value : "masonry";
+    return ["masonry", "mosaic", "justified", "grid"].indexOf(value) !== -1 ? value : "masonry";
+  }
+
+  function justifiedTargetRowHeight(containerWidth) {
+    if (containerWidth <= 480) return 180;
+    if (containerWidth <= 900) return 210;
+    return 240;
+  }
+
+  function itemAspectRatio(item) {
+    var ratio = parseFloat(item.getAttribute("data-aspect-ratio") || "");
+    if (isFinite(ratio) && ratio > 0) return ratio;
+    var image = item.querySelector("img");
+    return image && image.naturalWidth > 0 && image.naturalHeight > 0
+      ? image.naturalWidth / image.naturalHeight
+      : 1;
+  }
+
+  function sizeJustifiedRow(items, containerWidth, gap, targetHeight, complete) {
+    var ratioSum = items.reduce(function (sum, item) {
+      return sum + itemAspectRatio(item);
+    }, 0);
+    var availableWidth = Math.max(0, containerWidth - gap * Math.max(0, items.length - 1));
+    var rowHeight = complete && ratioSum > 0 ? availableWidth / ratioSum : targetHeight;
+
+    items.forEach(function (item) {
+      var width = rowHeight * itemAspectRatio(item);
+      item.style.width = Math.min(width, availableWidth) + "px";
+    });
+  }
+
+  function layoutJustifiedRows(grid, gap) {
+    var containerWidth = grid.clientWidth;
+    if (containerWidth <= 0) return;
+    var targetHeight = justifiedTargetRowHeight(containerWidth);
+    var visibleItems = Array.prototype.slice.call(
+      grid.querySelectorAll(".mosaic-item:not(.is-hidden)")
+    );
+    var row = [];
+    var ratioSum = 0;
+
+    visibleItems.forEach(function (item) {
+      var ratio = itemAspectRatio(item);
+      row.push(item);
+      ratioSum += ratio;
+      if (ratioSum * targetHeight + gap * Math.max(0, row.length - 1) >= containerWidth) {
+        sizeJustifiedRow(row, containerWidth, gap, targetHeight, true);
+        row = [];
+        ratioSum = 0;
+      }
+    });
+
+    if (row.length) {
+      sizeJustifiedRow(row, containerWidth, gap, targetHeight, false);
+    }
   }
 
   function injectCss(id, css) {
@@ -286,6 +340,9 @@
       var grid    = container.querySelector(".mosaic-grid") || container;
       var lightbox = null;
       var msnry = null;
+      var justifiedResizeObserver = null;
+      var justifiedResizeFrame = null;
+      var justifiedObservedWidth = grid.clientWidth;
       var themeClass = enable ? prepareLightboxTheme(container, index) : null;
 
       function markLayoutReady() {
@@ -330,7 +387,7 @@
 
       var visibleImages = grid.querySelectorAll(".mosaic-item:not(.is-hidden) img");
       waitForImages(visibleImages, function () {
-        if (layoutMode !== "grid" && typeof window.Masonry === "function") {
+        if (["masonry", "mosaic"].indexOf(layoutMode) !== -1 && typeof window.Masonry === "function") {
           try {
             var sizer = grid.querySelector(".mosaic-sizer") || grid.querySelector(".mosaic-item");
             msnry = new window.Masonry(grid, {
@@ -345,7 +402,7 @@
           }
         }
 
-        if (layoutMode === "grid") {
+        if (layoutMode === "grid" || layoutMode === "justified") {
           grid.style.height = "";
           Array.prototype.forEach.call(grid.querySelectorAll(".mosaic-item"), function (item) {
             item.style.left = "";
@@ -356,10 +413,33 @@
         }
 
         function relayout() {
-          if (msnry) msnry.layout();
+          if (layoutMode === "justified") {
+            layoutJustifiedRows(grid, gap);
+          } else if (msnry) {
+            msnry.layout();
+          }
         }
 
-        window.addEventListener("resize", relayout);
+        function scheduleRelayout() {
+          if (justifiedResizeFrame !== null) return;
+          justifiedResizeFrame = window.requestAnimationFrame(function () {
+            justifiedResizeFrame = null;
+            relayout();
+          });
+        }
+
+        if (layoutMode === "justified" && typeof window.ResizeObserver === "function") {
+          justifiedResizeObserver = new window.ResizeObserver(function () {
+            var currentWidth = grid.clientWidth;
+            if (currentWidth !== justifiedObservedWidth) {
+              justifiedObservedWidth = currentWidth;
+              scheduleRelayout();
+            }
+          });
+          justifiedResizeObserver.observe(grid);
+        } else {
+          window.addEventListener("resize", layoutMode === "justified" ? scheduleRelayout : relayout);
+        }
 
         var btn = container.querySelector(".mosaic-load-more");
         if (btn) {

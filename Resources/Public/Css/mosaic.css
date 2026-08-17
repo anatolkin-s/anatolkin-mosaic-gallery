@@ -16,9 +16,9 @@
   to{ visibility:visible; }
 }
 
-/* Masonry-based modes use the established 3 / 2 / 1 base columns. */
-.mosaic-gallery:not([data-layout-mode="grid"]) .mosaic-grid .mosaic-sizer,
-.mosaic-gallery:not([data-layout-mode="grid"]) .mosaic-grid .mosaic-item{
+/* Masonry and Mosaic use the established 3 / 2 / 1 base columns. */
+.mosaic-gallery:is([data-layout-mode="masonry"],[data-layout-mode="mosaic"]) .mosaic-grid .mosaic-sizer,
+.mosaic-gallery:is([data-layout-mode="masonry"],[data-layout-mode="mosaic"]) .mosaic-grid .mosaic-item{
   width: calc((100% - 2*var(--gap,12px)) / 3);
   box-sizing:border-box;
 }
@@ -28,8 +28,8 @@
 }
 
 @media (max-width:1024px){
-  .mosaic-gallery:not([data-layout-mode="grid"]) .mosaic-grid .mosaic-sizer,
-  .mosaic-gallery:not([data-layout-mode="grid"]) .mosaic-grid .mosaic-item{
+  .mosaic-gallery:is([data-layout-mode="masonry"],[data-layout-mode="mosaic"]) .mosaic-grid .mosaic-sizer,
+  .mosaic-gallery:is([data-layout-mode="masonry"],[data-layout-mode="mosaic"]) .mosaic-grid .mosaic-item{
     width: calc((100% - 1*var(--gap,12px)) / 2);
   }
 
@@ -38,10 +38,25 @@
   }
 }
 @media (max-width:640px){
-  .mosaic-gallery:not([data-layout-mode="grid"]) .mosaic-grid .mosaic-sizer,
-  .mosaic-gallery:not([data-layout-mode="grid"]) .mosaic-grid .mosaic-item{
+  .mosaic-gallery:is([data-layout-mode="masonry"],[data-layout-mode="mosaic"]) .mosaic-grid .mosaic-sizer,
+  .mosaic-gallery:is([data-layout-mode="masonry"],[data-layout-mode="mosaic"]) .mosaic-grid .mosaic-item{
     width: 100%;
   }
+}
+
+/* Justified rows preserve image ratios; JavaScript assigns row widths from FAL dimensions. */
+.mosaic-gallery[data-layout-mode="justified"] .mosaic-grid{
+  display:flex;
+  flex-wrap:wrap;
+  gap:var(--gap,12px);
+}
+.mosaic-gallery[data-layout-mode="justified"] .mosaic-sizer{
+  display:none;
+}
+.mosaic-gallery[data-layout-mode="justified"] .mosaic-item{
+  flex:0 0 auto;
+  margin:0;
+  max-width:100%;
 }
 
 /* Uniform Grid is presentation-only cropping; Lightbox links still target original files. */

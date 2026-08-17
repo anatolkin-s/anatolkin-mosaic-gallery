@@ -73,6 +73,7 @@
     <trans-unit id="flexform.layoutMode"><source>Layout</source><target>Раскладка</target></trans-unit>
     <trans-unit id="flexform.layoutMode.masonry"><source>Masonry</source><target>Masonry</target></trans-unit>
     <trans-unit id="flexform.layoutMode.mosaic"><source>Mosaic</source><target>Мозаика</target></trans-unit>
+    <trans-unit id="flexform.layoutMode.justified"><source>Justified rows</source><target>Выровненные ряды</target></trans-unit>
     <trans-unit id="flexform.layoutMode.grid"><source>Uniform grid</source><target>Равномерная сетка</target></trans-unit>
     <trans-unit id="flexform.maxWidth.help"><source>Maximum width of the processed image loaded into a gallery tile. This does not set the tile width and does not affect the Lightbox image, which opens the original file.</source><target>Максимальная ширина обработанного изображения, загружаемого в плитку галереи. Не определяет ширину самой плитки и не влияет на изображение в Lightbox, где открывается исходный файл.</target></trans-unit>
     <trans-unit id="flexform.enableLightbox"><source>Enable lightbox</source><target>Включить лайтбокс</target></trans-unit>

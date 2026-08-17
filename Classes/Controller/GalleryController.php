@@ -72,7 +72,7 @@ final class GalleryController extends ActionController
         $sortBy    = (string)($this->settings['sortBy'] ?? 'name');   // name|mtime|random
         $sortDir   = (string)($this->settings['sortDir'] ?? 'asc');   // asc|desc
         $layoutMode = (string)($this->settings['layoutMode'] ?? 'masonry');
-        if (!\in_array($layoutMode, ['masonry', 'mosaic', 'grid'], true)) {
+        if (!\in_array($layoutMode, ['masonry', 'mosaic', 'justified', 'grid'], true)) {
             $layoutMode = 'masonry';
         }
 
@@ -147,6 +147,7 @@ final class GalleryController extends ActionController
                         'alt'     => (string)$alt,
                         'hidden'  => ($enableLoadMore && $idx >= $itemsPerPage),
                         'layoutSpan' => $this->resolveLayoutSpan($file, $layoutMode),
+                        'aspectRatio' => $this->resolveAspectRatio($file),
                     ];
                 }
             } catch (\Throwable $e) {
@@ -189,6 +190,17 @@ final class GalleryController extends ActionController
             return $width > 0 && $height > 0 && ($width / $height) >= 1.6 ? 'wide' : 'normal';
         } catch (\Throwable) {
             return 'normal';
+        }
+    }
+
+    private function resolveAspectRatio(File $file): float
+    {
+        try {
+            $width = (int)$file->getProperty('width');
+            $height = (int)$file->getProperty('height');
+            return $width > 0 && $height > 0 ? $width / $height : 1.0;
+        } catch (\Throwable) {
+            return 1.0;
         }
     }
 
