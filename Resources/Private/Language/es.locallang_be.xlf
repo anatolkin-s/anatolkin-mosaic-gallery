@@ -69,7 +69,8 @@
     <trans-unit id="flexform.sortDir.asc"><source>Ascending</source><target>Ascendente</target></trans-unit>
     <trans-unit id="flexform.sortDir.desc"><source>Descending</source><target>Descendente</target></trans-unit>
     <trans-unit id="flexform.gap"><source>Gap (px)</source><target>Separación (px)</target></trans-unit>
-    <trans-unit id="flexform.maxWidth"><source>Max width</source><target>Ancho máx.</target></trans-unit>
+    <trans-unit id="flexform.maxWidth"><source>Gallery image max width (px)</source><target>Ancho máx. de imagen de galería (px)</target></trans-unit>
+    <trans-unit id="flexform.maxWidth.help"><source>Maximum width of the processed image loaded into a gallery tile. This does not set the tile width and does not affect the Lightbox image, which opens the original file.</source><target>Ancho máximo de la imagen procesada que se carga en una celda de la galería. No define el ancho de la celda ni afecta a la imagen del visor, que abre el archivo original.</target></trans-unit>
     <trans-unit id="flexform.enableLightbox"><source>Enable lightbox</source><target>Activar el visor</target></trans-unit>
     <trans-unit id="flexform.showCaptions"><source>Show captions</source><target>Mostrar pies de foto</target></trans-unit>
     <trans-unit id="flexform.captionAlign"><source>Caption alignment</source><target>Alineación de los pies de foto</target></trans-unit>

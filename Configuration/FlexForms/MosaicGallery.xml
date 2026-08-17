@@ -96,6 +96,7 @@
 
           <settings.maxWidth>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.maxWidth</label>
+            <description>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.maxWidth.help</description>
             <config>
               <type>input</type>
               <eval>int</eval>

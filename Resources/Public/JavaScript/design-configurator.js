@@ -358,6 +358,8 @@ const consolidateWorkspaces = (editor) => {
     .forEach((fieldName) => moveSection(fieldName, secondRow));
 
   const metadataFallback = secondRow.querySelector('.form-section[data-id="settings.useFalCaptions"]');
+  const maxWidth = secondRow.querySelector('.form-section[data-id="settings.maxWidth"]');
+  addCompactHelp(maxWidth);
   addCompactHelp(metadataFallback);
 
   return layoutSheet;
