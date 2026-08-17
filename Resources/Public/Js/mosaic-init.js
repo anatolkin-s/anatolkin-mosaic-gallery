@@ -134,44 +134,31 @@
   }
 
   function patternedColumnCount(containerWidth) {
-    if (containerWidth <= 420) return 2;
-    if (containerWidth <= 600) return 4;
-    if (containerWidth <= 900) return 8;
-    return 12;
+    if (containerWidth <= 420) return 4;
+    if (containerWidth <= 600) return 8;
+    if (containerWidth <= 900) return 12;
+    if (containerWidth <= 1200) return 16;
+    return 24;
   }
 
-  function patternedColumnSpan(item, columnCount) {
+  function patternedColumnSpan(item, columnCount, maxItemsPerRow) {
     var ratio = itemAspectRatio(item);
     var orientation = ratio < 0.8 ? "portrait" : (ratio > 1.8 ? "wide" : (ratio > 1.15 ? "landscape" : "square"));
     var weight = item.getAttribute("data-pattern-weight") || "medium";
-    var spans = {
-      12: {
-        small: { portrait: 3, square: 3, landscape: 4, wide: 5 },
-        medium: { portrait: 4, square: 4, landscape: 5, wide: 6 },
-        large: { portrait: 4, square: 5, landscape: 6, wide: 8 }
-      },
-      8: {
-        small: { portrait: 2, square: 2, landscape: 3, wide: 4 },
-        medium: { portrait: 2, square: 3, landscape: 4, wide: 5 },
-        large: { portrait: 3, square: 4, landscape: 5, wide: 6 }
-      },
-      4: {
-        small: { portrait: 2, square: 2, landscape: 2, wide: 3 },
-        medium: { portrait: 2, square: 2, landscape: 3, wide: 4 },
-        large: { portrait: 2, square: 3, landscape: 4, wide: 4 }
-      },
-      2: {
-        small: { portrait: 1, square: 1, landscape: 2, wide: 2 },
-        medium: { portrait: 1, square: 2, landscape: 2, wide: 2 },
-        large: { portrait: 2, square: 2, landscape: 2, wide: 2 }
-      }
+    var responsiveMaximum = {
+      24: maxItemsPerRow,
+      16: Math.min(maxItemsPerRow, 6),
+      12: Math.min(maxItemsPerRow, 4),
+      8: Math.min(maxItemsPerRow, 2),
+      4: 1
     };
-    return spans[columnCount][weight] && spans[columnCount][weight][orientation]
-      ? spans[columnCount][weight][orientation]
-      : Math.min(columnCount, Math.max(1, Math.round(columnCount / 3)));
+    var minimumSpan = Math.ceil(columnCount / responsiveMaximum[columnCount]);
+    var weightFactor = { small: 1, medium: 1.15, large: 1.55 }[weight] || 1.15;
+    var orientationFactor = { portrait: 0.9, square: 1, landscape: 1.1, wide: 1.25 }[orientation];
+    return Math.min(columnCount, Math.max(minimumSpan, Math.round(minimumSpan * weightFactor * orientationFactor)));
   }
 
-  function layoutPatternedGrid(grid, gap) {
+  function layoutPatternedGrid(grid, gap, maxItemsPerRow) {
     var containerWidth = grid.clientWidth;
     if (containerWidth <= 0) return;
     var columnCount = patternedColumnCount(containerWidth);
@@ -182,7 +169,7 @@
 
     visibleItems.forEach(function (item) {
       item.style.gridColumnStart = "";
-      item.style.gridColumnEnd = "span " + patternedColumnSpan(item, columnCount);
+      item.style.gridColumnEnd = "span " + patternedColumnSpan(item, columnCount, maxItemsPerRow);
       item.style.gridRowEnd = "";
     });
     visibleItems.forEach(function (item) {
@@ -396,6 +383,8 @@
       var enable  = container.getAttribute("data-lightbox") === "1";
       var group   = container.getAttribute("data-group") || "gallery";
       var layoutMode = normalizeLayoutMode(container.getAttribute("data-layout-mode"));
+      var maxItemsPerRow = parseInt(container.getAttribute("data-max-items-per-row") || "6", 10);
+      if ([4, 5, 6, 7, 8].indexOf(maxItemsPerRow) === -1) maxItemsPerRow = 6;
       var grid    = container.querySelector(".mosaic-grid") || container;
       var lightbox = null;
       var msnry = null;
@@ -478,7 +467,7 @@
           if (layoutMode === "justified") {
             layoutJustifiedRows(grid, gap);
           } else if (layoutMode === "patterned") {
-            layoutPatternedGrid(grid, gap);
+            layoutPatternedGrid(grid, gap, maxItemsPerRow);
           } else if (msnry) {
             msnry.layout();
           }
@@ -506,6 +495,13 @@
             patternedObservedWidth = currentWidth;
             schedulePatternedRelayout();
           }
+        }
+
+        if (layoutMode === "patterned") {
+          grid.addEventListener("load", function (event) {
+            var item = event.target && event.target.closest ? event.target.closest(".mosaic-item") : null;
+            if (item && !item.classList.contains("is-hidden")) schedulePatternedRelayout();
+          }, true);
         }
 
         if (layoutMode === "justified" && typeof window.ResizeObserver === "function") {

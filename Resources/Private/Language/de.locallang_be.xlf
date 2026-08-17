@@ -76,6 +76,8 @@
     <trans-unit id="flexform.layoutMode.patterned"><source>Patterned mosaic</source><target>Modulares Mosaik</target></trans-unit>
     <trans-unit id="flexform.layoutMode.justified"><source>Justified rows</source><target>Ausgerichtete Reihen</target></trans-unit>
     <trans-unit id="flexform.layoutMode.grid"><source>Uniform grid</source><target>Einheitliches Raster</target></trans-unit>
+    <trans-unit id="flexform.maxItemsPerRow"><source>Max items / row</source><target>Max. Elemente / Zeile</target></trans-unit>
+    <trans-unit id="flexform.maxItemsPerRow.help"><source>Applies to Patterned mosaic on wide screens. Responsive layouts automatically reduce density on smaller screens. This is a maximum target, not a guarantee that every visual row contains exactly this many items.</source><target>Gilt für das modulare Mosaik auf breiten Bildschirmen. Responsive Layouts reduzieren die Dichte auf kleineren Bildschirmen automatisch. Dies ist ein maximales Ziel, keine Garantie für exakt diese Anzahl in jeder visuellen Zeile.</target></trans-unit>
     <trans-unit id="flexform.maxWidth.help"><source>Maximum width of the processed image loaded into a gallery tile. This does not set the tile width and does not affect the Lightbox image, which opens the original file.</source><target>Maximale Breite des verarbeiteten Bildes, das in eine Galeriekachel geladen wird. Dies legt weder die Breite der Kachel fest noch beeinflusst es das Lightbox-Bild, das die Originaldatei öffnet.</target></trans-unit>
     <trans-unit id="flexform.enableLightbox"><source>Enable lightbox</source><target>Lightbox aktivieren</target></trans-unit>
     <trans-unit id="flexform.showCaptions"><source>Show captions</source><target>Bildunterschriften anzeigen</target></trans-unit>

@@ -77,6 +77,8 @@
       <trans-unit id="flexform.layoutMode.patterned"><source>Patterned mosaic</source></trans-unit>
       <trans-unit id="flexform.layoutMode.justified"><source>Justified rows</source></trans-unit>
       <trans-unit id="flexform.layoutMode.grid"><source>Uniform grid</source></trans-unit>
+      <trans-unit id="flexform.maxItemsPerRow"><source>Max items / row</source></trans-unit>
+      <trans-unit id="flexform.maxItemsPerRow.help"><source>Applies to Patterned mosaic on wide screens. Responsive layouts automatically reduce density on smaller screens. This is a maximum target, not a guarantee that every visual row contains exactly this many items.</source></trans-unit>
       <trans-unit id="flexform.maxWidth.help"><source>Maximum width of the processed image loaded into a gallery tile. This does not set the tile width and does not affect the Lightbox image, which opens the original file.</source></trans-unit>
       <trans-unit id="flexform.enableLightbox"><source>Enable lightbox</source></trans-unit>
       <trans-unit id="flexform.showCaptions"><source>Show captions</source></trans-unit>

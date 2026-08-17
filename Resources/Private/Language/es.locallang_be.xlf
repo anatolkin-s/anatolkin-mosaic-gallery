@@ -76,6 +76,8 @@
     <trans-unit id="flexform.layoutMode.patterned"><source>Patterned mosaic</source><target>Mosaico modular</target></trans-unit>
     <trans-unit id="flexform.layoutMode.justified"><source>Justified rows</source><target>Filas justificadas</target></trans-unit>
     <trans-unit id="flexform.layoutMode.grid"><source>Uniform grid</source><target>Cuadrícula uniforme</target></trans-unit>
+    <trans-unit id="flexform.maxItemsPerRow"><source>Max items / row</source><target>Máx. elementos / fila</target></trans-unit>
+    <trans-unit id="flexform.maxItemsPerRow.help"><source>Applies to Patterned mosaic on wide screens. Responsive layouts automatically reduce density on smaller screens. This is a maximum target, not a guarantee that every visual row contains exactly this many items.</source><target>Se aplica al mosaico modular en pantallas anchas. Los diseños adaptables reducen automáticamente la densidad en pantallas más pequeñas. Es un objetivo máximo, no una garantía de que cada fila visual contenga exactamente este número de elementos.</target></trans-unit>
     <trans-unit id="flexform.maxWidth.help"><source>Maximum width of the processed image loaded into a gallery tile. This does not set the tile width and does not affect the Lightbox image, which opens the original file.</source><target>Ancho máximo de la imagen procesada que se carga en una celda de la galería. No define el ancho de la celda ni afecta a la imagen del visor, que abre el archivo original.</target></trans-unit>
     <trans-unit id="flexform.enableLightbox"><source>Enable lightbox</source><target>Activar el visor</target></trans-unit>
     <trans-unit id="flexform.showCaptions"><source>Show captions</source><target>Mostrar pies de foto</target></trans-unit>

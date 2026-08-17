@@ -194,11 +194,14 @@ final class DesignConfiguratorElement extends AbstractFormElement
             $this->previewImageUrl('wide.svg'),
             $this->previewImageUrl('contrast.svg'),
         ];
+        $ratios = [1.6, 0.6667, 1.0, 2.1111, 1.5238];
+        $weights = ['medium', 'small', 'medium', 'large', 'small'];
 
         $galleryColumns = ['', '', ''];
         $extraItems = '';
         foreach ($images as $index => $image) {
-            $item = '<figure class="mosaic-design-preview__item" data-preview-fixture="' . $index . '"'
+            $item = '<figure class="mosaic-design-preview__item" data-preview-fixture="' . $index
+                . '" data-preview-ratio="' . $ratios[$index] . '" data-preview-weight="' . $weights[$index] . '"'
                 . ($index > 2 ? ' data-design-preview-extra hidden' : '') . '>'
                 . '<span class="mosaic-design-preview__frame"><img src="'
                 . htmlspecialchars($image, ENT_QUOTES) . '" alt=""></span>'

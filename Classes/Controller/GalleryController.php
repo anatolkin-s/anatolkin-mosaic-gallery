@@ -75,6 +75,10 @@ final class GalleryController extends ActionController
         if (!\in_array($layoutMode, ['masonry', 'mosaic', 'patterned', 'justified', 'grid'], true)) {
             $layoutMode = 'masonry';
         }
+        $maxItemsPerRow = (int)($this->settings['maxItemsPerRow'] ?? 6);
+        if (!\in_array($maxItemsPerRow, [4, 5, 6, 7, 8], true)) {
+            $maxItemsPerRow = 6;
+        }
 
         $showCaptions   = (bool)($this->settings['showCaptions'] ?? true);
         $useFalCaptions = (bool)($this->settings['useFalCaptions'] ?? true);
@@ -164,6 +168,7 @@ final class GalleryController extends ActionController
             'gap'            => $gap,
             'maxWidth'       => $maxWidth,
             'layoutMode'     => $layoutMode,
+            'maxItemsPerRow' => $maxItemsPerRow,
             'showCaptions'   => $showCaptions,
             'captionAlign'   => $captionAlign,
             'design'         => $design,

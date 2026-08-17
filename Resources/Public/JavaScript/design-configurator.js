@@ -237,6 +237,42 @@ const deriveAccentColor = (frameColor) => {
     .toString(16).padStart(2, '0')).join('')}`.toUpperCase();
 };
 
+const patternedPreviewSpan = (item, maxItemsPerRow) => {
+  const ratio = Number(item.dataset.previewRatio) || 1;
+  const orientation = ratio < 0.8 ? 'portrait' : (ratio > 1.8 ? 'wide' : (ratio > 1.15 ? 'landscape' : 'square'));
+  const weight = item.dataset.previewWeight || 'medium';
+  const minimumSpan = Math.ceil(24 / maxItemsPerRow);
+  const weightFactor = { small: 1, medium: 1.15, large: 1.55 }[weight] ?? 1.15;
+  const orientationFactor = { portrait: 0.9, square: 1, landscape: 1.1, wide: 1.25 }[orientation];
+  return Math.min(24, Math.max(minimumSpan, Math.round(minimumSpan * weightFactor * orientationFactor)));
+};
+
+const layoutPatternedPreview = (preview, maxItemsPerRow) => {
+  const grid = preview.querySelector('.mosaic-design-preview__items');
+  const items = [...preview.querySelectorAll('.mosaic-design-preview__item')];
+  if (!grid) return;
+  if (preview.dataset.layoutMode !== 'patterned') {
+    items.forEach((item) => {
+      item.style.gridColumnEnd = '';
+      item.style.gridRowEnd = '';
+    });
+    return;
+  }
+  items.forEach((item) => {
+    item.style.gridColumnEnd = `span ${patternedPreviewSpan(item, maxItemsPerRow)}`;
+    item.style.gridRowEnd = '';
+  });
+  window.requestAnimationFrame(() => {
+    const style = window.getComputedStyle(grid);
+    const rowUnit = Number.parseFloat(style.gridAutoRows) || 4;
+    const gap = Number.parseFloat(style.rowGap) || 0;
+    items.forEach((item) => {
+      const height = Math.max(item.scrollHeight, item.getBoundingClientRect().height);
+      item.style.gridRowEnd = `span ${Math.max(1, Math.ceil((height + gap) / (rowUnit + gap)))}`;
+    });
+  });
+};
+
 const renderPreview = (editor, effective) => {
   const preview = editor.querySelector('[data-design-live-preview]');
   if (!preview || !effective?.lightbox) {
@@ -380,15 +416,17 @@ const consolidateWorkspaces = (editor) => {
   };
   ['settings.source', 'settings.folder', 'settings.recursive', 'settings.sortBy', 'settings.sortDir']
     .forEach((fieldName) => moveSection(fieldName, firstRow));
-  ['settings.layoutMode', 'settings.maxWidth', 'settings.itemsPerPage', 'settings.loadStep', 'settings.useFalCaptions']
+  ['settings.layoutMode', 'settings.maxItemsPerRow', 'settings.maxWidth', 'settings.itemsPerPage', 'settings.loadStep', 'settings.useFalCaptions']
     .forEach((fieldName) => moveSection(fieldName, secondRow));
 
   const metadataFallback = secondRow.querySelector('.form-section[data-id="settings.useFalCaptions"]');
   const maxWidth = secondRow.querySelector('.form-section[data-id="settings.maxWidth"]');
+  const maxItemsPerRow = secondRow.querySelector('.form-section[data-id="settings.maxItemsPerRow"]');
   if (metadataFallback) {
     metadataFallback.dataset.mosaicInlineCheckbox = 'true';
   }
   addCompactHelp(maxWidth);
+  addCompactHelp(maxItemsPerRow);
   addCompactHelp(metadataFallback);
 
   return layoutSheet;
@@ -491,6 +529,8 @@ const initializeEditor = (editor) => {
       ? '12'
       : (control?.value ?? ''));
   const layoutModeControl = canonicalControl('settings.layoutMode');
+  const maxItemsPerRowControl = canonicalControl('settings.maxItemsPerRow');
+  const maxItemsPerRowSection = maxItemsPerRowControl?.closest('.form-section[data-id="settings.maxItemsPerRow"]');
   const updatePreviewLayout = () => {
     const preview = editor.querySelector('[data-design-live-preview]');
     if (!preview) {
@@ -498,9 +538,36 @@ const initializeEditor = (editor) => {
     }
     const value = String(layoutModeControl?.value ?? 'masonry');
     preview.dataset.layoutMode = ['masonry', 'mosaic', 'patterned', 'justified', 'grid'].includes(value) ? value : 'masonry';
+    const densityValue = Number.parseInt(maxItemsPerRowControl?.value ?? '6', 10);
+    const density = [4, 5, 6, 7, 8].includes(densityValue) ? densityValue : 6;
+    preview.dataset.maxItemsPerRow = String(density);
+    const densityInactive = preview.dataset.layoutMode !== 'patterned';
+    if (maxItemsPerRowSection) {
+      maxItemsPerRowSection.dataset.patternedDensityInactive = String(densityInactive);
+      maxItemsPerRowSection.toggleAttribute('inert', densityInactive);
+      maxItemsPerRowSection.setAttribute('aria-disabled', String(densityInactive));
+    }
+    layoutPatternedPreview(preview, density);
   };
   layoutModeControl?.addEventListener('change', updatePreviewLayout);
+  maxItemsPerRowControl?.addEventListener('change', updatePreviewLayout);
   updatePreviewLayout();
+  editor.querySelectorAll('.mosaic-design-preview__item img').forEach((image) => {
+    if (!image.complete) {
+      image.addEventListener('load', updatePreviewLayout, { once: true });
+    }
+  });
+  const patternedPreviewGrid = editor.querySelector('.mosaic-design-preview__items');
+  if (patternedPreviewGrid && typeof ResizeObserver === 'function') {
+    let observedPatternedPreviewWidth = patternedPreviewGrid.clientWidth;
+    new ResizeObserver(() => {
+      const width = patternedPreviewGrid.clientWidth;
+      if (width !== observedPatternedPreviewWidth) {
+        observedPatternedPreviewWidth = width;
+        updatePreviewLayout();
+      }
+    }).observe(patternedPreviewGrid);
+  }
   const displayState = () => Object.fromEntries(proxyControls.map(
     (proxy) => [proxy.dataset.designProxy.replace('settings.', ''), proxy.value],
   ));
@@ -639,6 +706,7 @@ const initializeEditor = (editor) => {
     preview.dataset.enableLoadMore = event.detail.display.enableLoadMore;
     preview.dataset.loadMoreFrame = event.detail.display.loadMoreUseFrameStyle;
     preview.dataset.galleryCaptionAlign = event.detail.display.captionAlign;
+    updatePreviewLayout();
   });
   editor.addEventListener('change', (event) => {
     const control = event.target.closest('[data-design-control]');
