@@ -76,7 +76,7 @@
   }
 
   function normalizeLayoutMode(value) {
-    return ["masonry", "mosaic", "justified", "grid"].indexOf(value) !== -1 ? value : "masonry";
+    return ["masonry", "mosaic", "patterned", "justified", "grid"].indexOf(value) !== -1 ? value : "masonry";
   }
 
   function justifiedTargetRowHeight(containerWidth) {
@@ -402,7 +402,7 @@
           }
         }
 
-        if (layoutMode === "grid" || layoutMode === "justified") {
+        if (["grid", "patterned", "justified"].indexOf(layoutMode) !== -1) {
           grid.style.height = "";
           Array.prototype.forEach.call(grid.querySelectorAll(".mosaic-item"), function (item) {
             item.style.left = "";
@@ -437,8 +437,8 @@
             }
           });
           justifiedResizeObserver.observe(grid);
-        } else {
-          window.addEventListener("resize", layoutMode === "justified" ? scheduleRelayout : relayout);
+        } else if (["masonry", "mosaic"].indexOf(layoutMode) !== -1) {
+          window.addEventListener("resize", relayout);
         }
 
         var btn = container.querySelector(".mosaic-load-more");

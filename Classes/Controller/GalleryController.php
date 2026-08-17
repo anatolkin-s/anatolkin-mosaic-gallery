@@ -72,7 +72,7 @@ final class GalleryController extends ActionController
         $sortBy    = (string)($this->settings['sortBy'] ?? 'name');   // name|mtime|random
         $sortDir   = (string)($this->settings['sortDir'] ?? 'asc');   // asc|desc
         $layoutMode = (string)($this->settings['layoutMode'] ?? 'masonry');
-        if (!\in_array($layoutMode, ['masonry', 'mosaic', 'justified', 'grid'], true)) {
+        if (!\in_array($layoutMode, ['masonry', 'mosaic', 'patterned', 'justified', 'grid'], true)) {
             $layoutMode = 'masonry';
         }
 
@@ -114,6 +114,7 @@ final class GalleryController extends ActionController
                 $lines = $this->splitLines((string)($this->settings['captions'] ?? ''));
 
                 foreach ($files as $idx => $file) {
+                    $aspectRatio = $this->resolveAspectRatio($file);
                     try {
                         $meta = $useFalCaptions ? $this->getLocalizedMeta($file) : [];
                     } catch (\Throwable $e) {
@@ -147,7 +148,8 @@ final class GalleryController extends ActionController
                         'alt'     => (string)$alt,
                         'hidden'  => ($enableLoadMore && $idx >= $itemsPerPage),
                         'layoutSpan' => $this->resolveLayoutSpan($file, $layoutMode),
-                        'aspectRatio' => $this->resolveAspectRatio($file),
+                        'aspectRatio' => $aspectRatio,
+                        'patternSpan' => $this->resolvePatternSpan($idx, $aspectRatio, $layoutMode),
                     ];
                 }
             } catch (\Throwable $e) {
@@ -202,6 +204,23 @@ final class GalleryController extends ActionController
         } catch (\Throwable) {
             return 1.0;
         }
+    }
+
+    private function resolvePatternSpan(int $index, float $aspectRatio, string $layoutMode): string
+    {
+        if ($layoutMode !== 'patterned') {
+            return 'standard';
+        }
+
+        $pattern = ['feature', 'standard', 'tall', 'wide', 'standard', 'standard', 'wide', 'tall', 'standard', 'feature'];
+        $span = $pattern[$index % \count($pattern)];
+        if ($span === 'wide' && $aspectRatio < 0.9) {
+            return 'tall';
+        }
+        if ($span === 'tall' && $aspectRatio > 1.2) {
+            return 'wide';
+        }
+        return $span;
     }
 
     /** @return array{key: string, quarter: string, third: string, forty: string, fortyFive: string, sixty: string, twoThirds: string, threeQuarters: string, total: string} */

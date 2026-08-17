@@ -225,8 +225,8 @@ final class DesignConfiguratorElement extends AbstractFormElement
             . '<div class="mosaic-design-preview__panel mosaic-design-preview__gallery">'
             . '<div class="mosaic-design-preview__panel-label">' . $this->label('design.preview.gallery') . '</div>'
             . '<div class="mosaic-design-preview__gallery-surface" data-preview-gallery-surface>'
-            . '<div class="mosaic-design-preview__items">' . $galleryItems . '</div>'
-            . '<div data-design-preview-extras hidden>' . $extraItems . '</div>'
+            . '<div class="mosaic-design-preview__items">' . $galleryItems
+            . '<div data-design-preview-extras hidden>' . $extraItems . '</div></div>'
             . '<div class="mosaic-design-preview__actions"><button type="button" class="btn btn-default btn-sm"'
             . ' data-design-preview-load-more>' . $this->frontendLabel('gallery.loadMore') . '</button></div>'
             . '</div></div>'

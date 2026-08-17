@@ -74,6 +74,7 @@
       <trans-unit id="flexform.layoutMode"><source>Layout</source></trans-unit>
       <trans-unit id="flexform.layoutMode.masonry"><source>Masonry</source></trans-unit>
       <trans-unit id="flexform.layoutMode.mosaic"><source>Mosaic</source></trans-unit>
+      <trans-unit id="flexform.layoutMode.patterned"><source>Patterned mosaic</source></trans-unit>
       <trans-unit id="flexform.layoutMode.justified"><source>Justified rows</source></trans-unit>
       <trans-unit id="flexform.layoutMode.grid"><source>Uniform grid</source></trans-unit>
       <trans-unit id="flexform.maxWidth.help"><source>Maximum width of the processed image loaded into a gallery tile. This does not set the tile width and does not affect the Lightbox image, which opens the original file.</source></trans-unit>

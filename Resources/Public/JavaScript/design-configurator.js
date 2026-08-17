@@ -497,7 +497,7 @@ const initializeEditor = (editor) => {
       return;
     }
     const value = String(layoutModeControl?.value ?? 'masonry');
-    preview.dataset.layoutMode = ['masonry', 'mosaic', 'justified', 'grid'].includes(value) ? value : 'masonry';
+    preview.dataset.layoutMode = ['masonry', 'mosaic', 'patterned', 'justified', 'grid'].includes(value) ? value : 'masonry';
   };
   layoutModeControl?.addEventListener('change', updatePreviewLayout);
   updatePreviewLayout();

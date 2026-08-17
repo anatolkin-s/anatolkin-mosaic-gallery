@@ -59,6 +59,90 @@
   max-width:100%;
 }
 
+/* Patterned Mosaic uses deterministic server-assigned spans in a dense modular grid. */
+.mosaic-gallery[data-layout-mode="patterned"]{
+  container-name:mosaic-patterned;
+  container-type:inline-size;
+}
+.mosaic-gallery[data-layout-mode="patterned"] .mosaic-grid{
+  display:grid;
+  gap:var(--gap,12px);
+  grid-auto-flow:dense;
+  grid-auto-rows:clamp(7rem,14cqi,12rem);
+  grid-template-columns:repeat(4,minmax(0,1fr));
+}
+.mosaic-gallery[data-layout-mode="patterned"] .mosaic-sizer{
+  display:none;
+}
+.mosaic-gallery[data-layout-mode="patterned"] .mosaic-item{
+  display:flex;
+  flex-direction:column;
+  height:100%;
+  margin:0;
+  min-width:0;
+  width:auto;
+}
+.mosaic-gallery[data-layout-mode="patterned"] .mosaic-item[data-pattern-span="feature"]{
+  grid-column:span 2;
+  grid-row:span 2;
+}
+.mosaic-gallery[data-layout-mode="patterned"] .mosaic-item[data-pattern-span="wide"]{
+  grid-column:span 2;
+}
+.mosaic-gallery[data-layout-mode="patterned"] .mosaic-item[data-pattern-span="tall"]{
+  grid-row:span 2;
+}
+.mosaic-gallery[data-layout-mode="patterned"] .mosaic-item > a{
+  flex:1 1 auto;
+  min-height:0;
+}
+.mosaic-gallery[data-layout-mode="patterned"] .mosaic-item > a img{
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+  width:100%;
+}
+.mosaic-gallery[data-layout-mode="patterned"][data-shadow="1"] .mosaic-item > a{
+  box-shadow:0 8px 24px rgba(0,0,0,.12);
+}
+.mosaic-gallery[data-layout-mode="patterned"][data-shadow="1"] .mosaic-item > a img{
+  box-shadow:none;
+}
+.mosaic-gallery[data-layout-mode="patterned"][data-apply-bg="tiles" i] .mosaic-item > a,
+.mosaic-gallery[data-layout-mode="patterned"][data-apply-bg="both" i] .mosaic-item > a{
+  background:var(--bg,transparent);
+}
+
+@container mosaic-patterned (max-width:720px){
+  .mosaic-gallery[data-layout-mode="patterned"] .mosaic-grid{
+    grid-auto-rows:clamp(7rem,24cqi,11rem);
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+  .mosaic-gallery[data-layout-mode="patterned"] .mosaic-item[data-pattern-span="feature"]{
+    grid-row:span 1;
+  }
+}
+
+@container mosaic-patterned (max-width:480px){
+  .mosaic-gallery[data-layout-mode="patterned"] .mosaic-grid{
+    grid-auto-rows:clamp(8rem,42cqi,12rem);
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .mosaic-gallery[data-layout-mode="patterned"] .mosaic-item[data-pattern-span="tall"]{
+    grid-row:span 1;
+  }
+}
+
+@container mosaic-patterned (max-width:380px){
+  .mosaic-gallery[data-layout-mode="patterned"] .mosaic-grid{
+    grid-template-columns:minmax(0,1fr);
+  }
+  .mosaic-gallery[data-layout-mode="patterned"] .mosaic-item{
+    grid-column:span 1;
+    grid-row:span 1;
+  }
+}
+
 /* Uniform Grid is presentation-only cropping; Lightbox links still target original files. */
 .mosaic-gallery[data-layout-mode="grid"] .mosaic-grid{
   display:grid;
