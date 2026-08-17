@@ -178,8 +178,77 @@
 /* Unified workspaces preserve canonical storage while presenting one Layout and one Images surface. */
 .tab-content > .tab-pane.active.mosaic-layout-sheet {
   column-gap: 1rem;
+  container-type: inline-size;
+  display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   row-gap: .75rem;
+}
+
+.mosaic-layout-header,
+.mosaic-layout-header__row {
+  min-width: 0;
+}
+
+.mosaic-layout-header {
+  grid-column: 1 / -1;
+}
+
+.mosaic-layout-header__row {
+  display: grid;
+  gap: .5rem .75rem;
+}
+
+.mosaic-layout-header__row--source {
+  grid-template-columns: minmax(7rem, 2fr) minmax(16rem, 4fr) minmax(7rem, 1fr) minmax(9rem, 3fr) minmax(8rem, 2fr);
+}
+
+.mosaic-layout-header__row--settings {
+  align-items: end;
+  grid-template-columns: minmax(7rem, 2fr) minmax(9rem, 2fr) minmax(6rem, 1fr) minmax(6rem, 1fr) minmax(24rem, 6fr);
+  margin-bottom: .75rem;
+}
+
+.mosaic-layout-header__row > .form-section {
+  margin: 0;
+  min-width: 0;
+  padding: 0;
+}
+
+.mosaic-layout-header__row .form-label {
+  font-size: .75rem;
+  line-height: 1.2;
+  margin-bottom: .2rem;
+}
+
+.mosaic-layout-header__row .form-control,
+.mosaic-layout-header__row .form-select {
+  min-width: 0;
+}
+
+.mosaic-layout-header__row--settings
+  > .form-section:is([data-id="settings.maxWidth"], [data-id="settings.itemsPerPage"], [data-id="settings.loadStep"])
+  .form-control {
+  max-width: 9rem;
+}
+
+.mosaic-layout-header__accessible-help {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.mosaic-layout-header__row .mosaic-design-configurator__toolbar {
+  gap: .4rem .75rem;
+  grid-template-columns: minmax(10rem, 1fr) minmax(0, 1.25fr) auto;
+  margin: 0;
+}
+
+.mosaic-layout-header__row .mosaic-design-configurator__status {
+  font-size: .8rem;
 }
 
 .tab-content > .tab-pane.active.mosaic-layout-sheet
@@ -221,6 +290,33 @@
 }
 
 @container (max-width: 1099px) {
+  .mosaic-layout-header__row--source,
+  .mosaic-layout-header__row--settings {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .mosaic-layout-header__row--source > .form-section[data-id="settings.source"],
+  .mosaic-layout-header__row--source > .form-section[data-id="settings.recursive"] {
+    grid-column: span 2;
+  }
+
+  .mosaic-layout-header__row--source > .form-section[data-id="settings.folder"] {
+    grid-column: span 4;
+  }
+
+  .mosaic-layout-header__row--source
+    > .form-section:is([data-id="settings.sortBy"], [data-id="settings.sortDir"]) {
+    grid-column: span 3;
+  }
+
+  .mosaic-layout-header__row--settings > .form-section {
+    grid-column: span 2;
+  }
+
+  .mosaic-layout-header__row--settings > .mosaic-design-configurator__toolbar {
+    grid-column: 1 / -1;
+  }
+
   .tab-content > .tab-pane.active.mosaic-layout-sheet
     > .form-section:is(
       [data-id="settings.sortBy"],
@@ -235,6 +331,18 @@
 }
 
 @container (max-width: 699px) {
+  .mosaic-layout-header__row--source,
+  .mosaic-layout-header__row--settings,
+  .mosaic-layout-header__row .mosaic-design-configurator__toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mosaic-layout-header__row--source > .form-section,
+  .mosaic-layout-header__row--settings > .form-section,
+  .mosaic-layout-header__row--settings > .mosaic-design-configurator__toolbar {
+    grid-column: 1 / -1;
+  }
+
   .tab-content > .tab-pane.active.mosaic-layout-sheet > .form-section {
     grid-column: 1 / -1 !important;
   }

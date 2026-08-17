@@ -304,6 +304,39 @@ const consolidateWorkspaces = (editor) => {
     imagesSheet.append(captionsSection);
   }
 
+  const header = document.createElement('div');
+  header.className = 'mosaic-layout-header';
+  const firstRow = document.createElement('div');
+  firstRow.className = 'mosaic-layout-header__row mosaic-layout-header__row--source';
+  firstRow.dataset.layoutHeaderRow = 'source';
+  const secondRow = document.createElement('div');
+  secondRow.className = 'mosaic-layout-header__row mosaic-layout-header__row--settings';
+  secondRow.dataset.layoutHeaderRow = 'settings';
+  header.append(firstRow);
+  layoutSheet.prepend(header);
+  editor.prepend(secondRow);
+
+  const moveSection = (fieldName, target) => {
+    const section = layoutSheet.querySelector(`:scope > .form-section[data-id="${fieldName}"]`);
+    if (section) {
+      target.append(section);
+    }
+    return section;
+  };
+  ['settings.source', 'settings.folder', 'settings.recursive', 'settings.sortBy', 'settings.sortDir']
+    .forEach((fieldName) => moveSection(fieldName, firstRow));
+  ['settings.maxWidth', 'settings.useFalCaptions', 'settings.itemsPerPage', 'settings.loadStep']
+    .forEach((fieldName) => moveSection(fieldName, secondRow));
+
+  const metadataFallback = secondRow.querySelector('.form-section[data-id="settings.useFalCaptions"]');
+  const metadataHelp = metadataFallback?.querySelector('.form-text');
+  if (metadataFallback && metadataHelp?.textContent.trim()) {
+    const helpText = metadataHelp.textContent.trim();
+    metadataFallback.title = helpText;
+    metadataFallback.querySelector('input, select')?.setAttribute('aria-description', helpText);
+    metadataHelp.classList.add('mosaic-layout-header__accessible-help');
+  }
+
   return layoutSheet;
 };
 
@@ -328,6 +361,11 @@ const initializeEditor = (editor) => {
   const presetSlot = editor.querySelector('[data-design-preset-slot]');
   if (presetSlot) {
     presetSlot.append(presetSection);
+  }
+  const toolbar = editor.querySelector('.mosaic-design-configurator__toolbar');
+  const settingsRow = editor.querySelector('[data-layout-header-row="settings"]');
+  if (toolbar && settingsRow) {
+    settingsRow.append(toolbar);
   }
   customSections.forEach((section) => {
     const group = CUSTOM_FIELD_GROUPS[section.dataset.id];
