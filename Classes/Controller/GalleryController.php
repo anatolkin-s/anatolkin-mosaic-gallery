@@ -115,7 +115,6 @@ final class GalleryController extends ActionController
 
                 foreach ($files as $idx => $file) {
                     $aspectRatio = $this->resolveAspectRatio($file);
-                    $patternTile = $this->resolvePatternTile($idx, $aspectRatio, $layoutMode);
                     try {
                         $meta = $useFalCaptions ? $this->getLocalizedMeta($file) : [];
                     } catch (\Throwable $e) {
@@ -150,9 +149,7 @@ final class GalleryController extends ActionController
                         'hidden'  => ($enableLoadMore && $idx >= $itemsPerPage),
                         'layoutSpan' => $this->resolveLayoutSpan($file, $layoutMode),
                         'aspectRatio' => $aspectRatio,
-                        'patternSpan' => $patternTile['span'],
-                        'patternFit' => $patternTile['fit'],
-                        'patternBridge' => $patternTile['bridge'],
+                        'patternWeight' => $this->resolvePatternWeight($idx, $layoutMode),
                     ];
                 }
             } catch (\Throwable $e) {
@@ -209,68 +206,14 @@ final class GalleryController extends ActionController
         }
     }
 
-    /** @return array{span: string, fit: string, bridge: string} */
-    private function resolvePatternTile(int $index, float $aspectRatio, string $layoutMode): array
+    private function resolvePatternWeight(int $index, string $layoutMode): string
     {
         if ($layoutMode !== 'patterned') {
-            return ['span' => 'standard', 'fit' => 'cover', 'bridge' => 'none'];
+            return 'medium';
         }
 
-        $pattern = ['feature', 'standard', 'tall', 'wide', 'standard', 'standard', 'wide', 'tall', 'standard', 'feature'];
-        $desired = $pattern[$index % \count($pattern)];
-        if ($aspectRatio < 0.85) {
-            $candidates = \in_array($desired, ['feature', 'standard', 'tall'], true)
-                ? [$desired, 'tall', 'standard']
-                : ['tall', 'standard'];
-        } elseif ($aspectRatio > 1.18) {
-            $candidates = \in_array($desired, ['feature', 'standard', 'wide'], true)
-                ? [$desired, 'wide', 'standard']
-                : ['wide', 'standard'];
-        } else {
-            $candidates = [$desired, 'standard'];
-        }
-
-        $candidates = array_values(array_unique($candidates));
-        $span = null;
-        foreach ($candidates as $candidate) {
-            if ($this->patternCropFraction($aspectRatio, $candidate) <= 0.2) {
-                $span = $candidate;
-                break;
-            }
-        }
-        $fit = 'cover';
-        if ($span === null) {
-            $fit = 'contain';
-            $span = $candidates[0] ?? 'standard';
-            $smallestCrop = $this->patternCropFraction($aspectRatio, $span);
-            foreach (array_slice($candidates, 1) as $candidate) {
-                $candidateCrop = $this->patternCropFraction($aspectRatio, $candidate);
-                if ($candidateCrop < $smallestCrop) {
-                    $span = $candidate;
-                    $smallestCrop = $candidateCrop;
-                }
-            }
-        }
-
-        $cyclePosition = $index % \count($pattern);
-        $bridge = 'none';
-        if ($span === 'wide' && $cyclePosition === 3) {
-            $bridge = 'center';
-        } elseif ($span === 'wide' && $cyclePosition === 6) {
-            $bridge = intdiv($index, \count($pattern)) % 2 === 0 ? 'right' : 'left';
-        }
-
-        return ['span' => $span, 'fit' => $fit, 'bridge' => $bridge];
-    }
-
-    private function patternCropFraction(float $sourceRatio, string $span): float
-    {
-        $tileRatio = match ($span) {
-            'wide' => 2.0,
-            'tall' => 0.5,
-            default => 1.0,
-        };
-        return 1.0 - min($sourceRatio / $tileRatio, $tileRatio / $sourceRatio);
+        $weights = ['medium', 'small', 'medium', 'large', 'small', 'medium', 'small', 'large', 'medium', 'small'];
+        return $weights[$index % \count($weights)];
     }
 
     /** @return array{key: string, quarter: string, third: string, forty: string, fortyFive: string, sixty: string, twoThirds: string, threeQuarters: string, total: string} */

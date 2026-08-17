@@ -133,6 +133,65 @@
     }
   }
 
+  function patternedColumnCount(containerWidth) {
+    if (containerWidth <= 420) return 2;
+    if (containerWidth <= 600) return 4;
+    if (containerWidth <= 900) return 8;
+    return 12;
+  }
+
+  function patternedColumnSpan(item, columnCount) {
+    var ratio = itemAspectRatio(item);
+    var orientation = ratio < 0.8 ? "portrait" : (ratio > 1.8 ? "wide" : (ratio > 1.15 ? "landscape" : "square"));
+    var weight = item.getAttribute("data-pattern-weight") || "medium";
+    var spans = {
+      12: {
+        small: { portrait: 3, square: 3, landscape: 4, wide: 5 },
+        medium: { portrait: 4, square: 4, landscape: 5, wide: 6 },
+        large: { portrait: 4, square: 5, landscape: 6, wide: 8 }
+      },
+      8: {
+        small: { portrait: 2, square: 2, landscape: 3, wide: 4 },
+        medium: { portrait: 2, square: 3, landscape: 4, wide: 5 },
+        large: { portrait: 3, square: 4, landscape: 5, wide: 6 }
+      },
+      4: {
+        small: { portrait: 2, square: 2, landscape: 2, wide: 3 },
+        medium: { portrait: 2, square: 2, landscape: 3, wide: 4 },
+        large: { portrait: 2, square: 3, landscape: 4, wide: 4 }
+      },
+      2: {
+        small: { portrait: 1, square: 1, landscape: 2, wide: 2 },
+        medium: { portrait: 1, square: 2, landscape: 2, wide: 2 },
+        large: { portrait: 2, square: 2, landscape: 2, wide: 2 }
+      }
+    };
+    return spans[columnCount][weight] && spans[columnCount][weight][orientation]
+      ? spans[columnCount][weight][orientation]
+      : Math.min(columnCount, Math.max(1, Math.round(columnCount / 3)));
+  }
+
+  function layoutPatternedGrid(grid, gap) {
+    var containerWidth = grid.clientWidth;
+    if (containerWidth <= 0) return;
+    var columnCount = patternedColumnCount(containerWidth);
+    var rowUnit = parseFloat(window.getComputedStyle(grid).gridAutoRows) || 4;
+    var visibleItems = Array.prototype.slice.call(
+      grid.querySelectorAll(".mosaic-item:not(.is-hidden)")
+    );
+
+    visibleItems.forEach(function (item) {
+      item.style.gridColumnStart = "";
+      item.style.gridColumnEnd = "span " + patternedColumnSpan(item, columnCount);
+      item.style.gridRowEnd = "";
+    });
+    visibleItems.forEach(function (item) {
+      var height = Math.max(item.scrollHeight, item.getBoundingClientRect().height);
+      var rowSpan = Math.max(1, Math.ceil((height + gap) / (rowUnit + gap)));
+      item.style.gridRowEnd = "span " + rowSpan;
+    });
+  }
+
   function injectCss(id, css) {
     if (document.getElementById(id)) return;
     var st = document.createElement("style");
@@ -343,6 +402,9 @@
       var justifiedResizeObserver = null;
       var justifiedResizeFrame = null;
       var justifiedObservedWidth = grid.clientWidth;
+      var patternedResizeObserver = null;
+      var patternedResizeFrame = null;
+      var patternedObservedWidth = grid.clientWidth;
       var themeClass = enable ? prepareLightboxTheme(container, index) : null;
 
       function markLayoutReady() {
@@ -415,6 +477,8 @@
         function relayout() {
           if (layoutMode === "justified") {
             layoutJustifiedRows(grid, gap);
+          } else if (layoutMode === "patterned") {
+            layoutPatternedGrid(grid, gap);
           } else if (msnry) {
             msnry.layout();
           }
@@ -428,6 +492,22 @@
           });
         }
 
+        function schedulePatternedRelayout() {
+          if (patternedResizeFrame !== null) return;
+          patternedResizeFrame = window.requestAnimationFrame(function () {
+            patternedResizeFrame = null;
+            relayout();
+          });
+        }
+
+        function handlePatternedResize() {
+          var currentWidth = grid.clientWidth;
+          if (currentWidth !== patternedObservedWidth) {
+            patternedObservedWidth = currentWidth;
+            schedulePatternedRelayout();
+          }
+        }
+
         if (layoutMode === "justified" && typeof window.ResizeObserver === "function") {
           justifiedResizeObserver = new window.ResizeObserver(function () {
             var currentWidth = grid.clientWidth;
@@ -437,6 +517,11 @@
             }
           });
           justifiedResizeObserver.observe(grid);
+        } else if (layoutMode === "patterned" && typeof window.ResizeObserver === "function") {
+          patternedResizeObserver = new window.ResizeObserver(handlePatternedResize);
+          patternedResizeObserver.observe(grid);
+        } else if (layoutMode === "patterned") {
+          window.addEventListener("resize", handlePatternedResize);
         } else if (["masonry", "mosaic"].indexOf(layoutMode) !== -1) {
           window.addEventListener("resize", relayout);
         }
