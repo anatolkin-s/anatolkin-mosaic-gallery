@@ -70,6 +70,10 @@
     <trans-unit id="flexform.sortDir.desc"><source>Descending</source><target>Décroissant</target></trans-unit>
     <trans-unit id="flexform.gap"><source>Gap (px)</source><target>Espacement (px)</target></trans-unit>
     <trans-unit id="flexform.maxWidth"><source>Image max width (px)</source><target>Largeur max. de l’image (px)</target></trans-unit>
+    <trans-unit id="flexform.layoutMode"><source>Layout</source><target>Mise en page</target></trans-unit>
+    <trans-unit id="flexform.layoutMode.masonry"><source>Masonry</source><target>Masonry</target></trans-unit>
+    <trans-unit id="flexform.layoutMode.mosaic"><source>Mosaic</source><target>Mosaïque</target></trans-unit>
+    <trans-unit id="flexform.layoutMode.grid"><source>Uniform grid</source><target>Grille uniforme</target></trans-unit>
     <trans-unit id="flexform.maxWidth.help"><source>Maximum width of the processed image loaded into a gallery tile. This does not set the tile width and does not affect the Lightbox image, which opens the original file.</source><target>Largeur maximale de l’image traitée chargée dans une vignette de galerie. Elle ne définit pas la largeur de la vignette et n’affecte pas l’image de la visionneuse, qui ouvre le fichier original.</target></trans-unit>
     <trans-unit id="flexform.enableLightbox"><source>Enable lightbox</source><target>Activer la visionneuse</target></trans-unit>
     <trans-unit id="flexform.showCaptions"><source>Show captions</source><target>Afficher les légendes</target></trans-unit>

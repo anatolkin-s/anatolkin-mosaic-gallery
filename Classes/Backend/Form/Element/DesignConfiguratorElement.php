@@ -210,8 +210,9 @@ final class DesignConfiguratorElement extends AbstractFormElement
             }
         }
         $galleryItems = '';
-        foreach ($galleryColumns as $column) {
-            $galleryItems .= '<div class="mosaic-design-preview__column" data-design-preview-column>'
+        foreach ($galleryColumns as $index => $column) {
+            $galleryItems .= '<div class="mosaic-design-preview__column" data-design-preview-column'
+                . ($index === 0 ? ' data-preview-span="wide"' : '') . '>'
                 . $column . '</div>';
         }
 

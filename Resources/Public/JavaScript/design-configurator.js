@@ -380,7 +380,7 @@ const consolidateWorkspaces = (editor) => {
   };
   ['settings.source', 'settings.folder', 'settings.recursive', 'settings.sortBy', 'settings.sortDir']
     .forEach((fieldName) => moveSection(fieldName, firstRow));
-  ['settings.maxWidth', 'settings.itemsPerPage', 'settings.loadStep', 'settings.useFalCaptions']
+  ['settings.layoutMode', 'settings.maxWidth', 'settings.itemsPerPage', 'settings.loadStep', 'settings.useFalCaptions']
     .forEach((fieldName) => moveSection(fieldName, secondRow));
 
   const metadataFallback = secondRow.querySelector('.form-section[data-id="settings.useFalCaptions"]');
@@ -490,6 +490,17 @@ const initializeEditor = (editor) => {
     : (fieldName === 'settings.gap' && String(control?.value ?? '').trim() === ''
       ? '12'
       : (control?.value ?? ''));
+  const layoutModeControl = canonicalControl('settings.layoutMode');
+  const updatePreviewLayout = () => {
+    const preview = editor.querySelector('[data-design-live-preview]');
+    if (!preview) {
+      return;
+    }
+    const value = String(layoutModeControl?.value ?? 'masonry');
+    preview.dataset.layoutMode = ['masonry', 'mosaic', 'grid'].includes(value) ? value : 'masonry';
+  };
+  layoutModeControl?.addEventListener('change', updatePreviewLayout);
+  updatePreviewLayout();
   const displayState = () => Object.fromEntries(proxyControls.map(
     (proxy) => [proxy.dataset.designProxy.replace('settings.', ''), proxy.value],
   ));

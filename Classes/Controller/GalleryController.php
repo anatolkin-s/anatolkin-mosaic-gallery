@@ -71,6 +71,10 @@ final class GalleryController extends ActionController
         $maxWidth  = max(200, (int)($this->settings['maxWidth'] ?? 1800));
         $sortBy    = (string)($this->settings['sortBy'] ?? 'name');   // name|mtime|random
         $sortDir   = (string)($this->settings['sortDir'] ?? 'asc');   // asc|desc
+        $layoutMode = (string)($this->settings['layoutMode'] ?? 'masonry');
+        if (!\in_array($layoutMode, ['masonry', 'mosaic', 'grid'], true)) {
+            $layoutMode = 'masonry';
+        }
 
         $showCaptions   = (bool)($this->settings['showCaptions'] ?? true);
         $useFalCaptions = (bool)($this->settings['useFalCaptions'] ?? true);
@@ -142,6 +146,7 @@ final class GalleryController extends ActionController
                         'caption' => (string)$caption,
                         'alt'     => (string)$alt,
                         'hidden'  => ($enableLoadMore && $idx >= $itemsPerPage),
+                        'layoutSpan' => $this->resolveLayoutSpan($file, $layoutMode),
                     ];
                 }
             } catch (\Throwable $e) {
@@ -155,6 +160,7 @@ final class GalleryController extends ActionController
             'items'          => $items,
             'gap'            => $gap,
             'maxWidth'       => $maxWidth,
+            'layoutMode'     => $layoutMode,
             'showCaptions'   => $showCaptions,
             'captionAlign'   => $captionAlign,
             'design'         => $design,
@@ -168,6 +174,22 @@ final class GalleryController extends ActionController
         ]);
 
         return $this->htmlResponse();
+    }
+
+    private function resolveLayoutSpan(File $file, string $layoutMode): string
+    {
+        if ($layoutMode !== 'mosaic') {
+            return 'normal';
+        }
+
+        try {
+            $width = (int)$file->getProperty('width');
+            $height = (int)$file->getProperty('height');
+            // A 1.6 ratio reserves two-column spans for clearly wide images rather than ordinary landscapes.
+            return $width > 0 && $height > 0 && ($width / $height) >= 1.6 ? 'wide' : 'normal';
+        } catch (\Throwable) {
+            return 'normal';
+        }
     }
 
     /** @return array{key: string, quarter: string, third: string, forty: string, fortyFive: string, sixty: string, twoThirds: string, threeQuarters: string, total: string} */

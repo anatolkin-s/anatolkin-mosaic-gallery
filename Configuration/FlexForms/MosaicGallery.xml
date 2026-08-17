@@ -94,6 +94,29 @@
             </config>
           </settings.gap>
 
+          <settings.layoutMode>
+            <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.layoutMode</label>
+            <config>
+              <type>select</type>
+              <renderType>selectSingle</renderType>
+              <items>
+                <numIndex index="0">
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.layoutMode.masonry</label>
+                  <value>masonry</value>
+                </numIndex>
+                <numIndex index="1">
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.layoutMode.mosaic</label>
+                  <value>mosaic</value>
+                </numIndex>
+                <numIndex index="2">
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.layoutMode.grid</label>
+                  <value>grid</value>
+                </numIndex>
+              </items>
+              <default>masonry</default>
+            </config>
+          </settings.layoutMode>
+
           <settings.maxWidth>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.maxWidth</label>
             <description>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.maxWidth.help</description>

@@ -75,6 +75,10 @@
     }[value] || { fontStyle: "normal", fontWeight: "400" };
   }
 
+  function normalizeLayoutMode(value) {
+    return ["masonry", "mosaic", "grid"].indexOf(value) !== -1 ? value : "masonry";
+  }
+
   function injectCss(id, css) {
     if (document.getElementById(id)) return;
     var st = document.createElement("style");
@@ -278,6 +282,7 @@
       var step    = parseInt(container.getAttribute("data-step") || "0", 10);
       var enable  = container.getAttribute("data-lightbox") === "1";
       var group   = container.getAttribute("data-group") || "gallery";
+      var layoutMode = normalizeLayoutMode(container.getAttribute("data-layout-mode"));
       var grid    = container.querySelector(".mosaic-grid") || container;
       var lightbox = null;
       var msnry = null;
@@ -325,7 +330,7 @@
 
       var visibleImages = grid.querySelectorAll(".mosaic-item:not(.is-hidden) img");
       waitForImages(visibleImages, function () {
-        if (typeof window.Masonry === "function") {
+        if (layoutMode !== "grid" && typeof window.Masonry === "function") {
           try {
             var sizer = grid.querySelector(".mosaic-sizer") || grid.querySelector(".mosaic-item");
             msnry = new window.Masonry(grid, {
@@ -338,6 +343,16 @@
           } catch (e) {
             msnry = null;
           }
+        }
+
+        if (layoutMode === "grid") {
+          grid.style.height = "";
+          Array.prototype.forEach.call(grid.querySelectorAll(".mosaic-item"), function (item) {
+            item.style.left = "";
+            item.style.position = "";
+            item.style.top = "";
+            item.style.transform = "";
+          });
         }
 
         function relayout() {
