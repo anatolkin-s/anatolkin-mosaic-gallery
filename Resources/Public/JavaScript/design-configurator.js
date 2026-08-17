@@ -277,13 +277,20 @@ const renderPreview = (editor, effective) => {
 };
 
 const addCompactHelp = (section) => {
-  const help = section?.querySelector('.form-text');
+  const help = section?.querySelector([
+    '.form-text',
+    '.form-description',
+    '[data-formengine-description]',
+    '[data-formengine-field-description]',
+  ].join(', '));
   const label = section?.querySelector('.form-label');
   const helpText = help?.textContent.trim();
   if (!section || !help || !label || !helpText || section.querySelector('[data-mosaic-compact-help]')) {
     return;
   }
 
+  section.dataset.mosaicCompactHelpSection = 'true';
+  help.dataset.mosaicCompactHelpDescription = 'true';
   const labelRow = document.createElement('div');
   labelRow.className = 'mosaic-layout-header__label-row';
   label.before(labelRow);

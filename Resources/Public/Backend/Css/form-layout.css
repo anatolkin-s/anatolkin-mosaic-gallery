@@ -204,7 +204,7 @@
 
 .mosaic-layout-header__row--settings {
   align-items: end;
-  grid-template-columns: minmax(7rem, 2fr) minmax(9rem, 2fr) minmax(6rem, 1fr) minmax(6rem, 1fr) minmax(24rem, 6fr);
+  grid-template-columns: minmax(10rem, 1.2fr) minmax(10rem, 1.1fr) minmax(7rem, .7fr) minmax(7rem, .7fr) minmax(28rem, 4fr);
   margin-bottom: .75rem;
 }
 
@@ -239,7 +239,14 @@
   max-width: 9rem;
 }
 
-.mosaic-layout-header__accessible-help {
+.mosaic-layout-header__accessible-help,
+[data-mosaic-compact-help-section="true"]
+  [data-mosaic-compact-help-description="true"]:is(
+    .form-text,
+    .form-description,
+    [data-formengine-description],
+    [data-formengine-field-description]
+  ) {
   clip: rect(0 0 0 0);
   clip-path: inset(50%);
   height: 1px;
@@ -282,9 +289,12 @@
 }
 
 .mosaic-layout-header__row .mosaic-design-configurator__toolbar {
-  align-items: end;
+  align-items: center;
+  background: var(--typo3-surface-container-low, rgba(0, 0, 0, .025));
+  border: 1px solid var(--typo3-component-border-color, #d7d7d7);
+  border-radius: .25rem;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 5px;
   margin: 0;
   min-width: 0;
@@ -294,6 +304,13 @@
 .mosaic-layout-header__row .mosaic-design-configurator__preset {
   flex: 1 1 11rem;
   min-width: 10rem;
+}
+
+.mosaic-layout-header__row .mosaic-design-configurator__preset .form-section {
+  background: transparent;
+  border: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .mosaic-layout-header__row .mosaic-design-configurator__status {
@@ -376,6 +393,7 @@
   }
 
   .mosaic-layout-header__row--settings > .mosaic-design-configurator__toolbar {
+    flex-wrap: wrap;
     grid-column: 1 / -1;
   }
 
