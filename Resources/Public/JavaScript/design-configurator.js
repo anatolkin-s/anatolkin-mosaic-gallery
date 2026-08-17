@@ -276,6 +276,35 @@ const renderPreview = (editor, effective) => {
   preview.dataset.captionStyle = effective.lightbox.captionStyle;
 };
 
+const addCompactHelp = (section) => {
+  const help = section?.querySelector('.form-text');
+  const label = section?.querySelector('.form-label');
+  const helpText = help?.textContent.trim();
+  if (!section || !help || !label || !helpText || section.querySelector('[data-mosaic-compact-help]')) {
+    return;
+  }
+
+  const labelRow = document.createElement('div');
+  labelRow.className = 'mosaic-layout-header__label-row';
+  label.before(labelRow);
+  labelRow.append(label);
+  const helpButton = document.createElement('button');
+  helpButton.type = 'button';
+  helpButton.className = 'mosaic-layout-header__help';
+  helpButton.dataset.mosaicCompactHelp = 'true';
+  helpButton.textContent = 'ⓘ';
+  helpButton.title = helpText;
+  helpButton.setAttribute('aria-label', helpText);
+  helpButton.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+  });
+  labelRow.append(helpButton);
+  section.title = helpText;
+  section.querySelector('input, select')?.setAttribute('aria-description', helpText);
+  help.classList.add('mosaic-layout-header__accessible-help');
+};
+
 const consolidateWorkspaces = (editor) => {
   const imagesSheet = editor.closest('.tab-pane');
   const tabContent = imagesSheet?.parentElement;
@@ -329,13 +358,7 @@ const consolidateWorkspaces = (editor) => {
     .forEach((fieldName) => moveSection(fieldName, secondRow));
 
   const metadataFallback = secondRow.querySelector('.form-section[data-id="settings.useFalCaptions"]');
-  const metadataHelp = metadataFallback?.querySelector('.form-text');
-  if (metadataFallback && metadataHelp?.textContent.trim()) {
-    const helpText = metadataHelp.textContent.trim();
-    metadataFallback.title = helpText;
-    metadataFallback.querySelector('input, select')?.setAttribute('aria-description', helpText);
-    metadataHelp.classList.add('mosaic-layout-header__accessible-help');
-  }
+  addCompactHelp(metadataFallback);
 
   return layoutSheet;
 };
@@ -362,6 +385,7 @@ const initializeEditor = (editor) => {
   if (presetSlot) {
     presetSlot.append(presetSection);
   }
+  addCompactHelp(presetSection);
   const toolbar = editor.querySelector('.mosaic-design-configurator__toolbar');
   const settingsRow = editor.querySelector('[data-layout-header-row="settings"]');
   if (toolbar && settingsRow) {
@@ -465,19 +489,25 @@ const initializeEditor = (editor) => {
     const preset = currentPreset();
     const count = countLeaves(overrides);
     const dirty = preset !== savedPreset || canonicalJson(overrides) !== canonicalJson(savedDocument);
-    const preview = editor.querySelector('[data-design-preview]');
-    const modifications = editor.querySelector('[data-design-modifications]');
+    const statusPrefix = editor.querySelector('[data-design-status-prefix]');
+    const statusName = editor.querySelector('[data-design-status-name]');
+    const statusDetail = editor.querySelector('[data-design-status-detail]');
     const resetAll = editor.querySelector('[data-design-reset-all]');
-    if (preview) {
-      preview.hidden = !dirty;
-      preview.textContent = dirty
-        ? `${editor.dataset.previewingLabel}: ${presetLabel(preset)} · ${editor.dataset.unsavedLabel}`
-        : '';
+    if (statusPrefix) {
+      statusPrefix.textContent = dirty ? editor.dataset.previewingLabel : editor.dataset.savedLabel;
     }
-    if (modifications) {
-      modifications.textContent = preset !== 'custom' && count > 0
-        ? `${presetLabel(preset)} · ${count} ${editor.dataset.modifiedLabel.toLowerCase()}`
-        : '';
+    if (statusName) {
+      statusName.textContent = presetLabel(dirty ? preset : savedPreset);
+    }
+    if (statusDetail) {
+      const details = [];
+      if (dirty) {
+        details.push(editor.dataset.unsavedLabel);
+      }
+      if (preset !== 'custom' && count > 0) {
+        details.push(`${count} ${editor.dataset.modifiedLabel}`);
+      }
+      statusDetail.textContent = details.length > 0 ? ` · ${details.join(' · ')}` : '';
     }
     if (resetAll) {
       const resetLabel = preset === 'site' ? editor.dataset.siteDefaultLabel : presetLabel(preset);

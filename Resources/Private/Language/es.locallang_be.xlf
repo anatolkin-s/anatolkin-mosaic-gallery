@@ -44,13 +44,13 @@
     <trans-unit id="flexform.designOverride.on"><source>On</source><target>Activado</target></trans-unit>
     <trans-unit id="flexform.designOverride.off"><source>Off</source><target>Desactivado</target></trans-unit>
     <trans-unit id="design.configurator.title"><source>Effective design</source><target>Diseño efectivo</target></trans-unit>
-    <trans-unit id="design.configurator.saved"><source>Saved design</source><target>Diseño guardado</target></trans-unit>
+    <trans-unit id="design.configurator.saved"><source>Saved</source><target>Guardado</target></trans-unit>
     <trans-unit id="design.configurator.previewing"><source>Previewing</source><target>Vista previa</target></trans-unit>
     <trans-unit id="design.configurator.unsaved"><source>Unsaved</source><target>Sin guardar</target></trans-unit>
-    <trans-unit id="design.configurator.modified"><source>Modified</source><target>Modificado</target></trans-unit>
+    <trans-unit id="design.configurator.modified"><source>modified</source><target>modificado</target></trans-unit>
     <trans-unit id="design.configurator.effective"><source>Effective</source><target>Efectivo</target></trans-unit>
     <trans-unit id="design.configurator.reset"><source>Reset</source><target>Restablecer</target></trans-unit>
-    <trans-unit id="design.configurator.resetAll"><source>Reset all to %s</source><target>Restablecer todo a %s</target></trans-unit>
+    <trans-unit id="design.configurator.resetAll"><source>Reset to “%s”</source><target>Restablecer a «%s»</target></trans-unit>
     <trans-unit id="design.configurator.siteDefault"><source>site default</source><target>valor predeterminado del sitio</target></trans-unit>
     <trans-unit id="design.preview.title"><source>Live preview</source><target>Vista previa en vivo</target></trans-unit>
     <trans-unit id="design.preview.help"><source>Changes are shown here before saving.</source><target>Los cambios se muestran aquí antes de guardar.</target></trans-unit>

@@ -45,13 +45,13 @@
       <trans-unit id="flexform.designOverride.on"><source>On</source></trans-unit>
       <trans-unit id="flexform.designOverride.off"><source>Off</source></trans-unit>
       <trans-unit id="design.configurator.title"><source>Effective design</source></trans-unit>
-      <trans-unit id="design.configurator.saved"><source>Saved design</source></trans-unit>
+      <trans-unit id="design.configurator.saved"><source>Saved</source></trans-unit>
       <trans-unit id="design.configurator.previewing"><source>Previewing</source></trans-unit>
       <trans-unit id="design.configurator.unsaved"><source>Unsaved</source></trans-unit>
-      <trans-unit id="design.configurator.modified"><source>Modified</source></trans-unit>
+      <trans-unit id="design.configurator.modified"><source>modified</source></trans-unit>
       <trans-unit id="design.configurator.effective"><source>Effective</source></trans-unit>
       <trans-unit id="design.configurator.reset"><source>Reset</source></trans-unit>
-      <trans-unit id="design.configurator.resetAll"><source>Reset all to %s</source></trans-unit>
+      <trans-unit id="design.configurator.resetAll"><source>Reset to “%s”</source></trans-unit>
       <trans-unit id="design.configurator.siteDefault"><source>site default</source></trans-unit>
       <trans-unit id="design.preview.title"><source>Live preview</source></trans-unit>
       <trans-unit id="design.preview.help"><source>Changes are shown here before saving.</source></trans-unit>

@@ -155,11 +155,13 @@ final class DesignConfiguratorElement extends AbstractFormElement
             . ' data-design-storage>'
             . '<div class="mosaic-design-configurator__toolbar">'
             . '<div class="mosaic-design-configurator__preset" data-design-preset-slot></div>'
-            . '<div class="mosaic-design-configurator__status" data-design-status><strong>'
-            . $this->label('design.configurator.saved') . ': '
-            . '<span data-design-saved>' . htmlspecialchars($savedLabel, ENT_QUOTES) . '</span></strong>'
-            . '<span class="form-text" data-design-preview hidden></span>'
-            . '<span class="form-text" data-design-modifications></span></div>'
+            . '<div class="mosaic-design-configurator__status" data-design-status>'
+            . '<span data-design-status-prefix>' . $this->label('design.configurator.saved') . '</span>: '
+            . '<span class="mosaic-design-configurator__preset-name">“<span data-design-status-name>'
+            . htmlspecialchars($savedLabel, ENT_QUOTES) . '</span>”</span>'
+            . '<span data-design-status-detail>'
+            . ($modifiedCount > 0 ? ' · ' . $modifiedCount . ' ' . $this->label('design.configurator.modified') : '')
+            . '</span></div>'
             . '<button type="button" class="btn btn-default btn-sm" data-design-reset-all'
             . ($modifiedCount === 0 ? ' disabled' : '') . '>'
             . $this->formatLabel(
