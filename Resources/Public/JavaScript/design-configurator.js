@@ -276,6 +276,8 @@ const renderPreview = (editor, effective) => {
   preview.dataset.captionStyle = effective.lightbox.captionStyle;
 };
 
+let compactHelpSequence = 0;
+
 const addCompactHelp = (section) => {
   const help = section?.querySelector([
     '.form-text',
@@ -291,6 +293,11 @@ const addCompactHelp = (section) => {
 
   section.dataset.mosaicCompactHelpSection = 'true';
   help.dataset.mosaicCompactHelpDescription = 'true';
+  if (!help.id) {
+    compactHelpSequence += 1;
+    help.id = `mosaic-compact-help-${compactHelpSequence}`;
+  }
+  help.setAttribute('role', 'tooltip');
   const labelRow = document.createElement('div');
   labelRow.className = 'mosaic-layout-header__label-row';
   label.before(labelRow);
@@ -300,16 +307,21 @@ const addCompactHelp = (section) => {
   helpButton.className = 'mosaic-layout-header__help';
   helpButton.dataset.mosaicCompactHelp = 'true';
   helpButton.textContent = 'ⓘ';
-  helpButton.title = helpText;
   helpButton.setAttribute('aria-label', helpText);
+  helpButton.setAttribute('aria-describedby', help.id);
   helpButton.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
   });
   labelRow.append(helpButton);
-  section.title = helpText;
-  section.querySelector('input, select')?.setAttribute('aria-description', helpText);
-  help.classList.add('mosaic-layout-header__accessible-help');
+  labelRow.append(help);
+  const control = section.querySelector('input, select');
+  control?.setAttribute('aria-description', helpText);
+  if (control) {
+    const describedBy = new Set((control.getAttribute('aria-describedby') ?? '').split(/\s+/).filter(Boolean));
+    describedBy.add(help.id);
+    control.setAttribute('aria-describedby', [...describedBy].join(' '));
+  }
 };
 
 const consolidateWorkspaces = (editor) => {
@@ -361,11 +373,14 @@ const consolidateWorkspaces = (editor) => {
   };
   ['settings.source', 'settings.folder', 'settings.recursive', 'settings.sortBy', 'settings.sortDir']
     .forEach((fieldName) => moveSection(fieldName, firstRow));
-  ['settings.maxWidth', 'settings.useFalCaptions', 'settings.itemsPerPage', 'settings.loadStep']
+  ['settings.maxWidth', 'settings.itemsPerPage', 'settings.loadStep', 'settings.useFalCaptions']
     .forEach((fieldName) => moveSection(fieldName, secondRow));
 
   const metadataFallback = secondRow.querySelector('.form-section[data-id="settings.useFalCaptions"]');
   const maxWidth = secondRow.querySelector('.form-section[data-id="settings.maxWidth"]');
+  if (metadataFallback) {
+    metadataFallback.dataset.mosaicInlineCheckbox = 'true';
+  }
   addCompactHelp(maxWidth);
   addCompactHelp(metadataFallback);
 
@@ -397,8 +412,17 @@ const initializeEditor = (editor) => {
   addCompactHelp(presetSection);
   const toolbar = editor.querySelector('.mosaic-design-configurator__toolbar');
   const settingsRow = editor.querySelector('[data-layout-header-row="settings"]');
+  const previewHeading = editor.querySelector('.mosaic-design-preview__heading');
+  const status = editor.querySelector('[data-design-status]');
+  const resetAll = editor.querySelector('[data-design-reset-all]');
+  if (previewHeading && status && resetAll) {
+    const previewState = document.createElement('div');
+    previewState.className = 'mosaic-design-preview__state';
+    previewState.append(status, resetAll);
+    previewHeading.append(previewState);
+  }
   if (toolbar && settingsRow) {
-    settingsRow.append(toolbar);
+    settingsRow.prepend(toolbar);
   }
   customSections.forEach((section) => {
     const group = CUSTOM_FIELD_GROUPS[section.dataset.id];
