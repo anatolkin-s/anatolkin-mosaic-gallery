@@ -27,7 +27,9 @@ const updateSummary = (editor, row, property) => {
   const value = row.querySelector(`[data-mosaic-value][data-mosaic-property="${property}"]`);
   const badge = row.querySelector(`[data-mosaic-summary-badge="${property}"]`);
   const summaryValue = row.querySelector(`[data-mosaic-summary-value="${property}"]`);
-  if (!mode || !value || !badge || !summaryValue) {
+  const statusState = row.querySelector(`[data-mosaic-status-state="${property}"]`);
+  const statusValue = row.querySelector(`[data-mosaic-status-value="${property}"]`);
+  if (!mode || !value || !badge || !summaryValue || !statusState || !statusValue) {
     return;
   }
   const labels = {
@@ -37,6 +39,8 @@ const updateSummary = (editor, row, property) => {
   };
   badge.textContent = labels[mode.value] ?? labels.inherit;
   summaryValue.textContent = property === 'caption' && mode.value === 'custom' ? value.value : '';
+  statusState.textContent = labels[mode.value] ?? labels.inherit;
+  statusValue.textContent = mode.value === 'custom' ? value.value : '';
 };
 
 const applyView = (editor, view) => {
@@ -187,8 +191,13 @@ const initializeEditor = (editor) => {
     if (editButton) {
       const row = editButton.closest('[data-mosaic-file-uid]');
       const expanded = row?.classList.toggle('is-metadata-expanded') ?? false;
+      const label = expanded ? editor.dataset.mosaicHideLabel : editor.dataset.mosaicEditLabel;
       editButton.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-      editButton.textContent = expanded ? editor.dataset.mosaicHideLabel : editor.dataset.mosaicEditLabel;
+      editButton.setAttribute('aria-label', label);
+      const visibleLabel = editButton.querySelector('.mosaic-metadata-item__edit-label');
+      if (visibleLabel) {
+        visibleLabel.textContent = label;
+      }
       return;
     }
     if (event.target.closest('.mosaic-metadata-help__button')) {

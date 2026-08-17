@@ -584,7 +584,7 @@
 }
 
 .mosaic-metadata-item__summary,
-.mosaic-metadata-item__edit {
+.mosaic-metadata-item__technical {
   display: none;
 }
 
@@ -619,20 +619,62 @@
   width: 100%;
 }
 
-[data-mosaic-images-view="grid"] .mosaic-metadata-item__property,
-[data-mosaic-images-view="grid"] .mosaic-metadata-item__edit,
-[data-mosaic-images-view="list"] .mosaic-metadata-item__edit {
-  display: block;
+[data-mosaic-images-view="grid"] .mosaic-metadata-item__identity strong {
+  display: -webkit-box;
+  line-clamp: 2;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+[data-mosaic-images-view="grid"] .mosaic-metadata-item__identity small {
+  display: none;
+}
+
+[data-mosaic-images-view="grid"] .mosaic-metadata-item__property {
+  display: none;
+  order: 1;
   width: 100%;
 }
 
-[data-mosaic-images-view="grid"] .mosaic-metadata-item__summary,
+[data-mosaic-images-view="grid"] .mosaic-metadata-item.is-metadata-expanded .mosaic-metadata-item__property {
+  display: block;
+}
+
 [data-mosaic-images-view="list"] .mosaic-metadata-item__summary {
   align-items: center;
   display: flex;
   font-size: .75rem;
   gap: 3px;
   min-width: 0;
+}
+
+[data-mosaic-images-view="grid"] .mosaic-metadata-item__technical,
+[data-mosaic-images-view="list"] .mosaic-metadata-item__technical {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+}
+
+[data-mosaic-images-view="grid"] .mosaic-metadata-item__technical {
+  margin-top: auto;
+  width: 100%;
+}
+
+[data-mosaic-images-view="grid"] .mosaic-metadata-item__edit {
+  margin-inline-start: auto;
+}
+
+[data-mosaic-images-view="grid"] .mosaic-metadata-item.is-metadata-expanded .mosaic-metadata-item__edit {
+  background: var(--typo3-state-default-hover-bg, rgba(0, 0, 0, .08));
+}
+
+[data-mosaic-images-view="grid"] .mosaic-metadata-item__edit-label {
+  display: none;
+}
+
+[data-mosaic-images-view="list"] .mosaic-metadata-state {
+  display: none;
 }
 
 .mosaic-metadata-item__summary-value {
@@ -662,12 +704,109 @@
   width: 90px;
 }
 
-[data-mosaic-images-view="list"] .mosaic-metadata-item__edit {
-  width: auto;
-}
-
 [data-mosaic-images-view="list"] .mosaic-metadata-item.is-metadata-expanded .mosaic-metadata-item__property {
   align-self: stretch;
+}
+
+.mosaic-metadata-state {
+  position: relative;
+}
+
+.mosaic-metadata-state__button,
+.mosaic-metadata-item__edit,
+.mosaic-design-eyedropper,
+.mosaic-design-reset-field {
+  align-items: center;
+  display: inline-flex;
+  height: 1.75rem;
+  justify-content: center;
+  min-width: 1.75rem;
+  padding: .2rem;
+}
+
+.mosaic-backend-icon {
+  fill: none;
+  height: 1rem;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+  width: 1rem;
+}
+
+.mosaic-metadata-state__button {
+  background: transparent;
+  border: 1px solid var(--typo3-component-border-color, #c8c8c8);
+  border-radius: .2rem;
+  color: var(--typo3-text-color-variant, #555);
+}
+
+.mosaic-metadata-state__tooltip {
+  background: var(--typo3-surface-container-high, #fff);
+  border: 1px solid var(--typo3-component-border-color, #b5b5b5);
+  border-radius: .25rem;
+  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .18);
+  color: var(--typo3-text-color-base, #222);
+  display: grid;
+  font-size: .8rem;
+  gap: .15rem;
+  inset-block-end: calc(100% + 4px);
+  inset-inline-start: 0;
+  line-height: 1.35;
+  max-width: 20rem;
+  opacity: 0;
+  overflow-wrap: anywhere;
+  padding: .45rem .55rem;
+  pointer-events: none;
+  position: absolute;
+  visibility: hidden;
+  white-space: normal;
+  width: max-content;
+  z-index: 1000;
+}
+
+.mosaic-metadata-state__button:hover + .mosaic-metadata-state__tooltip,
+.mosaic-metadata-state__button:focus-visible + .mosaic-metadata-state__tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mosaic-metadata-state__tooltip [data-mosaic-status-value]:empty {
+  display: none;
+}
+
+[data-mosaic-action-tooltip] {
+  position: relative;
+}
+
+[data-mosaic-action-tooltip]::after {
+  background: var(--typo3-surface-container-high, #fff);
+  border: 1px solid var(--typo3-component-border-color, #b5b5b5);
+  border-radius: .25rem;
+  box-shadow: 0 .2rem .6rem rgba(0, 0, 0, .16);
+  color: var(--typo3-text-color-base, #222);
+  content: attr(aria-label);
+  font-size: .75rem;
+  inset-block-end: calc(100% + 4px);
+  inset-inline-start: 50%;
+  line-height: 1.3;
+  max-width: 20rem;
+  opacity: 0;
+  overflow-wrap: anywhere;
+  padding: .35rem .45rem;
+  pointer-events: none;
+  position: absolute;
+  transform: translateX(-50%);
+  visibility: hidden;
+  white-space: normal;
+  width: max-content;
+  z-index: 1000;
+}
+
+[data-mosaic-action-tooltip]:hover::after,
+[data-mosaic-action-tooltip]:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
 }
 
 .mosaic-metadata-status {

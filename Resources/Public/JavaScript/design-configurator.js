@@ -10,6 +10,8 @@ const parseDocument = (value) => {
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const pathSegments = (path) => path.split('.');
 const normalizePreset = (value) => value === '' || value === 'custom' ? 'custom' : value;
+const EYEDROPPER_ICON = '<svg class="mosaic-backend-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+  + '<path d="m15.5 3.5 5 5-9.5 9.5-5.5.5.5-5.5z"/><path d="m13 6 5 5M4 20h7"/></svg>';
 const CUSTOM_FIELDS = {
   'settings.frameColor': ['frameColor', 'string'],
   'settings.frameAccentColor': ['frameAccentColor', 'string'],
@@ -716,8 +718,8 @@ const initializeEditor = (editor) => {
       const button = window.document.createElement('button');
       button.type = 'button';
       button.className = 'btn btn-default btn-sm mosaic-design-eyedropper';
-      button.textContent = '⌾';
-      button.title = editor.dataset.eyedropperLabel;
+      button.dataset.mosaicActionTooltip = 'true';
+      button.innerHTML = EYEDROPPER_ICON;
       button.setAttribute('aria-label', editor.dataset.eyedropperLabel);
       button.addEventListener('click', () => {
         new window.EyeDropper().open().then(({ sRGBHex }) => {

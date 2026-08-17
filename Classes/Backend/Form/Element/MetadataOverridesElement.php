@@ -548,9 +548,46 @@ final class MetadataOverridesElement extends AbstractFormElement
             . '<small>' . $escapedIdentifier . '</small></div>'
             . $this->renderPropertyCell('caption', $caption, false)
             . $this->renderPropertyCell('alt', $alt, true)
+            . '<div class="mosaic-metadata-item__technical">'
+            . $this->renderStatusIcon('caption', $caption)
+            . $this->renderStatusIcon('alt', $alt)
             . '<button type="button" class="btn btn-default btn-sm mosaic-metadata-item__edit"'
-            . ' data-mosaic-edit-metadata aria-expanded="false">' . $this->label('metadata.view.edit') . '</button>'
+            . ' data-mosaic-edit-metadata data-mosaic-action-tooltip aria-expanded="false" aria-label="'
+            . $this->label('metadata.view.edit') . '">' . $this->iconSvg('edit')
+            . '<span class="mosaic-metadata-item__edit-label">' . $this->label('metadata.view.edit') . '</span></button></div>'
             . '</article>';
+    }
+
+    /** @param array{mode: string, value: string} $property */
+    private function renderStatusIcon(string $propertyName, array $property): string
+    {
+        $label = $propertyName === 'caption' ? $this->label('metadata.caption') : $this->label('metadata.alternative');
+        $state = match ($property['mode']) {
+            'custom' => $this->label('metadata.custom'),
+            'empty' => $this->label('metadata.decorative'),
+            default => $this->label('metadata.inherit'),
+        };
+        $value = $property['mode'] === 'custom' ? htmlspecialchars($property['value'], ENT_QUOTES) : '';
+        $tooltipId = StringUtility::getUniqueId('mosaic-metadata-status-');
+
+        return '<span class="mosaic-metadata-state"><button type="button" class="mosaic-metadata-state__button"'
+            . ' data-mosaic-status-trigger="' . $propertyName . '" aria-label="' . $label . '" aria-describedby="'
+            . htmlspecialchars($tooltipId, ENT_QUOTES) . '">' . $this->iconSvg($propertyName) . '</button>'
+            . '<span id="' . htmlspecialchars($tooltipId, ENT_QUOTES) . '" class="mosaic-metadata-state__tooltip" role="tooltip">'
+            . '<strong>' . $label . '</strong><span data-mosaic-status-state="' . $propertyName . '">' . $state . '</span>'
+            . '<span data-mosaic-status-value="' . $propertyName . '">' . $value . '</span></span></span>';
+    }
+
+    private function iconSvg(string $icon): string
+    {
+        $path = match ($icon) {
+            'caption' => '<path d="M3 4.5h18v12H9l-5 4v-4H3z"/><path d="M7 9h10M7 12h7"/>',
+            'alt' => '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m5 17 4-4 3 3 2-2 5 3"/>',
+            default => '<path d="m4 20 4.5-1 10-10-3.5-3.5-10 10z"/><path d="m13.5 7 3.5 3.5M4 20l1-4.5 3.5 3.5z"/>',
+        };
+
+        return '<svg class="mosaic-backend-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+            . $path . '</svg>';
     }
 
     /** @param array{mode: string, value: string} $property */

@@ -329,18 +329,29 @@ final class DesignConfiguratorElement extends AbstractFormElement
                 . '<input type="' . $inputType . '" class="form-control form-control-sm" value="'
                 . htmlspecialchars($value, ENT_QUOTES) . '"' . $inputAttributes . $attributes . '>'
                 . ($type === 'color'
-                    ? '<button type="button" class="btn btn-default btn-sm" data-design-eyedropper hidden title="'
-                        . $this->label('design.configurator.eyedropper') . '" aria-label="'
-                        . $this->label('design.configurator.eyedropper') . '">⌾</button>'
+                    ? '<button type="button" class="btn btn-default btn-sm mosaic-design-eyedropper"'
+                        . ' data-design-eyedropper data-mosaic-action-tooltip hidden aria-label="'
+                        . $this->label('design.configurator.eyedropper') . '">' . $this->actionIcon('eyedropper') . '</button>'
                     : '');
         }
 
         return '<div class="mosaic-design-configurator__field" data-design-field="'
             . htmlspecialchars($path, ENT_QUOTES) . '"><label class="form-label">' . $this->label($control['label'])
             . '</label><div class="mosaic-design-configurator__control">' . $controlHtml
-            . '<button type="button" class="btn btn-default btn-sm" data-design-reset-field'
-            . ($modified ? '' : ' disabled hidden') . ' title="' . $this->label('design.configurator.reset') . '">'
-            . $this->label('design.configurator.reset') . '</button></div></div>';
+            . '<button type="button" class="btn btn-default btn-sm mosaic-design-reset-field"'
+            . ' data-design-reset-field data-mosaic-action-tooltip aria-label="'
+            . $this->label('design.configurator.reset') . '"'
+            . ($modified ? '' : ' disabled hidden') . '>' . $this->actionIcon('reset') . '</button></div></div>';
+    }
+
+    private function actionIcon(string $icon): string
+    {
+        $path = $icon === 'eyedropper'
+            ? '<path d="m15.5 3.5 5 5-9.5 9.5-5.5.5.5-5.5z"/><path d="m13 6 5 5M4 20h7"/>'
+            : '<path d="M4 8v5h5"/><path d="M5.5 12a7 7 0 1 0 2-5"/><path d="M4 8l3.5-3"/>';
+
+        return '<svg class="mosaic-backend-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+            . $path . '</svg>';
     }
 
     /** @return array<string, mixed> */
