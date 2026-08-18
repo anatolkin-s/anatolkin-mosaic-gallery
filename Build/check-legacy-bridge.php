@@ -129,6 +129,10 @@ if (!str_contains($designConfigurator, 'function unwrapFormEngineSettingValue(')
 if (str_contains($designConfigurator, 'flexFormRowData')) {
     $failures[] = 'DesignConfiguratorElement must not overlay flexFormRowData in this hotfix';
 }
+if (!str_contains($designConfigurator, "\$value = \$fieldValue['vDEF'] ?? ''")
+    || !str_contains($designConfigurator, '$value === []')) {
+    $failures[] = 'DesignConfiguratorElement must normalize empty legacy vDEF arrays to empty strings';
+}
 
 if ($failures === []) {
     fwrite(STDOUT, "Legacy bridge structural checks passed.\n");

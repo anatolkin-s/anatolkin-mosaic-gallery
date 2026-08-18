@@ -386,7 +386,10 @@ final class DesignConfiguratorElement extends AbstractFormElement
                 if (!str_starts_with((string)$fieldName, 'settings.')) {
                     continue;
                 }
-                $settings[substr((string)$fieldName, 9)] = $this->scalarValue($fieldValue['vDEF'] ?? '');
+                $value = $fieldValue['vDEF'] ?? '';
+                $settings[substr((string)$fieldName, 9)] = $value === []
+                    ? ''
+                    : $this->scalarValue($value);
             }
         }
         return $settings;
