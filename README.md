@@ -135,6 +135,13 @@ FlexForm data, record UIDs, localization relationships, and ordinary `tt_content
 - Multilingual metadata workflow integrated with TYPO3 content localization
 - Compact responsive backend configuration
 - English, German, French, Spanish, and Russian extension interface translations
+
+## What's new in 0.4.1
+
+Version 0.4.1 is a compatibility hotfix for upgrades from earlier Mosaic Gallery releases.
+
+It restores live frontend and backend use of leftover `CType=list` gallery records on TYPO3 13.4, keeps the `mosaicGalleryCTypeMigration` wizard data-driven for both legacy `list_type` signatures, and normalizes TYPO3 FormEngine FlexForm wrapper values. Empty legacy `vDEF` arrays that previously caused `Array to string conversion` in the Design configurator are treated as empty strings. Already-canonical `CType=mosaicgallery_pi1` records need no database migration.
+
 ## What's new in 0.4.0
 
 Version 0.4.0 substantially expands gallery presentation and backend editing while preserving existing gallery compatibility.
@@ -186,7 +193,7 @@ Configured site languages are discovered from TYPO3 Site Configuration. The five
 
 ## Compatibility and release status
 
-Anatolkin Mosaic Gallery 0.4.0 targets TYPO3 13.4 and TYPO3 14.3.
+Anatolkin Mosaic Gallery 0.4.1 targets TYPO3 13.4 and TYPO3 14.3.
 
 Existing folder galleries, legacy Quick captions, and the `list_type` to `CType` migration path introduced in 0.3.0 remain supported. On TYPO3 13.4, unmigrated plugin records remain usable before that wizard is run. TYPO3 14 installations should complete the wizard first and then use dedicated `CType=mosaicgallery_pi1` records only.
 

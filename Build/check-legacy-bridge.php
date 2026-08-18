@@ -107,8 +107,8 @@ if (str_contains($setup, 'tt_content.list.20.')) {
     $failures[] = 'ext_typoscript_setup.typoscript must not contain list.20 aliases';
 }
 
-if (!str_contains($emconf, "'version' => '0.4.0'")) {
-    $failures[] = 'ext_emconf.php version must remain 0.4.0 in this pass';
+if (!str_contains($emconf, "'version' => '0.4.1'")) {
+    $failures[] = 'ext_emconf.php version must be 0.4.1 for the release';
 }
 
 if (str_contains($extLocalconf, 'addPageTSConfig')) {
