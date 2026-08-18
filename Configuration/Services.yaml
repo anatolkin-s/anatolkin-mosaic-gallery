@@ -16,4 +16,4 @@ services:
 
   Anatolkin\MosaicGallery\Backend\Form\Element\MetadataOverridesElement: ~
 
-  Anatolkin\MosaicGallery\Upgrades\MosaicGalleryCTypeMigration: ~
+  Anatolkin\MosaicGallery\Upgrades\MosaicGalleryLegacyCTypeMigration: ~

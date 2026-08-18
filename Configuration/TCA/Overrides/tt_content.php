@@ -66,4 +66,24 @@ use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
         );
         ExtensionManagementUtility::addPiFlexFormValue('*', $flexForm, $pluginSignature);
     }
+
+    if ($typo3Version->getMajorVersion() < 14) {
+        if (
+            !isset($GLOBALS['TCA']['tt_content']['columns']['list_type']['config']['items'])
+            || !is_array($GLOBALS['TCA']['tt_content']['columns']['list_type']['config']['items'])
+        ) {
+            $GLOBALS['TCA']['tt_content']['columns']['list_type']['config']['items'] = [];
+        }
+
+        foreach (['mosaicgallery_pi1', 'anatolkinmosaicgallery_pi1'] as $legacyListType) {
+            $GLOBALS['TCA']['tt_content']['columns']['list_type']['config']['items'][] = [
+                'label' => $pluginTitle,
+                'value' => $legacyListType,
+                'icon' => 'mosaic-gallery-plugin',
+            ];
+            $GLOBALS['TCA']['tt_content']['types']['list']['subtypes_addlist'][$legacyListType]
+                = 'pi_flexform,' . $metadataOverridesField;
+            ExtensionManagementUtility::addPiFlexFormValue($legacyListType, $flexForm);
+        }
+    }
 })();

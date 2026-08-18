@@ -47,21 +47,15 @@ As an alternative, add this explicit import to the site's TypoScript **Setup**, 
 
 A site should normally use one integration method. Do not include the same Mosaic Gallery TypoScript through a Site Set, static include, and manual import at the same time.
 
-## Upgrade from 0.2.x to 0.3.0
+## Upgrade and legacy compatibility
 
-1. Update or install Anatolkin Mosaic Gallery 0.3.0.
-2. Run TYPO3 extension setup:
+Canonical Mosaic Gallery content uses:
 
-   ```bash
-   php vendor/bin/typo3 extension:setup
-   ```
+```text
+CType=mosaicgallery_pi1
+```
 
-3. For sites using Site Sets, add the **Anatolkin Mosaic Gallery** Site Set.
-4. Run the registered TYPO3 upgrade wizard `mosaicGalleryCTypeMigration`.
-5. Flush caches.
-6. Verify existing Mosaic Gallery content elements in the backend and frontend.
-
-The upgrade wizard converts legacy records from:
+Older installations stored galleries as plugins:
 
 ```text
 CType=list
@@ -75,14 +69,45 @@ CType=list
 list_type=anatolkinmosaicgallery_pi1
 ```
 
-to:
+Whether migration is needed is determined from those database records, not from the installed extension version. Do not edit `tt_content` rows manually.
+
+The TYPO3 upgrade wizard identifier is `mosaicGalleryCTypeMigration`. It may be checked again if matching legacy rows appear later. It does not run automatically during Composer install, extension setup, or normal frontend or backend requests.
+
+On TYPO3 13.4, a compatibility bridge restores frontend rendering and backend editing of leftover plugin records **before** the wizard is run. The wizard remains the recommended permanent conversion. Complete that conversion before upgrading the TYPO3 Core to 14.
+
+### Fresh installation
+
+1. Install Anatolkin Mosaic Gallery.
+2. Run TYPO3 extension setup and flush caches.
+3. For Site Set sites, add the **Anatolkin Mosaic Gallery** Site Set.
+4. Create galleries from the **Gallery** group. New records use `CType=mosaicgallery_pi1`.
+5. The upgrade wizard is unnecessary when no legacy plugin records exist.
+
+### Already canonical 0.3.x or 0.4.x records
+
+If existing galleries already use `CType=mosaicgallery_pi1`, no database migration is required. Flush caches after updating. The wizard stays inactive unless leftover `CType=list` plugin records are still present.
+
+### Direct update from 0.1.x or 0.2.x
+
+1. Update to the current Anatolkin Mosaic Gallery release.
+2. Run TYPO3 extension setup and flush caches.
+3. For Site Set sites, add the **Anatolkin Mosaic Gallery** Site Set.
+4. On TYPO3 13.4, existing plugin records should render and remain editable immediately.
+5. Run `mosaicGalleryCTypeMigration` to convert them to `CType=mosaicgallery_pi1` with an empty `list_type`.
+6. Verify backend labels, FlexForm settings, and frontend output.
+
+### Recovery after 0.3.x or 0.4.0 with leftover plugin records
+
+If the site was already updated to 0.3.x or 0.4.0 while some or all galleries remained `CType=list`, install the current release and flush caches. On TYPO3 13.4 the compatibility bridge restores frontend output and backend labels without changing those rows. Then run `mosaicGalleryCTypeMigration`. Mixed sites with both canonical and leftover plugin records are supported: only matching legacy rows are converted.
+
+The wizard converts matching records to:
 
 ```text
 CType=mosaicgallery_pi1
 list_type=''
 ```
 
-Do not edit these database records manually.
+FlexForm data, record UIDs, localization relationships, and ordinary `tt_content` fields are preserved. No duplicate content elements are created.
 
 ## Basic usage
 
@@ -127,7 +152,7 @@ Highlights include:
 - Improved multilingual metadata workflow
 - Per-gallery scoped Lightbox theming
 
-Existing galleries without a layout setting continue to use Masonry. Updating from 0.3.1 to 0.4.0 requires no database migration.
+Existing galleries without a layout setting continue to use Masonry. Updating from 0.3.1 to 0.4.0 requires no database migration when records are already canonical. Leftover plugin records from earlier releases still need `mosaicGalleryCTypeMigration`.
 
 ## Image metadata behavior
 
@@ -163,9 +188,10 @@ Configured site languages are discovered from TYPO3 Site Configuration. The five
 
 Anatolkin Mosaic Gallery 0.4.0 targets TYPO3 13.4 and TYPO3 14.3.
 
-Existing folder galleries, legacy Quick captions, and the `list_type` to `CType` migration path introduced in 0.3.0 remain supported. Existing galleries without the newer layout and design settings continue to use backward-compatible defaults.
+Existing folder galleries, legacy Quick captions, and the `list_type` to `CType` migration path introduced in 0.3.0 remain supported. On TYPO3 13.4, unmigrated plugin records remain usable before that wizard is run. TYPO3 14 installations should complete the wizard first and then use dedicated `CType=mosaicgallery_pi1` records only.
 
-Updating from 0.3.1 to 0.4.0 requires no database migration. Metadata conversion remains an explicit editor action and is not automatically required.
+Existing galleries without the newer layout and design settings continue to use backward-compatible defaults. Metadata conversion remains an explicit editor action and is not automatically required.
+
 ## License
 
 Anatolkin Mosaic Gallery is released under the [GNU General Public License v2.0 or later](LICENSE).
