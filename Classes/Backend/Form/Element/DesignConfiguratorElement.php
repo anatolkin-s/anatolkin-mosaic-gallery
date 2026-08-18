@@ -373,7 +373,11 @@ final class DesignConfiguratorElement extends AbstractFormElement
             return [];
         }
         if (is_array($flexForm['settings'] ?? null)) {
-            return $flexForm['settings'];
+            $settings = [];
+            foreach ($flexForm['settings'] as $key => $value) {
+                $settings[$key] = $this->unwrapFormEngineSettingValue($value);
+            }
+            return $settings;
         }
 
         $settings = [];
@@ -386,6 +390,55 @@ final class DesignConfiguratorElement extends AbstractFormElement
             }
         }
         return $settings;
+    }
+
+    /**
+     * Unwrap single-value TYPO3 FormEngine FlexForm wrappers only.
+     * Multi-value lists and structured documents are left unchanged.
+     */
+    private function unwrapFormEngineSettingValue(mixed $value): mixed
+    {
+        if (!is_array($value)) {
+            return $value;
+        }
+        if ($value === []) {
+            return '';
+        }
+        if ($this->isVDefFormEngineWrapper($value)) {
+            return $this->unwrapFormEngineSettingValue($value['vDEF']);
+        }
+        if ($this->isSingleValueFormEngineWrapper($value)) {
+            return $this->unwrapFormEngineSettingValue($value[0]);
+        }
+        return $value;
+    }
+
+    /** @param array<string|int, mixed> $value */
+    private function isVDefFormEngineWrapper(array $value): bool
+    {
+        if (!array_key_exists('vDEF', $value)) {
+            return false;
+        }
+        foreach (array_keys($value) as $key) {
+            if ($key !== 'vDEF' && $key !== '_TRANSFORM_') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** @param array<string|int, mixed> $value */
+    private function isSingleValueFormEngineWrapper(array $value): bool
+    {
+        if (!array_key_exists(0, $value)) {
+            return false;
+        }
+        foreach (array_keys($value) as $key) {
+            if ($key !== 0 && $key !== '_TRANSFORM_') {
+                return false;
+            }
+        }
+        return true;
     }
 
     private function scalarValue(mixed $value): mixed

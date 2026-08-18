@@ -31,6 +31,7 @@ $services = readFileOrFail($root . '/Configuration/Services.yaml', $failures);
 $setup = readFileOrFail($root . '/ext_typoscript_setup.typoscript', $failures);
 $emconf = readFileOrFail($root . '/ext_emconf.php', $failures);
 $pageTs = readFileOrFail($root . '/Configuration/PageTS/Mod/Wizards/NewContentElement.tsconfig', $failures);
+$designConfigurator = readFileOrFail($root . '/Classes/Backend/Form/Element/DesignConfiguratorElement.php', $failures);
 
 $configurePluginCount = preg_match_all('/ExtensionUtility::configurePlugin\s*\(/', $extLocalconf);
 if ($configurePluginCount !== 1) {
@@ -115,6 +116,18 @@ if (str_contains($extLocalconf, 'addPageTSConfig')) {
 }
 if (str_contains($pageTs, 'CType = list') && str_contains($extLocalconf, 'NewContentElement')) {
     $failures[] = 'Stale New Content Element PageTS must not be reactivated';
+}
+
+if (preg_match('/return \$flexForm\[[\'"]settings[\'"]\];/', $designConfigurator)) {
+    $failures[] = 'DesignConfiguratorElement must not return raw FormEngine settings arrays';
+}
+if (!str_contains($designConfigurator, 'function unwrapFormEngineSettingValue(')
+    || !str_contains($designConfigurator, 'function isVDefFormEngineWrapper(')
+    || !str_contains($designConfigurator, 'function isSingleValueFormEngineWrapper(')) {
+    $failures[] = 'DesignConfiguratorElement must narrowly unwrap recognized FormEngine settings wrappers';
+}
+if (str_contains($designConfigurator, 'flexFormRowData')) {
+    $failures[] = 'DesignConfiguratorElement must not overlay flexFormRowData in this hotfix';
 }
 
 if ($failures === []) {
