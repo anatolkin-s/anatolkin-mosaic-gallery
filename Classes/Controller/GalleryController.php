@@ -125,16 +125,22 @@ final class GalleryController extends ActionController
                         $meta = [];
                     }
 
-                    // Safe access to FAL metadata: all keys are optional.
-                    $title       = $meta['title'] ?? '';
-                    $captionMeta = $meta['caption'] ?? '';
-                    $description = $meta['description'] ?? '';
+                    // Stable Fluid subset from localized sys_file_metadata (same source as caption/alt).
+                    $metadata = [
+                        'title' => (string)($meta['title'] ?? ''),
+                        'caption' => (string)($meta['caption'] ?? ''),
+                        'description' => (string)($meta['description'] ?? ''),
+                        'alternative' => (string)($meta['alternative'] ?? ''),
+                        'copyright' => (string)($meta['copyright'] ?? ''),
+                    ];
 
                     $caption = $useFalCaptions
-                        ? ($title !== '' ? $title : ($captionMeta !== '' ? $captionMeta : $description))
+                        ? ($metadata['caption'] !== ''
+                            ? $metadata['caption']
+                            : ($metadata['title'] !== '' ? $metadata['title'] : $metadata['description']))
                         : ($legacyCaptionsConverted ? '' : ($lines[$idx] ?? ''));
 
-                    $alt = ($meta['alternative'] ?? '') ?: $caption;
+                    $alt = $metadata['alternative'] !== '' ? $metadata['alternative'] : $caption;
 
                     $fileOverride = $metadataOverrides[(string)$file->getUid()] ?? [];
                     if (($fileOverride['caption']['mode'] ?? null) === 'custom') {
@@ -148,6 +154,7 @@ final class GalleryController extends ActionController
 
                     $items[] = [
                         'file'    => $file,
+                        'metadata' => $metadata,
                         'caption' => (string)$caption,
                         'alt'     => (string)$alt,
                         'hidden'  => ($enableLoadMore && $idx >= $itemsPerPage),

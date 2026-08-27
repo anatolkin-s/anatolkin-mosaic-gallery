@@ -171,6 +171,20 @@ The gallery Fluid template receives the current `tt_content` content-object row 
 
 Typical fields include `{data.uid}`, `{data.pid}`, `{data.CType}`, and `{data.sys_language_uid}`. The value comes from the active frontend `ContentObjectRenderer` data for the rendering context.
 
+Each gallery item also exposes localized `sys_file_metadata` as a stable subset:
+
+- `{it.metadata.title}`
+- `{it.metadata.caption}`
+- `{it.metadata.description}`
+- `{it.metadata.alternative}`
+- `{it.metadata.copyright}`
+
+`{it.caption}` and `{it.alt}` remain the final resolved values after gallery-specific overrides. When **Use file metadata as fallback** is enabled, the visible caption fallback order is:
+
+```text
+caption → title → description
+```
+
 ## Image metadata behavior
 
 The Image metadata editor stores gallery-specific values on the current `tt_content` record. Entries are linked to `sys_file.uid`, so Caption and Alternative text overrides remain attached to the correct image when ordering changes or files are added or removed.
