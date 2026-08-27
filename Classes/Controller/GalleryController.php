@@ -164,6 +164,7 @@ final class GalleryController extends ActionController
         $hasMore = $enableLoadMore && \count($items) > $itemsPerPage;
 
         $this->view->assignMultiple([
+            'data'           => $this->resolveContentData(),
             'items'          => $items,
             'gap'            => $gap,
             'maxWidth'       => $maxWidth,
@@ -251,6 +252,17 @@ final class GalleryController extends ActionController
             return (int)($cObj->data['uid'] ?? 0);
         }
         return 0;
+    }
+
+    /** @return array<string, mixed> */
+    private function resolveContentData(): array
+    {
+        $cObj = $this->request->getAttribute('currentContentObject');
+        if ($cObj instanceof ContentObjectRenderer) {
+            return $cObj->data;
+        }
+
+        return [];
     }
 
     private function resolveMetadataOverridesValue(): string

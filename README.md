@@ -161,6 +161,16 @@ Highlights include:
 
 Existing galleries without a layout setting continue to use Masonry. Updating from 0.3.1 to 0.4.0 requires no database migration when records are already canonical. Leftover plugin records from earlier releases still need `mosaicGalleryCTypeMigration`.
 
+## Custom Fluid templates
+
+The gallery Fluid template receives the current `tt_content` content-object row as `{data}`. Custom templates can therefore access ordinary content element fields, for example:
+
+```html
+<f:comment>Gallery content element uid: {data.uid}, page id: {data.pid}</f:comment>
+```
+
+Typical fields include `{data.uid}`, `{data.pid}`, `{data.CType}`, and `{data.sys_language_uid}`. The value comes from the active frontend `ContentObjectRenderer` data for the rendering context.
+
 ## Image metadata behavior
 
 The Image metadata editor stores gallery-specific values on the current `tt_content` record. Entries are linked to `sys_file.uid`, so Caption and Alternative text overrides remain attached to the correct image when ordering changes or files are added or removed.
