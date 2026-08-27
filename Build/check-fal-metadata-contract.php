@@ -66,6 +66,17 @@ if ($controller !== '') {
     if (substr_count($controller, 'function getLocalizedMeta(') !== 1) {
         $failures[] = 'Must reuse a single getLocalizedMeta() localization path';
     }
+
+    if (!str_contains($controller, "\$alt = \$metadata['alternative'] ?: \$caption;")) {
+        $failures[] = 'Inherited alt fallback must use $metadata[\'alternative\'] ?: $caption to preserve PHP falsy semantics';
+    }
+
+    if (preg_match(
+        '/\\\$alt\\s*=\\s*\\\$metadata\\[\'alternative\'\\]\\s*!==\\s*\'\'/',
+        $controller
+    )) {
+        $failures[] = 'Inherited alt fallback must not use a non-empty-string comparison';
+    }
 }
 
 if ($failures === []) {

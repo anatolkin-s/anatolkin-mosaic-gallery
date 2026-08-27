@@ -140,7 +140,7 @@ final class GalleryController extends ActionController
                             : ($metadata['title'] !== '' ? $metadata['title'] : $metadata['description']))
                         : ($legacyCaptionsConverted ? '' : ($lines[$idx] ?? ''));
 
-                    $alt = $metadata['alternative'] !== '' ? $metadata['alternative'] : $caption;
+                    $alt = $metadata['alternative'] ?: $caption;
 
                     $fileOverride = $metadataOverrides[(string)$file->getUid()] ?? [];
                     if (($fileOverride['caption']['mode'] ?? null) === 'custom') {
