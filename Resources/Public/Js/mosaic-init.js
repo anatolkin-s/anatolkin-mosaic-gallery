@@ -199,6 +199,38 @@
     });
   }
 
+  function focusElement(element) {
+    if (!element || typeof element.focus !== "function") return;
+    try {
+      element.focus({ preventScroll: true });
+    } catch (e) {
+      try {
+        element.focus();
+      } catch (ignored) {
+        // Ignore focus failures on non-focusable or detached elements.
+      }
+    }
+  }
+
+  function focusOpenedLightbox() {
+    var lightboxBody = document.getElementById("glightbox-body");
+    if (!lightboxBody) return;
+    var closeButton = lightboxBody.querySelector(".gclose");
+    if (closeButton) {
+      focusElement(closeButton);
+      return;
+    }
+    focusElement(lightboxBody);
+  }
+
+  function isFocusableTrigger(trigger) {
+    if (!trigger || !document.contains(trigger)) return false;
+    if (trigger.hasAttribute("disabled")) return false;
+    var tabIndex = trigger.getAttribute("tabindex");
+    if (tabIndex === "-1") return false;
+    return true;
+  }
+
   function prepareLightboxTheme(root, index) {
     var ds = root.dataset;
     var themeClass = activeThemeClassPrefix + index;
@@ -395,24 +427,53 @@
       var patternedResizeFrame = null;
       var patternedObservedWidth = grid.clientWidth;
       var themeClass = enable ? prepareLightboxTheme(container, index) : null;
+      var originatingTrigger = null;
+      var captureListenerBound = false;
 
       function markLayoutReady() {
         container.classList.remove("is-layout-pending");
         container.classList.add("is-layout-ready");
       }
 
+      function rememberGalleryTrigger(event) {
+        var trigger = event.target && event.target.closest
+          ? event.target.closest("a[data-gallery]")
+          : null;
+        if (!trigger || !container.contains(trigger)) return;
+        if (trigger.getAttribute("data-gallery") !== group) return;
+
+        originatingTrigger = trigger;
+        if (document.activeElement === trigger) {
+          // Blur before GLightbox build() assigns aria-hidden to ancestors.
+          trigger.blur();
+        }
+      }
+
+      function bindGalleryTriggerCapture() {
+        if (captureListenerBound) return;
+        captureListenerBound = true;
+        // Capture phase runs before GLightbox's own click listener / build().
+        container.addEventListener("click", rememberGalleryTrigger, true);
+      }
+
       function tryInitLightbox() {
         if (!enable) return;
         if (window.GLightbox) {
           try {
+            bindGalleryTriggerCapture();
             lightbox = GLightbox({
               selector: "a[data-gallery=\"" + group + "\"]",
               onOpen: function () {
                 activateMosaicLightboxTheme(themeClass);
                 ensureLightboxFrameWrappers(document);
+                focusOpenedLightbox();
               },
               onClose: function () {
                 deactivateMosaicLightboxTheme(themeClass);
+                if (isFocusableTrigger(originatingTrigger)) {
+                  focusElement(originatingTrigger);
+                }
+                originatingTrigger = null;
               }
             });
             lightbox.on("slide_after_load", function (data) {
