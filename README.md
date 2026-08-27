@@ -136,6 +136,18 @@ FlexForm data, record UIDs, localization relationships, and ordinary `tt_content
 - Compact responsive backend configuration
 - English, German, French, Spanish, and Russian extension interface translations
 
+## What's new in 0.4.2
+
+Version 0.4.2 improves custom-template integration, inherited FAL metadata, and GLightbox accessibility without requiring a database migration.
+
+Highlights:
+
+- Exposes the current `tt_content` row to custom Fluid templates as `{data}`.
+- Exposes a stable localized `sys_file_metadata` subset for each gallery item: title, caption, description, alternative text, and copyright.
+- Uses inherited caption fallback order: `caption → title → description` while preserving gallery-specific overrides.
+- Fixes the GLightbox `aria-hidden` focus warning by moving focus into the lightbox before background content becomes inaccessible and restoring focus to the originating gallery link when the lightbox closes.
+- No database migration is required for already-canonical gallery records.
+
 ## What's new in 0.4.1
 
 Version 0.4.1 is a compatibility hotfix for upgrades from earlier Mosaic Gallery releases.
@@ -217,7 +229,7 @@ Configured site languages are discovered from TYPO3 Site Configuration. The five
 
 ## Compatibility and release status
 
-Anatolkin Mosaic Gallery 0.4.1 targets TYPO3 13.4 and TYPO3 14.3.
+Anatolkin Mosaic Gallery 0.4.2 targets TYPO3 13.4 and TYPO3 14.3.
 
 Existing folder galleries, legacy Quick captions, and the `list_type` to `CType` migration path introduced in 0.3.0 remain supported. On TYPO3 13.4, unmigrated plugin records remain usable before that wizard is run. TYPO3 14 installations should complete the wizard first and then use dedicated `CType=mosaicgallery_pi1` records only.
 
