@@ -145,7 +145,7 @@ Highlights:
 - Exposes the current `tt_content` row to custom Fluid templates as `{data}`.
 - Exposes a stable localized `sys_file_metadata` subset for each gallery item: title, caption, description, alternative text, and copyright.
 - Uses inherited caption fallback order: `caption → title → description` while preserving gallery-specific overrides.
-- Fixes the GLightbox `aria-hidden` focus warning by moving focus into the lightbox before background content becomes inaccessible and restoring focus to the originating gallery link when the lightbox closes.
+- Fixes the GLightbox `aria-hidden` focus warning by clearing focus from the originating gallery link before GLightbox hides background content, moving focus into the lightbox when it opens, and restoring focus to the originating link when it closes.
 - No database migration is required for already-canonical gallery records.
 
 ## What's new in 0.4.1
