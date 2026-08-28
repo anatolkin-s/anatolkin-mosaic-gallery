@@ -107,7 +107,13 @@ if (!str_contains($setup, 'recursive = 1')) {
 if (!str_contains($setup, 'gap = 12')) {
     $failures[] = 'setup.typoscript must keep runtime setting gap = 12';
 }
-if (!str_contains($setup, 'settings.defaults')) {
+$documentsDefaultsNamespace =
+    str_contains($setup, 'settings.defaults')
+    || preg_match(
+        '/settings\s*\{[\s\S]*?#\s*defaults\s*\{/',
+        $setup
+    ) === 1;
+if (!$documentsDefaultsNamespace) {
     $failures[] = 'setup.typoscript must document settings.defaults namespace';
 }
 
