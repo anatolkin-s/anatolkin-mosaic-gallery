@@ -170,31 +170,73 @@ final class MosaicGalleryCreationDefaultsDefinition
 
     private function normalizeBoolean(mixed $value): ?string
     {
+        if ($value === null || is_array($value) || is_object($value)) {
+            return null;
+        }
+
         if (is_bool($value)) {
             return $value ? '1' : '0';
         }
 
-        if (is_int($value) || is_float($value)) {
-            return ((int)$value) !== 0 ? '1' : '0';
+        if (is_int($value)) {
+            if ($value === 1) {
+                return '1';
+            }
+            if ($value === 0) {
+                return '0';
+            }
+
+            return null;
         }
 
-        $stringValue = strtolower(trim((string)$value));
-        if ($stringValue === '1' || $stringValue === 'true' || $stringValue === 'yes' || $stringValue === 'on') {
-            return '1';
-        }
-        if ($stringValue === '0' || $stringValue === 'false' || $stringValue === 'no' || $stringValue === 'off' || $stringValue === '') {
-            return '0';
+        if (is_float($value)) {
+            if ($value === 1.0) {
+                return '1';
+            }
+            if ($value === 0.0) {
+                return '0';
+            }
+
+            return null;
         }
 
-        return null;
+        if (!is_string($value)) {
+            return null;
+        }
+
+        $stringValue = strtolower(trim($value));
+        if ($stringValue === '') {
+            return null;
+        }
+
+        return match ($stringValue) {
+            '1', 'true', 'yes', 'on' => '1',
+            '0', 'false', 'no', 'off' => '0',
+            default => null,
+        };
     }
 
     private function normalizeInteger(mixed $value, ?int $min, ?int $max): ?string
     {
-        if (is_int($value) || is_float($value)) {
+        if ($value === null || is_array($value) || is_object($value) || is_bool($value)) {
+            return null;
+        }
+
+        $intValue = null;
+
+        if (is_int($value)) {
+            $intValue = $value;
+        } elseif (is_float($value)) {
+            if (!is_finite($value) || $value !== (float)(int)$value) {
+                return null;
+            }
             $intValue = (int)$value;
-        } elseif (is_string($value) && preg_match('/^-?\d+$/', trim($value)) === 1) {
-            $intValue = (int)trim($value);
+        } elseif (is_string($value)) {
+            $trimmed = trim($value);
+            if ($trimmed === '' || preg_match('/^-?\d+$/', $trimmed) !== 1) {
+                return null;
+            }
+            $intValue = (int)$trimmed;
         } else {
             return null;
         }
@@ -211,10 +253,20 @@ final class MosaicGalleryCreationDefaultsDefinition
 
     private function normalizeAlpha(mixed $value): ?string
     {
+        if ($value === null || is_array($value) || is_object($value) || is_bool($value)) {
+            return null;
+        }
+
+        $number = null;
+
         if (is_int($value) || is_float($value)) {
             $number = (float)$value;
-        } elseif (is_string($value) && is_numeric(trim($value))) {
-            $number = (float)trim($value);
+        } elseif (is_string($value)) {
+            $trimmed = trim($value);
+            if ($trimmed === '' || !is_numeric($trimmed)) {
+                return null;
+            }
+            $number = (float)$trimmed;
         } else {
             return null;
         }
@@ -223,8 +275,11 @@ final class MosaicGalleryCreationDefaultsDefinition
             return null;
         }
 
-        $clamped = min(1.0, max(0.0, $number));
-        $formatted = rtrim(rtrim(sprintf('%.2F', $clamped), '0'), '.');
+        if ($number < 0.0 || $number > 1.0) {
+            return null;
+        }
+
+        $formatted = rtrim(rtrim(sprintf('%.2F', $number), '0'), '.');
 
         return $formatted === '' ? '0' : $formatted;
     }
