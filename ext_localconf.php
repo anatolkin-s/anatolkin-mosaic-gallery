@@ -8,7 +8,10 @@ use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
 use Anatolkin\MosaicGallery\Backend\Form\Element\DesignConfiguratorElement;
 use Anatolkin\MosaicGallery\Backend\Form\Element\MetadataOverridesElement;
+use Anatolkin\MosaicGallery\Backend\Form\FormDataProvider\MosaicGalleryFlexFormDefaultsProvider;
 use Anatolkin\MosaicGallery\Controller\GalleryController;
+use TYPO3\CMS\Backend\Form\FormDataProvider\TcaFlexPrepare;
+use TYPO3\CMS\Backend\Form\FormDataProvider\TcaFlexProcess;
 
 // Configure Extbase plugin
 ExtensionUtility::configurePlugin(
@@ -48,3 +51,18 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1755129601] = [
     'priority' => 40,
     'class' => DesignConfiguratorElement::class,
 ];
+
+// Site TypoScript creation defaults for new Mosaic Gallery records (Issue #2).
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['formDataGroup']['tcaDatabaseRecord'][MosaicGalleryFlexFormDefaultsProvider::class] = [
+    'depends' => [
+        TcaFlexPrepare::class,
+    ],
+];
+$tcaFlexProcessDepends = &$GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['formDataGroup']['tcaDatabaseRecord'][TcaFlexProcess::class]['depends'];
+if (!is_array($tcaFlexProcessDepends)) {
+    $tcaFlexProcessDepends = [TcaFlexPrepare::class];
+}
+if (!in_array(MosaicGalleryFlexFormDefaultsProvider::class, $tcaFlexProcessDepends, true)) {
+    $tcaFlexProcessDepends[] = MosaicGalleryFlexFormDefaultsProvider::class;
+}
+unset($tcaFlexProcessDepends);

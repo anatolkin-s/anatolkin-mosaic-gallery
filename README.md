@@ -47,6 +47,45 @@ As an alternative, add this explicit import to the site's TypoScript **Setup**, 
 
 A site should normally use one integration method. Do not include the same Mosaic Gallery TypoScript through a Site Set, static include, and manual import at the same time.
 
+### Site defaults for new galleries
+
+Site integrators can configure the **initial values shown when creating a new Mosaic Gallery content element** through:
+
+```typoscript
+plugin.tx_mosaicgallery_pi1.settings.defaults {
+    gap = 20
+    layoutMode = grid
+    enableLightbox = 0
+    frameWidth = 0
+}
+```
+
+This namespace controls **creation defaults only**. It does not provide live inheritance for already saved galleries.
+
+**Precedence for a new content element:**
+
+1. Site TypoScript `settings.defaults.*`
+2. Extension FlexForm XML default (when a TypoScript key is absent)
+
+**After the first save:**
+
+Stored FlexForm values become explicit content-element settings and remain authoritative permanently.
+
+Changing TypoScript defaults later does **not** retroactively alter already saved galleries.
+
+The existing 0.4.x top-level runtime settings remain supported and unchanged:
+
+```typoscript
+plugin.tx_mosaicgallery_pi1.settings {
+    source = folder
+    folder = fileadmin/gallery/
+    recursive = 1
+    gap = 12
+}
+```
+
+Those keys affect **frontend runtime** behavior when a FlexForm value is absent. They are separate from the creation-default API above.
+
 ## Upgrade and legacy compatibility
 
 Canonical Mosaic Gallery content uses:

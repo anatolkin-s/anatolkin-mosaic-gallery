@@ -12,16 +12,23 @@ plugin.tx_mosaicgallery_pi1 {
   }
 
   settings {
-    # Default image source: folder.
+    # Runtime settings (0.4.x public API). These affect frontend rendering when a
+    # FlexForm value is absent; they are NOT creation defaults for new records.
     source = folder
-
-    # Default base folder; editors can override it in the FlexForm.
     folder = fileadmin/gallery/
-
-    # Traverse subfolders recursively.
     recursive = 1
-
-    # Gap between images in pixels.
     gap = 12
+
+    # Site-specific defaults for NEW Mosaic Gallery content elements only.
+    # Absent keys fall through to the FlexForm XML default. After the first save,
+    # stored FlexForm values remain explicit and are not retroactively changed.
+    #
+    # defaults {
+    #   gap = 20
+    #   sortBy = name
+    #   layoutMode = grid
+    #   enableLightbox = 0
+    #   frameWidth = 0
+    # }
   }
 }
