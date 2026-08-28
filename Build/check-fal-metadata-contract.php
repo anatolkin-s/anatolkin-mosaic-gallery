@@ -3,6 +3,11 @@ declare(strict_types=1);
 
 /**
  * Structural checks for the gallery Fluid FAL metadata contract.
+ *
+ * Inherited metadata must come from TYPO3 native FAL:
+ * File → MetaDataAspect → MetaDataRepository → EnrichFileMetaDataEvent
+ * (frontend FileMetadataOverlayAspect applies language/workspace overlays).
+ *
  * Run: php Build/check-fal-metadata-contract.php
  */
 
@@ -32,14 +37,30 @@ if ($controller !== '') {
         $normalized = '';
     }
 
+    if ($normalized === '' || !str_contains($normalized, '$file->getMetaData()->get()')) {
+        $failures[] = 'GalleryController must load inherited metadata via $file->getMetaData()->get()';
+    }
+
     if (!str_contains($controller, "'metadata' => \$metadata")) {
         $failures[] = 'GalleryController items must expose a metadata array key';
+    }
+
+    if (!str_contains($controller, "'file'    => \$file") && !str_contains($controller, "'file' => \$file")) {
+        $failures[] = 'GalleryController items must expose the File object as file';
+    }
+
+    if (!str_contains($controller, "'caption' => (string)\$caption")) {
+        $failures[] = 'GalleryController items must expose resolved caption';
+    }
+
+    if (!str_contains($controller, "'alt'     => (string)\$alt") && !str_contains($controller, "'alt' => (string)\$alt")) {
+        $failures[] = 'GalleryController items must expose resolved alt';
     }
 
     foreach (['title', 'caption', 'description', 'alternative', 'copyright'] as $key) {
         $assignment = "'" . $key . "' => (string)(\$meta['" . $key . "'] ?? '')";
         if ($normalized === '' || !str_contains($normalized, $assignment)) {
-            $failures[] = 'metadata subset must include ' . $key . ' from localized \$meta';
+            $failures[] = 'metadata subset must include ' . $key . ' from native \$meta';
         }
     }
 
@@ -66,8 +87,22 @@ if ($controller !== '') {
         $failures[] = 'Issue #8 data Fluid contract must remain intact';
     }
 
-    if (substr_count($controller, 'function getLocalizedMeta(') !== 1) {
-        $failures[] = 'Must reuse a single getLocalizedMeta() localization path';
+    if (str_contains($controller, 'function getLocalizedMeta(')) {
+        $failures[] = 'Custom getLocalizedMeta() must be removed; use native FAL MetaDataAspect';
+    }
+
+    if (str_contains($controller, '\\PDO::PARAM_INT') || str_contains($controller, 'PDO::PARAM_INT')) {
+        $failures[] = 'GalleryController must not use PDO::PARAM_INT';
+    }
+
+    if (str_contains($controller, "getQueryBuilderForTable('sys_file_metadata')")
+        || str_contains($controller, 'getQueryBuilderForTable("sys_file_metadata")')
+    ) {
+        $failures[] = 'GalleryController must not query sys_file_metadata directly';
+    }
+
+    if (str_contains($controller, 'ConnectionPool')) {
+        $failures[] = 'GalleryController must not retain ConnectionPool after removing custom metadata SQL';
     }
 
     if (!str_contains($controller, "\$alt = \$metadata['alternative'] ?: \$caption;")) {
@@ -76,6 +111,31 @@ if ($controller !== '') {
 
     if (str_contains($normalized, "\$alt = \$metadata['alternative'] !== ''")) {
         $failures[] = 'Inherited alt fallback must not use a non-empty-string comparison';
+    }
+
+    // Caption fallback fixture: description-only metadata resolves caption to description.
+    $meta = [
+        'title' => '',
+        'caption' => '',
+        'description' => 'Photo by chuttersnap on Unsplash',
+        'alternative' => '',
+        'copyright' => '',
+    ];
+    $metadata = [
+        'title' => (string)($meta['title'] ?? ''),
+        'caption' => (string)($meta['caption'] ?? ''),
+        'description' => (string)($meta['description'] ?? ''),
+        'alternative' => (string)($meta['alternative'] ?? ''),
+        'copyright' => (string)($meta['copyright'] ?? ''),
+    ];
+    $caption = $metadata['caption'] !== ''
+        ? $metadata['caption']
+        : ($metadata['title'] !== '' ? $metadata['title'] : $metadata['description']);
+    if ($metadata['description'] !== 'Photo by chuttersnap on Unsplash') {
+        $failures[] = 'Fixture metadata.description must remain the Unsplash description string';
+    }
+    if ($caption !== 'Photo by chuttersnap on Unsplash') {
+        $failures[] = 'Description-only native metadata must resolve caption via caption → title → description';
     }
 }
 

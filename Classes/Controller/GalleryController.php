@@ -15,7 +15,6 @@ use TYPO3\CMS\Core\Resource\Folder;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\LanguageAspect;
-use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
@@ -119,13 +118,16 @@ final class GalleryController extends ActionController
 
                 foreach ($files as $idx => $file) {
                     $aspectRatio = $this->resolveAspectRatio($file);
+                    // Inherited FAL metadata via TYPO3 Core:
+                    // File → MetaDataAspect → MetaDataRepository → EnrichFileMetaDataEvent
+                    // (frontend FileMetadataOverlayAspect applies language/workspace overlays).
                     try {
-                        $meta = $useFalCaptions ? $this->getLocalizedMeta($file) : [];
-                    } catch (\Throwable $e) {
+                        $meta = $useFalCaptions ? $file->getMetaData()->get() : [];
+                    } catch (\Throwable) {
                         $meta = [];
                     }
 
-                    // Stable Fluid subset from localized sys_file_metadata (same source as caption/alt).
+                    // Stable Fluid subset only (same five keys as caption/alt resolution).
                     $metadata = [
                         'title' => (string)($meta['title'] ?? ''),
                         'caption' => (string)($meta['caption'] ?? ''),
@@ -315,74 +317,6 @@ final class GalleryController extends ActionController
         }
 
         return $result;
-    }
-
-    /**
-     * Returns localized FAL metadata for a given file.
-     *
-     * Strategy:
-     * 1) Fetch base record (sys_language_uid = 0) by file UID.
-     * 2) If current language > 0, look for an overlay (l10n_parent + sys_language_uid).
-     * 3) Merge overlay on top of base; empty strings in overlay do not overwrite base values.
-     *
-     * Any DB/context error falls back to base or an empty metadata array.
-     */
-    private function getLocalizedMeta(File $file): array
-    {
-        $ctx    = GeneralUtility::makeInstance(Context::class);
-        $langId = (int)$ctx->getPropertyFromAspect('language', 'id');
-
-        $qb   = GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getQueryBuilderForTable('sys_file_metadata');
-        $base = $qb->select('*')
-            ->from('sys_file_metadata')
-            ->where(
-                $qb->expr()->eq(
-                    'file',
-                    $qb->createNamedParameter($file->getUid(), \PDO::PARAM_INT)
-                ),
-                $qb->expr()->eq('sys_language_uid', 0)
-            )
-            ->setMaxResults(1)
-            ->executeQuery()
-            ->fetchAssociative() ?: [];
-
-        if ($langId > 0 && !empty($base['uid'])) {
-            $qb2     = GeneralUtility::makeInstance(ConnectionPool::class)
-                ->getQueryBuilderForTable('sys_file_metadata');
-            $overlay = $qb2->select('*')
-                ->from('sys_file_metadata')
-                ->where(
-                    $qb2->expr()->eq(
-                        'l10n_parent',
-                        $qb2->createNamedParameter((int)$base['uid'], \PDO::PARAM_INT)
-                    ),
-                    $qb2->expr()->eq(
-                        'sys_language_uid',
-                        $qb2->createNamedParameter($langId, \PDO::PARAM_INT)
-                    )
-                )
-                ->setMaxResults(1)
-                ->executeQuery()
-                ->fetchAssociative() ?: [];
-
-            if ($overlay) {
-                // Overlay extends base metadata; empty strings do not overwrite base values.
-                foreach ($overlay as $k => $v) {
-                    if (\is_string($v) && $v !== '') {
-                        $base[$k] = $v;
-                    }
-                }
-            }
-        }
-
-        return [
-            'title'       => (string)($base['title'] ?? ''),
-            'description' => (string)($base['description'] ?? ''),
-            'alternative' => (string)($base['alternative'] ?? ''),
-            'caption'     => (string)($base['caption'] ?? ''),
-            'copyright'   => (string)($base['copyright'] ?? ''),
-        ];
     }
 
     private function splitLines(string $text): array
