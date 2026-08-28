@@ -25,10 +25,13 @@ function readFileOrFail(string $path, array &$failures): string
 
 $reader = readFileOrFail($root . '/Classes/Service/FrontendTypoScriptDefaultsReader.php', $failures);
 $definition = readFileOrFail($root . '/Classes/Service/MosaicGalleryCreationDefaultsDefinition.php', $failures);
+$overridesBuilder = readFileOrFail($root . '/Classes/Service/MosaicGalleryCreationDesignOverridesBuilder.php', $failures);
 $provider = readFileOrFail(
     $root . '/Classes/Backend/Form/FormDataProvider/MosaicGalleryFlexFormDefaultsProvider.php',
     $failures,
 );
+$designConfiguratorJs = readFileOrFail($root . '/Resources/Public/JavaScript/design-configurator.js', $failures);
+$designConfiguratorElement = readFileOrFail($root . '/Classes/Backend/Form/Element/DesignConfiguratorElement.php', $failures);
 $extLocalconf = readFileOrFail($root . '/ext_localconf.php', $failures);
 $services = readFileOrFail($root . '/Configuration/Services.yaml', $failures);
 $setup = readFileOrFail($root . '/Configuration/TypoScript/setup.typoscript', $failures);
@@ -55,8 +58,21 @@ if (!str_contains($definition, 'class MosaicGalleryCreationDefaultsDefinition'))
 if (!str_contains($definition, 'FIELD_MAP')) {
     $failures[] = 'MosaicGalleryCreationDefaultsDefinition must define an explicit FIELD_MAP allowlist';
 }
+if (!str_contains($definition, 'fieldDefinition')) {
+    $failures[] = 'MosaicGalleryCreationDefaultsDefinition must expose fieldDefinition helper';
+}
 if (str_contains($definition, 'siteDesignPreset')) {
     $failures[] = 'siteDesignPreset must not be exposed in creation defaults definition';
+}
+
+if (!str_contains($overridesBuilder, 'class MosaicGalleryCreationDesignOverridesBuilder')) {
+    $failures[] = 'MosaicGalleryCreationDesignOverridesBuilder class must exist';
+}
+if (str_contains($overridesBuilder, 'BUILT_IN_PRESETS')) {
+    $failures[] = 'Creation design overrides builder must not embed preset base values';
+}
+if (!str_contains($overridesBuilder, 'lightbox')) {
+    $failures[] = 'Creation design overrides builder must map lightbox override paths';
 }
 
 if (!str_contains($provider, 'class MosaicGalleryFlexFormDefaultsProvider')) {
@@ -70,6 +86,22 @@ if (!str_contains($provider, 'effectivePid')) {
 }
 if (preg_match('/databaseRow[^\n;]*vDEF/', $provider)) {
     $failures[] = 'FormDataProvider must not mutate databaseRow vDEF directly';
+}
+if (!str_contains($provider, 'MosaicGalleryCreationDesignOverridesBuilder')) {
+    $failures[] = 'FormDataProvider must synthesize named-preset designOverrides defaults';
+}
+if (!str_contains($provider, 'settings.designOverrides')) {
+    $failures[] = 'FormDataProvider must target settings.designOverrides creation default';
+}
+
+if (preg_match("/settings\\.gap'\\s*&&[\\s\\S]*'12'/m", $designConfiguratorJs)) {
+    $failures[] = 'design-configurator.js must not hardcode settings.gap fallback 12';
+}
+if (!str_contains($designConfiguratorJs, 'designProxyDefault')) {
+    $failures[] = 'design-configurator.js must read server-provided proxy defaults';
+}
+if (!str_contains($designConfiguratorElement, 'data-design-proxy-default')) {
+    $failures[] = 'DesignConfiguratorElement must expose proxy defaults from FormEngine values';
 }
 
 if (!str_contains($extLocalconf, 'MosaicGalleryFlexFormDefaultsProvider::class')) {
@@ -90,6 +122,12 @@ if (str_contains($extLocalconf, 'ModifyFlexFormDataStructureEvent')) {
 
 if (!str_contains($services, 'FrontendTypoScriptDefaultsReader')) {
     $failures[] = 'Services.yaml must register FrontendTypoScriptDefaultsReader';
+}
+if (!str_contains($services, 'MosaicGalleryCreationDefaultsDefinition')) {
+    $failures[] = 'Services.yaml must register MosaicGalleryCreationDefaultsDefinition';
+}
+if (!str_contains($services, 'MosaicGalleryCreationDesignOverridesBuilder')) {
+    $failures[] = 'Services.yaml must register MosaicGalleryCreationDesignOverridesBuilder';
 }
 if (!str_contains($services, 'MosaicGalleryFlexFormDefaultsProvider')) {
     $failures[] = 'Services.yaml must register MosaicGalleryFlexFormDefaultsProvider';

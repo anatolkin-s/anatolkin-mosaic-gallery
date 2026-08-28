@@ -18,6 +18,8 @@ services:
 
   Anatolkin\MosaicGallery\Service\MosaicGalleryCreationDefaultsDefinition: ~
 
+  Anatolkin\MosaicGallery\Service\MosaicGalleryCreationDesignOverridesBuilder: ~
+
   Anatolkin\MosaicGallery\Backend\Form\FormDataProvider\MosaicGalleryFlexFormDefaultsProvider: ~
 
   Anatolkin\MosaicGallery\Backend\Form\Element\MetadataOverridesElement: ~

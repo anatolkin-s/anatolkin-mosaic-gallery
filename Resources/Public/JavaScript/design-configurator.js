@@ -523,11 +523,36 @@ const initializeEditor = (editor) => {
         && control.name.endsWith(`[${fieldName}][vDEF]`),
     ) ?? null;
   };
-  const canonicalValue = (control, fieldName = '') => control?.type === 'checkbox'
-    ? (control.checked ? '1' : '0')
-    : (fieldName === 'settings.gap' && String(control?.value ?? '').trim() === ''
-      ? '12'
-      : (control?.value ?? ''));
+  const canonicalValue = (control, proxy = null) => {
+    if (!control) {
+      const proxyDefault = String(proxy?.dataset?.designProxyDefault ?? '').trim();
+      return proxyDefault;
+    }
+    if (control.type === 'checkbox') {
+      return control.checked ? '1' : '0';
+    }
+    const current = String(control.value ?? '').trim();
+    if (current !== '') {
+      return control.value;
+    }
+    const defaultValue = String(control.defaultValue ?? '').trim();
+    if (defaultValue !== '') {
+      return control.defaultValue;
+    }
+    const formEngineDefault = String(
+      control.dataset?.formengineDefaultValue
+        ?? control.getAttribute('data-formengine-default-value')
+        ?? '',
+    ).trim();
+    if (formEngineDefault !== '') {
+      return formEngineDefault;
+    }
+    const proxyDefault = String(proxy?.dataset?.designProxyDefault ?? '').trim();
+    if (proxyDefault !== '') {
+      return proxyDefault;
+    }
+    return control.value ?? '';
+  };
   const layoutModeControl = canonicalControl('settings.layoutMode');
   const maxItemsPerRowControl = canonicalControl('settings.maxItemsPerRow');
   const maxItemsPerRowSection = maxItemsPerRowControl?.closest('.form-section[data-id="settings.maxItemsPerRow"]');
@@ -667,7 +692,7 @@ const initializeEditor = (editor) => {
       canonicalSection.hidden = true;
       canonicalSection.classList.add('mosaic-proxy-storage-field');
     }
-    proxy.value = canonicalValue(canonical, proxy.dataset.designProxy);
+    proxy.value = canonicalValue(canonical, proxy);
     proxy.addEventListener('change', () => {
       if (canonical.type === 'checkbox') {
         canonical.checked = proxy.value === '1';
@@ -680,7 +705,7 @@ const initializeEditor = (editor) => {
       publishState();
     });
     const syncProxy = () => {
-      proxy.value = canonicalValue(canonical, proxy.dataset.designProxy);
+      proxy.value = canonicalValue(canonical, proxy);
       publishState();
     };
     canonical.addEventListener('change', syncProxy);

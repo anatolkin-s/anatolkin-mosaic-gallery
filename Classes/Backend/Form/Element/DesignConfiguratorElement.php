@@ -171,7 +171,7 @@ final class DesignConfiguratorElement extends AbstractFormElement
                     : $presetLabels[$previewPreset],
             ) . '</button></div>'
             . $this->renderPreview($fieldId)
-            . $this->renderControlGroups($base, $effective, $overrides)
+            . $this->renderControlGroups($base, $effective, $overrides, $settings)
             . '</div>';
         $resultArray['html'] = $html;
         $resultArray['stylesheetFiles'][] =
@@ -246,8 +246,8 @@ final class DesignConfiguratorElement extends AbstractFormElement
             . '</div></div></div></section>';
     }
 
-    /** @param array<string, mixed> $base @param array<string, mixed> $effective @param array<string, mixed> $overrides */
-    private function renderControlGroups(array $base, array $effective, array $overrides): string
+    /** @param array<string, mixed> $base @param array<string, mixed> $effective @param array<string, mixed> $overrides @param array<string, mixed> $settings */
+    private function renderControlGroups(array $base, array $effective, array $overrides, array $settings): string
     {
         $controls = [];
         foreach (self::CONTROLS as $control) {
@@ -259,7 +259,7 @@ final class DesignConfiguratorElement extends AbstractFormElement
             $html .= '<section class="mosaic-design-configurator__group" data-design-group="' . $group . '">'
                 . '<h3>' . $this->label('design.group.' . $group) . '</h3>'
                 . '<div class="mosaic-design-configurator__grid" data-design-controls>'
-                . $this->renderDisplayControls($group);
+                . $this->renderDisplayControls($group, $settings);
             foreach ($paths as $path) {
                 $control = $controls[$path];
                 $html .= $this->renderControl(
@@ -275,23 +275,68 @@ final class DesignConfiguratorElement extends AbstractFormElement
         return $html . '</div>';
     }
 
-    private function renderDisplayControls(string $group): string
+    /** @param array<string, mixed> $settings */
+    private function renderDisplayControls(string $group, array $settings): string
     {
         $booleanOptions = '<option value="0">' . $this->label('flexform.designOverride.off') . '</option>'
             . '<option value="1">' . $this->label('flexform.designOverride.on') . '</option>';
         $field = fn(string $labelKey, string $control): string =>
             '<label class="mosaic-design-display-controls__field"><span>'
             . $this->label($labelKey) . '</span>' . $control . '</label>';
+        $proxyDefault = fn(string $fieldName): string => $this->proxyDefaultAttribute($fieldName, $settings);
 
         return match ($group) {
-            'gallery' => $field('design.field.gap', '<input type="number" min="0" class="form-control form-control-sm" data-design-proxy="settings.gap">')
-                . $field('design.field.captions', '<select class="form-select form-select-sm" data-design-proxy="settings.showCaptions">' . $booleanOptions . '</select>')
-                . $field('design.field.alignment', '<select class="form-select form-select-sm" data-design-proxy="settings.captionAlign"><option value="left">' . $this->label('flexform.captionAlign.left') . '</option><option value="center">' . $this->label('flexform.captionAlign.center') . '</option><option value="right">' . $this->label('flexform.captionAlign.right') . '</option></select>'),
-            'lightbox' => $field('design.field.enabled', '<select class="form-select form-select-sm" data-design-proxy="settings.enableLightbox">' . $booleanOptions . '</select>'),
-            'loadMore' => $field('design.field.enabled', '<select class="form-select form-select-sm" data-design-proxy="settings.enableLoadMore">' . $booleanOptions . '</select>')
-                . $field('design.field.buttonFrame', '<select class="form-select form-select-sm" data-design-proxy="settings.loadMoreUseFrameStyle">' . $booleanOptions . '</select>'),
+            'gallery' => $field('design.field.gap', '<input type="number" min="0" class="form-control form-control-sm" data-design-proxy="settings.gap"' . $proxyDefault('settings.gap') . '>')
+                . $field('design.field.captions', '<select class="form-select form-select-sm" data-design-proxy="settings.showCaptions"' . $proxyDefault('settings.showCaptions') . '>' . $booleanOptions . '</select>')
+                . $field('design.field.alignment', '<select class="form-select form-select-sm" data-design-proxy="settings.captionAlign"' . $proxyDefault('settings.captionAlign') . '><option value="left">' . $this->label('flexform.captionAlign.left') . '</option><option value="center">' . $this->label('flexform.captionAlign.center') . '</option><option value="right">' . $this->label('flexform.captionAlign.right') . '</option></select>'),
+            'lightbox' => $field('design.field.enabled', '<select class="form-select form-select-sm" data-design-proxy="settings.enableLightbox"' . $proxyDefault('settings.enableLightbox') . '>' . $booleanOptions . '</select>'),
+            'loadMore' => $field('design.field.enabled', '<select class="form-select form-select-sm" data-design-proxy="settings.enableLoadMore"' . $proxyDefault('settings.enableLoadMore') . '>' . $booleanOptions . '</select>')
+                . $field('design.field.buttonFrame', '<select class="form-select form-select-sm" data-design-proxy="settings.loadMoreUseFrameStyle"' . $proxyDefault('settings.loadMoreUseFrameStyle') . '>' . $booleanOptions . '</select>'),
             default => '',
         };
+    }
+
+    /** @param array<string, mixed> $settings */
+    private function proxyDefaultAttribute(string $fieldName, array $settings): string
+    {
+        $key = substr($fieldName, 9);
+        $value = (string)($settings[$key] ?? '');
+        if ($value === '') {
+            $value = $this->resolveFlexFormVDef($fieldName);
+        }
+        if ($value === '') {
+            return '';
+        }
+
+        return ' data-design-proxy-default="' . htmlspecialchars($value, ENT_QUOTES) . '"';
+    }
+
+    private function resolveFlexFormVDef(string $fieldName): string
+    {
+        $flexForm = $this->data['databaseRow']['pi_flexform'] ?? '';
+        if (!is_array($flexForm)) {
+            return '';
+        }
+
+        $vDef = $flexForm['data'][$this->flexFormSheetForField($fieldName)]['lDEF'][$fieldName]['vDEF'] ?? null;
+        if ($vDef === null || $vDef === '' || $vDef === []) {
+            return '';
+        }
+
+        return (string)$this->scalarValue($vDef);
+    }
+
+    private function flexFormSheetForField(string $fieldName): string
+    {
+        return str_starts_with($fieldName, 'settings.design') || str_starts_with($fieldName, 'settings.frame')
+            || str_starts_with($fieldName, 'settings.border')
+            || str_starts_with($fieldName, 'settings.shadow')
+            || str_starts_with($fieldName, 'settings.background')
+            || str_starts_with($fieldName, 'settings.captionColor')
+            || str_starts_with($fieldName, 'settings.applyTo')
+            || str_starts_with($fieldName, 'settings.lb')
+            ? 'sDESIGN'
+            : 'sDEF';
     }
 
     private function previewImageUrl(string $fileName): string

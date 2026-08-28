@@ -116,6 +116,14 @@ final class MosaicGalleryCreationDefaultsDefinition
     }
 
     /**
+     * @return array{sheet: string, field: string, kind: string, allowed?: list<string>, min?: int, max?: int, allowEmpty?: bool}|null
+     */
+    public static function fieldDefinition(string $key): ?array
+    {
+        return self::FIELD_MAP[$key] ?? null;
+    }
+
+    /**
      * @param array<string, mixed> $dataStructure
      * @param array<string, scalar> $siteDefaults
      * @return array<string, mixed>

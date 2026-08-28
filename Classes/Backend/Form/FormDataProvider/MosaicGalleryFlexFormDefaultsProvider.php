@@ -5,6 +5,7 @@ namespace Anatolkin\MosaicGallery\Backend\Form\FormDataProvider;
 
 use Anatolkin\MosaicGallery\Service\FrontendTypoScriptDefaultsReader;
 use Anatolkin\MosaicGallery\Service\MosaicGalleryCreationDefaultsDefinition;
+use Anatolkin\MosaicGallery\Service\MosaicGalleryCreationDesignOverridesBuilder;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Form\FormDataProviderInterface;
 use TYPO3\CMS\Core\Site\Entity\NullSite;
@@ -16,6 +17,7 @@ use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 final readonly class MosaicGalleryFlexFormDefaultsProvider implements FormDataProviderInterface
 {
     private const FLEX_FIELD = 'pi_flexform';
+    private const DESIGN_OVERRIDES_FIELD = 'settings.designOverrides';
 
     /** @var list<string> */
     private const LEGACY_LIST_TYPES = [
@@ -26,6 +28,7 @@ final readonly class MosaicGalleryFlexFormDefaultsProvider implements FormDataPr
     public function __construct(
         private FrontendTypoScriptDefaultsReader $typoScriptDefaultsReader,
         private MosaicGalleryCreationDefaultsDefinition $creationDefaultsDefinition,
+        private MosaicGalleryCreationDesignOverridesBuilder $designOverridesBuilder,
     ) {
     }
 
@@ -60,10 +63,41 @@ final readonly class MosaicGalleryFlexFormDefaultsProvider implements FormDataPr
             return $result;
         }
 
-        $result['processedTca']['columns'][self::FLEX_FIELD]['config']['ds']
-            = $this->creationDefaultsDefinition->applyToDataStructure($flexConfig['ds'], $siteDefaults);
+        $dataStructure = $this->creationDefaultsDefinition->applyToDataStructure($flexConfig['ds'], $siteDefaults);
+        $dataStructure = $this->applyDesignOverridesDefault($dataStructure, $siteDefaults);
+
+        $result['processedTca']['columns'][self::FLEX_FIELD]['config']['ds'] = $dataStructure;
 
         return $result;
+    }
+
+    /**
+     * @param array<string, mixed> $dataStructure
+     * @param array<string, scalar> $siteDefaults
+     * @return array<string, mixed>
+     */
+    private function applyDesignOverridesDefault(array $dataStructure, array $siteDefaults): array
+    {
+        if (!isset($dataStructure['sheets']['sDESIGN']['ROOT']['el'][self::DESIGN_OVERRIDES_FIELD]['config'])
+            || !is_array($dataStructure['sheets']['sDESIGN']['ROOT']['el'][self::DESIGN_OVERRIDES_FIELD]['config'])
+        ) {
+            return $dataStructure;
+        }
+
+        $existingDefault = $dataStructure['sheets']['sDESIGN']['ROOT']['el'][self::DESIGN_OVERRIDES_FIELD]['config']['default'] ?? null;
+        if (is_string($existingDefault) && trim($existingDefault) !== '' && trim($existingDefault) !== '{}') {
+            return $dataStructure;
+        }
+
+        $overridesJson = $this->designOverridesBuilder->buildJson($siteDefaults);
+        if ($overridesJson === null || $overridesJson === '' || $overridesJson === '{}') {
+            return $dataStructure;
+        }
+
+        $dataStructure['sheets']['sDESIGN']['ROOT']['el'][self::DESIGN_OVERRIDES_FIELD]['config']['default']
+            = $overridesJson;
+
+        return $dataStructure;
     }
 
     /** @param array<string, mixed> $result */
