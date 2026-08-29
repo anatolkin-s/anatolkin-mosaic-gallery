@@ -62,7 +62,7 @@ if ($configurePluginPosition === false || $addTypoScriptPosition === false || $c
 }
 
 if (!str_contains($ttContent, "'mosaicgallery_pi1'") || !str_contains($ttContent, "'anatolkinmosaicgallery_pi1'")) {
-    $failures[] = 'tt_content.php must register both legacy list_type signatures';
+    $failures[] = 'tt_content.php must retain both legacy list_type signatures';
 }
 if (!str_contains($ttContent, 'subtypes_addlist')) {
     $failures[] = 'tt_content.php must restore list subtypes for FlexForm and metadata';
@@ -72,6 +72,15 @@ if (!preg_match("/getMajorVersion\(\)\s*<\s*14/", $ttContent)) {
 }
 if (!str_contains($ttContent, 'registerPlugin')) {
     $failures[] = 'Canonical CType registerPlugin() must remain';
+}
+if (!preg_match("/list_type']\['config']\['items'\]\[\]\s*=/", $ttContent)) {
+    $failures[] = 'tt_content.php must keep static legacy list_type.items for DataHandler compatibility';
+}
+if (str_contains($ttContent, 'itemsProcFunc') || str_contains($ttContent, 'MosaicGalleryLegacyListTypeItems')) {
+    $failures[] = 'tt_content.php must not install a global list_type itemsProcFunc';
+}
+if (!str_contains($extLocalconf, 'MosaicGalleryLegacyListTypeVisibilityProvider::class')) {
+    $failures[] = 'ext_localconf.php must register MosaicGalleryLegacyListTypeVisibilityProvider for FormEngine UI filtering';
 }
 
 if (substr_count($legacyWizard, "UpgradeWizard('mosaicGalleryCTypeMigration')") < 2) {
@@ -114,8 +123,8 @@ if (!str_contains($emconf, "'version' => '0.4.2'")) {
 if (str_contains($extLocalconf, 'addPageTSConfig')) {
     $failures[] = 'Do not restore addPageTSConfig() wizard registration';
 }
-if (str_contains($pageTs, 'CType = list') && str_contains($extLocalconf, 'NewContentElement')) {
-    $failures[] = 'Stale New Content Element PageTS must not be reactivated';
+if (str_contains($pageTs, 'CType = list') || str_contains($pageTs, 'list_type = mosaicgallery_pi1')) {
+    $failures[] = 'Stale New Content Element PageTS must not offer legacy list_type creation';
 }
 
 if (preg_match('/return \$flexForm\[[\'"]settings[\'"]\];/', $designConfigurator)) {

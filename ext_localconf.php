@@ -9,9 +9,11 @@ use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
 use Anatolkin\MosaicGallery\Backend\Form\Element\DesignConfiguratorElement;
 use Anatolkin\MosaicGallery\Backend\Form\Element\MetadataOverridesElement;
 use Anatolkin\MosaicGallery\Backend\Form\FormDataProvider\MosaicGalleryFlexFormDefaultsProvider;
+use Anatolkin\MosaicGallery\Backend\Form\FormDataProvider\MosaicGalleryLegacyListTypeVisibilityProvider;
 use Anatolkin\MosaicGallery\Controller\GalleryController;
 use TYPO3\CMS\Backend\Form\FormDataProvider\TcaFlexPrepare;
 use TYPO3\CMS\Backend\Form\FormDataProvider\TcaFlexProcess;
+use TYPO3\CMS\Backend\Form\FormDataProvider\TcaSelectItems;
 
 // Configure Extbase plugin
 ExtensionUtility::configurePlugin(
@@ -66,3 +68,13 @@ if (!in_array(MosaicGalleryFlexFormDefaultsProvider::class, $tcaFlexProcessDepen
     $tcaFlexProcessDepends[] = MosaicGalleryFlexFormDefaultsProvider::class;
 }
 unset($tcaFlexProcessDepends);
+
+// TYPO3 13 only: hide legacy Mosaic Gallery list_type choices from FormEngine UI
+// while keeping static TCA items valid for DataHandler on existing records.
+if ((new Typo3Version())->getMajorVersion() < 14) {
+    $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['formDataGroup']['tcaDatabaseRecord'][MosaicGalleryLegacyListTypeVisibilityProvider::class] = [
+        'depends' => [
+            TcaSelectItems::class,
+        ],
+    ];
+}

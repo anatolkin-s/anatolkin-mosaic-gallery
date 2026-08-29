@@ -22,6 +22,8 @@ services:
 
   Anatolkin\MosaicGallery\Backend\Form\FormDataProvider\MosaicGalleryFlexFormDefaultsProvider: ~
 
+  Anatolkin\MosaicGallery\Backend\Form\FormDataProvider\MosaicGalleryLegacyListTypeVisibilityProvider: ~
+
   Anatolkin\MosaicGallery\Backend\Form\Element\MetadataOverridesElement: ~
 
   Anatolkin\MosaicGallery\Upgrades\MosaicGalleryLegacyCTypeMigration: ~

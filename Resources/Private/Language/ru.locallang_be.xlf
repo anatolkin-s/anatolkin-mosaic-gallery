@@ -5,6 +5,8 @@
     <trans-unit id="plugin.typoscriptTitle"><source>Anatolkin Mosaic Gallery (Assets &amp; Masonry)</source><target>Anatolkin Mosaic Gallery (ресурсы и раскладка Masonry)</target></trans-unit>
     <trans-unit id="plugin.description"><source>Masonry-style image gallery using FAL with an optional lightbox</source><target>Мозаичная галерея изображений на основе FAL с дополнительным лайтбоксом</target></trans-unit>
     <trans-unit id="plugin.group"><source>Gallery</source><target>Галерея</target></trans-unit>
+    <trans-unit id="plugin.legacyCompatibility"><source>Anatolkin Mosaic Gallery — Legacy compatibility</source><target>Anatolkin Mosaic Gallery — Совместимость со старыми записями</target></trans-unit>
+    <trans-unit id="plugin.legacyCompatibility.description"><source>This record uses an older TYPO3 13 Mosaic Gallery plugin signature. It is retained only for backward compatibility. Do not use it for new content. Migrate to the current Anatolkin Mosaic Gallery content element.</source><target>Эта запись использует старую plugin-подпись Mosaic Gallery для TYPO3 13. Она сохранена только для обратной совместимости. Не используйте её для нового контента. Перенесите галерею в текущий контент-элемент Anatolkin Mosaic Gallery.</target></trans-unit>
     <trans-unit id="flexform.sheet.general"><source>Layout</source><target>Макет</target></trans-unit>
     <trans-unit id="flexform.sheet.design"><source>Images</source><target>Изображения</target></trans-unit>
     <trans-unit id="design.group.gallery"><source>Gallery</source><target>Галерея</target></trans-unit>

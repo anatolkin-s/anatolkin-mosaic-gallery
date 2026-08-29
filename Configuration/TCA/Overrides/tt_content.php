@@ -75,9 +75,12 @@ use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
             $GLOBALS['TCA']['tt_content']['columns']['list_type']['config']['items'] = [];
         }
 
+        // Keep both legacy signatures in static TCA so DataHandler continues to
+        // accept persisted values. FormEngine UI visibility is filtered request-
+        // specifically by MosaicGalleryLegacyListTypeVisibilityProvider.
         foreach (['mosaicgallery_pi1', 'anatolkinmosaicgallery_pi1'] as $legacyListType) {
             $GLOBALS['TCA']['tt_content']['columns']['list_type']['config']['items'][] = [
-                'label' => $pluginTitle,
+                'label' => 'LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:plugin.legacyCompatibility',
                 'value' => $legacyListType,
                 'icon' => 'mosaic-gallery-plugin',
             ];

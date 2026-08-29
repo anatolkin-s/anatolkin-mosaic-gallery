@@ -114,6 +114,8 @@ The TYPO3 upgrade wizard identifier is `mosaicGalleryCTypeMigration`. It may be 
 
 On TYPO3 13.4, a compatibility bridge restores frontend rendering and backend editing of leftover plugin records **before** the wizard is run. The wizard remains the recommended permanent conversion. Complete that conversion before upgrading the TYPO3 Core to 14.
 
+The two legacy `list_type` signatures are **not** offered when creating new Plugin / `CType=list` content. New galleries must be created from the **Gallery** group as `CType=mosaicgallery_pi1`. Existing unmigrated plugin records stay editable in FormEngine with an explicit legacy-compatibility label; only the signature already stored on that record is exposed. Frontend TypoScript aliases for both legacy signatures remain active on TYPO3 13 only.
+
 ### Fresh installation
 
 1. Install Anatolkin Mosaic Gallery.
