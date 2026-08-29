@@ -201,6 +201,58 @@ const fieldControl = (section) => {
   );
 };
 
+const CUSTOM_COLOR_SECTION_IDS = [
+  'settings.frameColor',
+  'settings.frameAccentColor',
+  'settings.backgroundColor',
+  'settings.captionColor',
+  'settings.lbOverlay',
+  'settings.lbNavColor',
+  'settings.lbCloseColor',
+  'settings.lbCaptionColor',
+  'settings.lbCaptionBg',
+];
+
+/**
+ * Prefer Core FormEngine color row (.form-wizards-wrap + aside) shared by TYPO3 13/14.
+ * Never mount actions inside typo3-backend-color-picker (that wraps under the hex field).
+ */
+const ensureCustomColorControlRow = (section) => {
+  if (!section) {
+    return null;
+  }
+  const wizardsWrap = section.querySelector('.form-wizards-wrap');
+  if (wizardsWrap) {
+    wizardsWrap.setAttribute('data-mosaic-color-control-row', '');
+    let asideGroup = wizardsWrap.querySelector(
+      '.form-wizards-item-aside--field-control .btn-group, .form-wizards-item-aside .btn-group',
+    );
+    if (!asideGroup) {
+      const aside = document.createElement('div');
+      aside.className = 'form-wizards-item-aside form-wizards-item-aside--field-control';
+      asideGroup = document.createElement('div');
+      asideGroup.className = 'btn-group';
+      aside.append(asideGroup);
+      const bottom = wizardsWrap.querySelector('.form-wizards-item-bottom');
+      if (bottom) {
+        wizardsWrap.insertBefore(aside, bottom);
+      } else {
+        wizardsWrap.append(aside);
+      }
+    }
+    return asideGroup;
+  }
+
+  const wrap = section.querySelector('.form-control-wrap')
+    || section.querySelector('.form-wizards-item-element')
+    || section.querySelector('typo3-formengine-element-color');
+  if (!wrap) {
+    return null;
+  }
+  wrap.setAttribute('data-mosaic-color-control-row', '');
+  return wrap;
+};
+
 const customDesign = (sections) => {
   const design = {
     preset: 'custom',
@@ -861,8 +913,12 @@ const initializeEditor = (editor) => {
   });
   if (window.EyeDropper) {
     editor.querySelectorAll('[data-design-eyedropper]').forEach((button) => { button.hidden = false; });
-    customSections.filter((section) => ['settings.frameColor', 'settings.frameAccentColor', 'settings.backgroundColor', 'settings.captionColor', 'settings.lbOverlay', 'settings.lbNavColor', 'settings.lbCloseColor', 'settings.lbCaptionColor', 'settings.lbCaptionBg'].includes(section.dataset.id)).forEach((section) => {
+    customSections.filter((section) => CUSTOM_COLOR_SECTION_IDS.includes(section.dataset.id)).forEach((section) => {
       const control = fieldControl(section);
+      const mount = ensureCustomColorControlRow(section);
+      if (!control || !mount || mount.querySelector('.mosaic-design-eyedropper')) {
+        return;
+      }
       const button = window.document.createElement('button');
       button.type = 'button';
       button.className = 'btn btn-default btn-sm mosaic-design-eyedropper';
@@ -876,7 +932,7 @@ const initializeEditor = (editor) => {
           control.dispatchEvent(new Event('change', { bubbles: true }));
         }).catch(() => {});
       });
-      control.parentElement?.append(button);
+      mount.append(button);
     });
   }
   updateMode();

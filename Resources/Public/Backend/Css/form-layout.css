@@ -1001,14 +1001,19 @@
   min-width: 0;
 }
 
-.mosaic-design-configurator__control {
+/* Named-preset color row: extension-owned flex control. */
+.mosaic-design-configurator__control,
+.mosaic-design-configurator__control[data-mosaic-color-control-row] {
   align-items: center;
   display: flex;
+  flex-wrap: nowrap;
   gap: .4rem;
+  min-width: 0;
 }
 
 .mosaic-design-configurator__control .form-control,
 .mosaic-design-configurator__control .form-select {
+  flex: 1 1 auto;
   min-width: 0;
 }
 
@@ -1020,12 +1025,54 @@
 }
 
 .mosaic-design-configurator__picker {
+  align-self: center;
   border: 1px solid var(--typo3-component-border-color, #b6b6b6);
   border-radius: .25rem;
-  flex: 0 0 2rem;
-  height: 2rem;
+  box-sizing: border-box;
+  flex: 0 0 1.75rem;
+  height: 1.75rem;
   padding: .1rem;
-  width: 2rem;
+  width: 1.75rem;
+}
+
+/*
+ * Custom mode: Core owns typo3-backend-color-picker. Decorate the shared
+ * FormEngine wizards row (TYPO3 13 + 14) and keep eyedropper in the aside.
+ */
+.mosaic-design-configurator .form-wizards-wrap[data-mosaic-color-control-row] {
+  align-items: center;
+  display: grid;
+  gap: .4rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  width: 100%;
+}
+
+.mosaic-design-configurator .form-wizards-wrap[data-mosaic-color-control-row] > .form-wizards-item-element {
+  grid-column: 1;
+  min-width: 0;
+}
+
+.mosaic-design-configurator .form-wizards-wrap[data-mosaic-color-control-row] > .form-wizards-item-aside {
+  align-self: center;
+  grid-column: 2;
+}
+
+.mosaic-design-configurator .form-wizards-wrap[data-mosaic-color-control-row] > .form-wizards-item-bottom {
+  grid-column: 1 / -1;
+}
+
+.mosaic-design-configurator.is-custom .mosaic-design-configurator__custom .form-control-wrap {
+  max-width: 100% !important;
+}
+
+.mosaic-design-configurator.is-custom .mosaic-design-configurator__custom typo3-backend-color-picker {
+  display: block;
+  max-width: 100%;
+  width: 100%;
+}
+
+.mosaic-design-configurator [data-mosaic-color-control-row] .mosaic-design-eyedropper {
+  flex: 0 0 auto;
 }
 
 .mosaic-design-display-controls__field {

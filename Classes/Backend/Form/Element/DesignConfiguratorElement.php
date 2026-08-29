@@ -459,7 +459,9 @@ final class DesignConfiguratorElement extends AbstractFormElement
 
         return '<div class="mosaic-design-configurator__field" data-design-field="'
             . htmlspecialchars($path, ENT_QUOTES) . '"><label class="form-label">' . $this->label($control['label'])
-            . '</label><div class="mosaic-design-configurator__control">' . $controlHtml
+            . '</label><div class="mosaic-design-configurator__control'
+            . ($type === 'color' ? '" data-mosaic-color-control-row' : '"')
+            . '>' . $controlHtml
             . '<button type="button" class="btn btn-default btn-sm mosaic-design-reset-field"'
             . ' data-design-reset-field data-mosaic-action-tooltip aria-label="'
             . $this->label('design.configurator.reset') . '"'
