@@ -1,0 +1,5 @@
+# Hide legacy Mosaic Gallery plugin signatures from TYPO3 13 FormEngine and
+# New Content Wizard discovery while keeping them in static TCA for DataHandler.
+TCEFORM.tt_content.list_type {
+    removeItems := addToList(mosaicgallery_pi1,anatolkinmosaicgallery_pi1)
+}
