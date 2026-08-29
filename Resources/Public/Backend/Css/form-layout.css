@@ -1003,7 +1003,7 @@
 
 /* Named-preset color row: extension-owned flex control. */
 .mosaic-design-configurator__control,
-.mosaic-design-configurator__control[data-mosaic-color-control-row] {
+.mosaic-design-configurator__control[data-mosaic-color-control-row="preset"] {
   align-items: center;
   display: flex;
   flex-wrap: nowrap;
@@ -1036,10 +1036,11 @@
 }
 
 /*
- * Custom mode: Core owns typo3-backend-color-picker. Decorate the shared
- * FormEngine wizards row (TYPO3 13 + 14) and keep eyedropper in the aside.
+ * Custom mode: Core owns typo3-backend-color-picker. Style only the
+ * extension-decorated wizards row so TYPO3 13/14 ancestry differences do not
+ * drop the field-control aside onto a second line.
  */
-.mosaic-design-configurator .form-wizards-wrap[data-mosaic-color-control-row] {
+.form-wizards-wrap[data-mosaic-color-control-row="custom"] {
   align-items: center;
   display: grid;
   gap: .4rem;
@@ -1047,31 +1048,34 @@
   width: 100%;
 }
 
-.mosaic-design-configurator .form-wizards-wrap[data-mosaic-color-control-row] > .form-wizards-item-element {
+.form-wizards-wrap[data-mosaic-color-control-row="custom"] > .form-wizards-item-element {
   grid-column: 1;
+  grid-row: 1;
   min-width: 0;
 }
 
-.mosaic-design-configurator .form-wizards-wrap[data-mosaic-color-control-row] > .form-wizards-item-aside {
+.form-wizards-wrap[data-mosaic-color-control-row="custom"] > .form-wizards-item-aside,
+.form-wizards-wrap[data-mosaic-color-control-row="custom"] > .form-wizards-item-aside--field-control {
   align-self: center;
   grid-column: 2;
+  grid-row: 1;
 }
 
-.mosaic-design-configurator .form-wizards-wrap[data-mosaic-color-control-row] > .form-wizards-item-bottom {
+.form-wizards-wrap[data-mosaic-color-control-row="custom"] > .form-wizards-item-bottom {
   grid-column: 1 / -1;
 }
 
-.mosaic-design-configurator.is-custom .mosaic-design-configurator__custom .form-control-wrap {
+.form-wizards-wrap[data-mosaic-color-control-row="custom"] .form-control-wrap {
   max-width: 100% !important;
 }
 
-.mosaic-design-configurator.is-custom .mosaic-design-configurator__custom typo3-backend-color-picker {
+.form-wizards-wrap[data-mosaic-color-control-row="custom"] typo3-backend-color-picker {
   display: block;
   max-width: 100%;
   width: 100%;
 }
 
-.mosaic-design-configurator [data-mosaic-color-control-row] .mosaic-design-eyedropper {
+[data-mosaic-color-control-row] .mosaic-design-eyedropper {
   flex: 0 0 auto;
 }
 

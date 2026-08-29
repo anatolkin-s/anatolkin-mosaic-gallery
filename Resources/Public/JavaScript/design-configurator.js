@@ -223,7 +223,7 @@ const ensureCustomColorControlRow = (section) => {
   }
   const wizardsWrap = section.querySelector('.form-wizards-wrap');
   if (wizardsWrap) {
-    wizardsWrap.setAttribute('data-mosaic-color-control-row', '');
+    wizardsWrap.setAttribute('data-mosaic-color-control-row', 'custom');
     let asideGroup = wizardsWrap.querySelector(
       '.form-wizards-item-aside--field-control .btn-group, .form-wizards-item-aside .btn-group',
     );
@@ -249,7 +249,7 @@ const ensureCustomColorControlRow = (section) => {
   if (!wrap) {
     return null;
   }
-  wrap.setAttribute('data-mosaic-color-control-row', '');
+  wrap.setAttribute('data-mosaic-color-control-row', 'custom');
   return wrap;
 };
 
