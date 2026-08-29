@@ -78,11 +78,14 @@ use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
         // Keep both legacy signatures in static TCA so DataHandler continues to
         // accept persisted values. FormEngine UI visibility is filtered request-
         // specifically by MosaicGalleryLegacyListTypeVisibilityProvider.
+        // Technical group mosaicgallery_legacy is removed from the New Content
+        // Wizard via mod.wizards.newContentElement.wizardItems.removeItems.
         foreach (['mosaicgallery_pi1', 'anatolkinmosaicgallery_pi1'] as $legacyListType) {
             $GLOBALS['TCA']['tt_content']['columns']['list_type']['config']['items'][] = [
                 'label' => 'LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:plugin.legacyCompatibility',
                 'value' => $legacyListType,
                 'icon' => 'mosaic-gallery-plugin',
+                'group' => 'mosaicgallery_legacy',
             ];
             $GLOBALS['TCA']['tt_content']['types']['list']['subtypes_addlist'][$legacyListType]
                 = 'pi_flexform,' . $metadataOverridesField;

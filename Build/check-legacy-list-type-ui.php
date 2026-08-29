@@ -49,19 +49,47 @@ $pageTsConfig = readFileOrFail($pageTsConfigPath, $failures);
 $readme = readFileOrFail($root . '/README.md', $failures);
 $language = readFileOrFail($root . '/Resources/Private/Language/locallang_be.xlf', $failures);
 
-// 1–3. Global page.tsconfig hides legacy list_type from wizard/selector without addPageTSConfig()
+// 1–2. Static TCA retains both legacy values in technical wizard group mosaicgallery_legacy
+if (!preg_match(
+    "/foreach\s*\(\s*\[\s*'mosaicgallery_pi1'\s*,\s*'anatolkinmosaicgallery_pi1'\s*\]\s+as\s+\\\$legacyListType\s*\)/",
+    $ttContent,
+) || !preg_match("/list_type']\['config']\['items'\]\[\]\s*=\s*\[[\s\S]*?'value'\s*=>\s*\\\$legacyListType/", $ttContent)
+) {
+    $failures[] = '1: TYPO3 13 static TCA must still append both legacy list_type values';
+}
+if (!preg_match(
+    "/list_type']\['config']\['items'\]\[\]\s*=\s*\[[\s\S]*?'group'\s*=>\s*'mosaicgallery_legacy'/",
+    $ttContent,
+)) {
+    $failures[] = '2: Both legacy list_type items must use group mosaicgallery_legacy';
+}
+if (!str_contains($ttContent, 'subtypes_addlist')
+    || !str_contains($ttContent, 'addPiFlexFormValue($legacyListType')) {
+    $failures[] = '1: Legacy subtypes_addlist / addPiFlexFormValue wiring must remain';
+}
+
+// 3–4. page.tsconfig: FormEngine TCEFORM + wizard group removal
 if (!is_file($pageTsConfigPath)) {
-    $failures[] = '1: Configuration/page.tsconfig must exist';
+    $failures[] = '3: Configuration/page.tsconfig must exist';
 }
 if (!str_contains($pageTsConfig, 'TCEFORM.tt_content.list_type')
-    || !str_contains($pageTsConfig, 'removeItems')
-    || !str_contains($pageTsConfig, 'mosaicgallery_pi1')
-    || !str_contains($pageTsConfig, 'anatolkinmosaicgallery_pi1')
+    || !preg_match(
+        '/TCEFORM\.tt_content\.list_type\s*\{[\s\S]*?removeItems\s*:=\s*addToList\s*\(\s*mosaicgallery_pi1\s*,\s*anatolkinmosaicgallery_pi1\s*\)/s',
+        $pageTsConfig,
+    )
 ) {
-    $failures[] = '2: page.tsconfig must remove both legacy list_type values via TCEFORM';
+    $failures[] = '3: page.tsconfig must retain TCEFORM.tt_content.list_type.removeItems for both legacy values';
 }
+if (!preg_match(
+    '/mod\.wizards\.newContentElement\.wizardItems\s*\{[\s\S]*?removeItems\s*:=\s*addToList\s*\(\s*mosaicgallery_legacy\s*\)/s',
+    $pageTsConfig,
+)) {
+    $failures[] = '4: page.tsconfig must remove mosaicgallery_legacy from newContentElement.wizardItems';
+}
+
+// 5. No addPageTSConfig()
 if (str_contains($extLocalconf, 'addPageTSConfig')) {
-    $failures[] = '3: ext_localconf.php must not call addPageTSConfig()';
+    $failures[] = '5: ext_localconf.php must not call addPageTSConfig()';
 }
 
 // Inactive stub must not reintroduce a manual wizard card
@@ -72,25 +100,19 @@ if (!str_contains($pageTsStub, 'Intentionally inactive')) {
     $failures[] = 'NewContentElement.tsconfig must remain an explicit inactive stub';
 }
 
-// 4. TYPO3 13 static TCA still contains both legacy values
-if (!preg_match(
-    "/foreach\s*\(\s*\[\s*'mosaicgallery_pi1'\s*,\s*'anatolkinmosaicgallery_pi1'\s*\]\s+as\s+\\\$legacyListType\s*\)/",
-    $ttContent,
-) || !preg_match("/list_type']\['config']\['items'\]\[\]\s*=\s*\[[\s\S]*?'value'\s*=>\s*\\\$legacyListType/", $ttContent)
-) {
-    $failures[] = '4: TYPO3 13 static TCA must still append both legacy list_type values';
-}
-if (!str_contains($ttContent, 'subtypes_addlist')
-    || !str_contains($ttContent, 'addPiFlexFormValue($legacyListType')) {
-    $failures[] = '4: Legacy subtypes_addlist / addPiFlexFormValue wiring must remain';
-}
-
-// no global tt_content.list_type itemsProcFunc
+// 6. no global tt_content.list_type itemsProcFunc
 if (str_contains($ttContent, 'itemsProcFunc')
     || str_contains($ttContent, 'MosaicGalleryLegacyListTypeItems')
     || is_file($root . '/Classes/Backend/Form/MosaicGalleryLegacyListTypeItems.php')
 ) {
-    $failures[] = 'Extension must not install a global list_type itemsProcFunc';
+    $failures[] = '6: Extension must not install a global list_type itemsProcFunc';
+}
+
+// 9. Canonical CType remains in Gallery group
+if (!preg_match("/\\\$pluginGroup\s*=\s*'gallery'/", $ttContent)
+    || !str_contains($ttContent, 'registerPlugin')
+) {
+    $failures[] = '9: Canonical CType=mosaicgallery_pi1 registration must remain in group Gallery';
 }
 
 // provider registration (TYPO3 13 only) + fallback re-add when item missing
@@ -100,7 +122,7 @@ if (!str_contains($provider, 'class MosaicGalleryLegacyListTypeVisibilityProvide
 if (!str_contains($provider, '!$kept')
     || !preg_match("/\\\$filtered\[\]\s*=\s*\[[\s\S]*?'value'\s*=>\s*\\\$keepLegacyValue/", $provider)
 ) {
-    $failures[] = '5: Provider must re-add the current legacy item when missing from processed items';
+    $failures[] = '7: Provider must re-add the current legacy item when missing from processed items';
 }
 if (!str_contains($extLocalconf, 'MosaicGalleryLegacyListTypeVisibilityProvider::class')) {
     $failures[] = 'ext_localconf.php must register the legacy visibility provider';
