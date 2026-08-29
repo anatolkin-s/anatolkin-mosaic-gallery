@@ -100,8 +100,20 @@ if (preg_match("/settings\\.gap'\\s*&&[\\s\\S]*'12'/m", $designConfiguratorJs)) 
 if (!str_contains($designConfiguratorJs, 'designProxyDefault')) {
     $failures[] = 'design-configurator.js must read server-provided proxy defaults';
 }
+if (!str_contains($designConfiguratorJs, 'initialProxyValue')) {
+    $failures[] = 'design-configurator.js must initialize proxies even without canonical controls';
+}
+if (!str_contains($designConfiguratorJs, 'input[type="checkbox"]')) {
+    $failures[] = 'design-configurator.js fieldControl must prefer checkbox inputs';
+}
 if (!str_contains($designConfiguratorElement, 'data-design-proxy-default')) {
     $failures[] = 'DesignConfiguratorElement must expose proxy defaults from FormEngine values';
+}
+if (!str_contains($designConfiguratorElement, 'resolveProcessedDataStructureDefault')) {
+    $failures[] = 'DesignConfiguratorElement must resolve new-record DS defaults for proxies';
+}
+if (!str_contains($designConfiguratorElement, "command'] ?? '') !== 'new'")) {
+    $failures[] = 'DesignConfiguratorElement DS-default fallback must gate on command=new';
 }
 
 if (!str_contains($extLocalconf, 'MosaicGalleryFlexFormDefaultsProvider::class')) {

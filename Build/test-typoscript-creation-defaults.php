@@ -287,24 +287,192 @@ if ($providerSource === false || !str_contains($providerSource, 'MosaicGalleryCr
     $failures[] = 'Provider must synthesize named-preset designOverrides defaults';
 }
 
-// F. Gap proxy contract
 $js = file_get_contents(dirname(__DIR__) . '/Resources/Public/JavaScript/design-configurator.js');
-if ($js === false) {
-    $failures[] = 'Case F design-configurator.js unreadable';
-} else {
-    if (preg_match("/settings\\.gap'\\s*&&[\\s\\S]*'12'/m", $js) === 1) {
-        $failures[] = 'Case F gap proxy must not hardcode fallback 12';
-    }
-    if (!str_contains($js, 'designProxyDefault')) {
-        $failures[] = 'Case F gap proxy must read server-provided designProxyDefault';
-    }
-    if (!str_contains($js, 'defaultValue')) {
-        $failures[] = 'Case F gap proxy must read canonical defaultValue';
-    }
-}
 $designElement = file_get_contents(dirname(__DIR__) . '/Classes/Backend/Form/Element/DesignConfiguratorElement.php');
-if ($designElement === false || !str_contains($designElement, 'data-design-proxy-default')) {
-    $failures[] = 'Case F DesignConfiguratorElement must expose proxy defaults from FormEngine values';
+if ($js === false) {
+    $failures[] = 'design-configurator.js unreadable';
+    $js = '';
+}
+if ($designElement === false) {
+    $failures[] = 'DesignConfiguratorElement.php unreadable';
+    $designElement = '';
+}
+
+/**
+ * Mirror of DesignConfiguratorElement proxy-default priority for fixture coverage.
+ */
+function resolveProxyDefaultFixture(?string $settingsValue, ?string $vDefValue, ?string $dsDefault, string $command): ?string
+{
+    foreach ([$settingsValue, $vDefValue] as $candidate) {
+        if ($candidate === null || $candidate === '') {
+            continue;
+        }
+        return $candidate;
+    }
+    if ($settingsValue === '0' || $vDefValue === '0') {
+        return '0';
+    }
+    if ($command !== 'new') {
+        return null;
+    }
+    if ($dsDefault === null || $dsDefault === '') {
+        return $dsDefault === '0' ? '0' : null;
+    }
+    return $dsDefault;
+}
+
+/**
+ * Mirror of design-configurator.js initialProxyValue for fixture coverage.
+ *
+ * @param array{type?: string, checked?: bool, value?: string}|null $control
+ */
+function initialProxyValueFixture(?array $control, ?string $proxyDefault): string
+{
+    if ($control === null) {
+        return $proxyDefault ?? '';
+    }
+    if (($control['type'] ?? '') === 'checkbox') {
+        if (!empty($control['checked'])) {
+            return '1';
+        }
+        if ($proxyDefault !== null) {
+            return $proxyDefault;
+        }
+        return '0';
+    }
+    $current = trim((string)($control['value'] ?? ''));
+    if ($current !== '') {
+        return (string)$control['value'];
+    }
+    return $proxyDefault ?? '';
+}
+
+// A. proxy initialization when canonical exists
+assertSame(
+    '23',
+    initialProxyValueFixture(['type' => 'text', 'value' => '23'], '12'),
+    'Case A canonical explicit value wins over proxy default',
+    $failures,
+);
+
+// B. proxy initialization when canonical is absent but proxy default exists
+assertSame(
+    '23',
+    initialProxyValueFixture(null, '23'),
+    'Case B absent canonical uses data-design-proxy-default',
+    $failures,
+);
+if (!str_contains($js, 'Always initialize the proxy')) {
+    $failures[] = 'Case B JS must initialize proxy before optional canonical wiring';
+}
+if (preg_match('/proxyControls\.forEach\(\(proxy\) => \{[\s\S]*?if \(!canonical\) \{\s*return;/m', $js)
+    && !str_contains($js, 'initialProxyValue(canonical, proxy)')
+) {
+    $failures[] = 'Case B JS must not return early before proxy initialization';
+}
+if (!str_contains($js, 'initialProxyValue(canonical, proxy)')) {
+    $failures[] = 'Case B JS must compute initialProxyValue before canonical-only return';
+}
+
+// C. missing boolean default is not silently treated as "0" when attribute absent
+assertSame(
+    '0',
+    initialProxyValueFixture(['type' => 'checkbox', 'checked' => false], null),
+    'Case C unchecked checkbox without proxy default resolves to 0',
+    $failures,
+);
+assertSame(
+    '',
+    initialProxyValueFixture(null, null),
+    'Case C missing proxy default stays empty (not forced to 0)',
+    $failures,
+);
+
+// D. boolean proxy default "1" -> On
+assertSame(
+    '1',
+    initialProxyValueFixture(['type' => 'checkbox', 'checked' => false], '1'),
+    'Case D unchecked checkbox with proxy default 1 resolves to On',
+    $failures,
+);
+assertSame(
+    '1',
+    resolveProxyDefaultFixture(null, null, '1', 'new'),
+    'Case D new-record DS default 1 preserved',
+    $failures,
+);
+
+// E. boolean proxy default "0" -> Off
+assertSame(
+    '0',
+    initialProxyValueFixture(['type' => 'checkbox', 'checked' => false], '0'),
+    'Case E unchecked checkbox with proxy default 0 resolves to Off',
+    $failures,
+);
+assertSame(
+    '0',
+    resolveProxyDefaultFixture(null, null, '0', 'new'),
+    'Case E new-record DS default 0 preserved',
+    $failures,
+);
+assertSame(
+    '0',
+    resolveProxyDefaultFixture('0', null, '1', 'edit'),
+    'Case E explicit settings 0 wins over DS default',
+    $failures,
+);
+
+// F. new-record processed DS default can feed server proxy default
+assertSame(
+    '23',
+    resolveProxyDefaultFixture(null, null, '23', 'new'),
+    'Case F new-record DS default feeds proxy default',
+    $failures,
+);
+assertSame(
+    '1',
+    resolveProxyDefaultFixture(null, null, '1', 'new'),
+    'Case F new-record boolean DS default feeds proxy default',
+    $failures,
+);
+if (!str_contains($designElement, 'resolveProcessedDataStructureDefault')) {
+    $failures[] = 'Case F DesignConfiguratorElement must read processed DS defaults';
+}
+if (!str_contains($designElement, "command'] ?? '') !== 'new'")) {
+    $failures[] = 'Case F DS-default fallback must be gated to command=new';
+}
+if (!str_contains($designElement, "processedTca']['columns']['pi_flexform']")) {
+    $failures[] = 'Case F must read processedTca pi_flexform DS defaults';
+}
+
+// G. existing records do not inherit DS defaults through this fallback
+assertNull(
+    resolveProxyDefaultFixture(null, null, '23', 'edit'),
+    'Case G edit command must not inherit DS defaults',
+    $failures,
+);
+assertSame(
+    '9',
+    resolveProxyDefaultFixture('9', null, '23', 'edit'),
+    'Case G explicit existing value remains authoritative',
+    $failures,
+);
+
+// H. no hardcoded gap=12 or other proxy default constants
+if (preg_match("/settings\\.gap'\\s*&&[\\s\\S]*'12'/m", $js) === 1) {
+    $failures[] = 'Case H gap proxy must not hardcode fallback 12';
+}
+if (str_contains($js, "? '12'") || str_contains($js, '? "12"')) {
+    $failures[] = 'Case H JS must not hardcode proxy default constants';
+}
+if (!str_contains($js, 'designProxyDefault')) {
+    $failures[] = 'Case H JS must read server-provided designProxyDefault';
+}
+if (!str_contains($js, 'input[type="checkbox"]')) {
+    $failures[] = 'Case H fieldControl must prefer checkbox over hidden inputs';
+}
+if (!str_contains($designElement, 'data-design-proxy-default')) {
+    $failures[] = 'Case H DesignConfiguratorElement must expose proxy defaults';
 }
 
 if ($failures !== []) {

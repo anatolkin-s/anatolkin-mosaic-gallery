@@ -299,31 +299,104 @@ final class DesignConfiguratorElement extends AbstractFormElement
     /** @param array<string, mixed> $settings */
     private function proxyDefaultAttribute(string $fieldName, array $settings): string
     {
-        $key = substr($fieldName, 9);
-        $value = (string)($settings[$key] ?? '');
-        if ($value === '') {
-            $value = $this->resolveFlexFormVDef($fieldName);
-        }
-        if ($value === '') {
+        $value = $this->resolveProxyDefaultValue($fieldName, $settings);
+        if ($value === null) {
             return '';
         }
 
         return ' data-design-proxy-default="' . htmlspecialchars($value, ENT_QUOTES) . '"';
     }
 
-    private function resolveFlexFormVDef(string $fieldName): string
+    /**
+     * Resolve the server-side value that Design Configurator proxies should initialize from.
+     *
+     * Priority:
+     * 1. Explicit processed settings / FlexForm vDEF (authoritative for existing records)
+     * 2. For command=new only: processed FlexForm DS config.default
+     *
+     * Boolean "0" is a valid value and must not be treated as missing.
+     *
+     * @param array<string, mixed> $settings
+     */
+    private function resolveProxyDefaultValue(string $fieldName, array $settings): ?string
+    {
+        $key = substr($fieldName, 9);
+        if (array_key_exists($key, $settings)) {
+            $normalized = $this->normalizeProxyScalar($settings[$key]);
+            // Keep "0"; only treat null/empty-string as absent so DS defaults can apply on new records.
+            if ($normalized !== null && $normalized !== '') {
+                return $normalized;
+            }
+            if ($normalized === '0') {
+                return '0';
+            }
+        }
+
+        $vDef = $this->resolveFlexFormVDefRaw($fieldName);
+        if ($vDef !== null && $vDef !== '') {
+            return $vDef;
+        }
+        if ($vDef === '0') {
+            return '0';
+        }
+
+        if (($this->data['command'] ?? '') !== 'new') {
+            return null;
+        }
+
+        return $this->resolveProcessedDataStructureDefault($fieldName);
+    }
+
+    private function normalizeProxyScalar(mixed $value): ?string
+    {
+        if ($value === null || $value === []) {
+            return null;
+        }
+        if (is_bool($value)) {
+            return $value ? '1' : '0';
+        }
+        if (is_int($value) || is_float($value)) {
+            return (string)$value;
+        }
+        if (is_string($value)) {
+            return $value;
+        }
+        $scalar = $this->scalarValue($value);
+        if ($scalar === null || $scalar === [] || is_array($scalar)) {
+            return null;
+        }
+        if (is_bool($scalar)) {
+            return $scalar ? '1' : '0';
+        }
+
+        return (string)$scalar;
+    }
+
+    private function resolveFlexFormVDefRaw(string $fieldName): ?string
     {
         $flexForm = $this->data['databaseRow']['pi_flexform'] ?? '';
         if (!is_array($flexForm)) {
-            return '';
+            return null;
         }
 
-        $vDef = $flexForm['data'][$this->flexFormSheetForField($fieldName)]['lDEF'][$fieldName]['vDEF'] ?? null;
-        if ($vDef === null || $vDef === '' || $vDef === []) {
-            return '';
+        $sheet = $this->flexFormSheetForField($fieldName);
+        if (!is_array($flexForm['data'][$sheet]['lDEF'][$fieldName] ?? null)) {
+            return null;
+        }
+        if (!array_key_exists('vDEF', $flexForm['data'][$sheet]['lDEF'][$fieldName])) {
+            return null;
         }
 
-        return (string)$this->scalarValue($vDef);
+        return $this->normalizeProxyScalar($flexForm['data'][$sheet]['lDEF'][$fieldName]['vDEF']);
+    }
+
+    private function resolveProcessedDataStructureDefault(string $fieldName): ?string
+    {
+        $sheet = $this->flexFormSheetForField($fieldName);
+        $default = $this->data['processedTca']['columns']['pi_flexform']['config']['ds']['sheets'][$sheet]['ROOT']['el'][$fieldName]['config']['default']
+            ?? null;
+
+        return $this->normalizeProxyScalar($default);
     }
 
     private function flexFormSheetForField(string $fieldName): string

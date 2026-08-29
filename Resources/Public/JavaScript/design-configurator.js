@@ -188,9 +188,18 @@ const effectiveDesign = (base, document) => {
   return effective;
 };
 
-const fieldControl = (section) => section?.querySelector(
-  'select, input[type="checkbox"], input.form-control, input[type="text"], input[type="number"]',
-);
+const fieldControl = (section) => {
+  if (!section) {
+    return null;
+  }
+  const checkbox = section.querySelector('input[type="checkbox"]');
+  if (checkbox) {
+    return checkbox;
+  }
+  return section.querySelector(
+    'select, input.form-control:not([type="hidden"]), input[type="text"], input[type="number"]',
+  );
+};
 
 const customDesign = (sections) => {
   const design = {
@@ -523,13 +532,47 @@ const initializeEditor = (editor) => {
         && control.name.endsWith(`[${fieldName}][vDEF]`),
     ) ?? null;
   };
-  const canonicalValue = (control, proxy = null) => {
+  const proxyDefaultValue = (proxy) => {
+    if (!proxy || !Object.prototype.hasOwnProperty.call(proxy.dataset, 'designProxyDefault')) {
+      return null;
+    }
+    return String(proxy.dataset.designProxyDefault);
+  };
+  const applyValueToCanonical = (control, value) => {
     if (!control) {
-      const proxyDefault = String(proxy?.dataset?.designProxyDefault ?? '').trim();
-      return proxyDefault;
+      return;
+    }
+    if (control.type === 'checkbox') {
+      control.checked = value === '1';
+      control.value = value === '1' ? '1' : '0';
+      return;
+    }
+    control.value = value;
+  };
+  const liveCanonicalValue = (control) => {
+    if (!control) {
+      return '';
     }
     if (control.type === 'checkbox') {
       return control.checked ? '1' : '0';
+    }
+    return control.value ?? '';
+  };
+  const initialProxyValue = (control, proxy = null) => {
+    const proxyDefault = proxyDefaultValue(proxy);
+    if (!control) {
+      return proxyDefault ?? '';
+    }
+    if (control.type === 'checkbox') {
+      if (control.checked) {
+        return '1';
+      }
+      // Unchecked boxes are not yet authoritative on new records before FormEngine
+      // applies DS defaults; prefer the server-provided creation default when present.
+      if (proxyDefault !== null) {
+        return proxyDefault;
+      }
+      return '0';
     }
     const current = String(control.value ?? '').trim();
     if (current !== '') {
@@ -547,8 +590,7 @@ const initializeEditor = (editor) => {
     if (formEngineDefault !== '') {
       return formEngineDefault;
     }
-    const proxyDefault = String(proxy?.dataset?.designProxyDefault ?? '').trim();
-    if (proxyDefault !== '') {
+    if (proxyDefault !== null) {
       return proxyDefault;
     }
     return control.value ?? '';
@@ -684,6 +726,11 @@ const initializeEditor = (editor) => {
   presetSelector.addEventListener('change', updateMode);
   proxyControls.forEach((proxy) => {
     const canonical = canonicalControl(proxy.dataset.designProxy);
+    const initialValue = initialProxyValue(canonical, proxy);
+    // Always initialize the proxy, including when no canonical control exists yet.
+    if (initialValue !== '' || proxyDefaultValue(proxy) !== null) {
+      proxy.value = initialValue;
+    }
     if (!canonical) {
       return;
     }
@@ -692,20 +739,17 @@ const initializeEditor = (editor) => {
       canonicalSection.hidden = true;
       canonicalSection.classList.add('mosaic-proxy-storage-field');
     }
-    proxy.value = canonicalValue(canonical, proxy);
+    // Keep FormEngine storage aligned with the resolved creation/default value.
+    applyValueToCanonical(canonical, proxy.value);
     proxy.addEventListener('change', () => {
-      if (canonical.type === 'checkbox') {
-        canonical.checked = proxy.value === '1';
-        canonical.value = canonical.checked ? '1' : '0';
-      } else {
-        canonical.value = proxy.value;
-      }
+      applyValueToCanonical(canonical, proxy.value);
       canonical.dispatchEvent(new Event('input', { bubbles: true }));
       canonical.dispatchEvent(new Event('change', { bubbles: true }));
       publishState();
     });
     const syncProxy = () => {
-      proxy.value = canonicalValue(canonical, proxy);
+      // After initialization, live canonical state is authoritative (including Off=0).
+      proxy.value = liveCanonicalValue(canonical);
       publishState();
     };
     canonical.addEventListener('change', syncProxy);
