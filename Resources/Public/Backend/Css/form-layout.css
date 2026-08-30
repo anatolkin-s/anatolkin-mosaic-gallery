@@ -962,11 +962,16 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+/*
+ * Outer groups and Custom inner fields use intrinsic auto-fit so columns
+ * respond to each track's available width. Nested groups are ~half the
+ * outer configurator; outer @container breakpoints alone are insufficient.
+ */
 .mosaic-design-configurator__groups {
   align-items: start;
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
   margin-top: 1rem;
 }
 
@@ -989,7 +994,7 @@
 .mosaic-design-configurator.is-custom .mosaic-design-configurator__custom {
   display: grid;
   gap: .75rem 1rem;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
 }
 
 .mosaic-design-configurator__custom > .form-section {
@@ -1473,10 +1478,6 @@
 }
 
 @container (max-width: 799px) {
-  .mosaic-design-configurator__groups {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
   .mosaic-design-preview__panels {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -1503,6 +1504,7 @@
   }
 }
 
+/* Preset-mode extension-owned control grid still uses outer-container steps. */
 @container (max-width: 999px) {
   .mosaic-design-configurator__grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1510,15 +1512,13 @@
 }
 
 @container (max-width: 749px) {
-  .mosaic-design-configurator__grid,
-  .mosaic-design-configurator.is-custom .mosaic-design-configurator__custom {
+  .mosaic-design-configurator__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @container (max-width: 499px) {
-  .mosaic-design-configurator__grid,
-  .mosaic-design-configurator.is-custom .mosaic-design-configurator__custom {
+  .mosaic-design-configurator__grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }
