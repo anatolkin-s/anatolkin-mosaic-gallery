@@ -10,8 +10,6 @@ const parseDocument = (value) => {
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const pathSegments = (path) => path.split('.');
 const normalizePreset = (value) => value === '' || value === 'custom' ? 'custom' : value;
-const EYEDROPPER_ICON = '<svg class="mosaic-backend-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
-  + '<path d="m15.5 3.5 5 5-9.5 9.5-5.5.5.5-5.5z"/><path d="m13 6 5 5M4 20h7"/></svg>';
 const CUSTOM_FIELDS = {
   'settings.frameColor': ['frameColor', 'string'],
   'settings.frameAccentColor': ['frameAccentColor', 'string'],
@@ -199,58 +197,6 @@ const fieldControl = (section) => {
   return section.querySelector(
     'select, input.form-control:not([type="hidden"]), input[type="text"], input[type="number"]',
   );
-};
-
-const CUSTOM_COLOR_SECTION_IDS = [
-  'settings.frameColor',
-  'settings.frameAccentColor',
-  'settings.backgroundColor',
-  'settings.captionColor',
-  'settings.lbOverlay',
-  'settings.lbNavColor',
-  'settings.lbCloseColor',
-  'settings.lbCaptionColor',
-  'settings.lbCaptionBg',
-];
-
-/**
- * Prefer Core FormEngine color row (.form-wizards-wrap + aside) shared by TYPO3 13/14.
- * Never mount actions inside typo3-backend-color-picker (that wraps under the hex field).
- */
-const ensureCustomColorControlRow = (section) => {
-  if (!section) {
-    return null;
-  }
-  const wizardsWrap = section.querySelector('.form-wizards-wrap');
-  if (wizardsWrap) {
-    wizardsWrap.setAttribute('data-mosaic-color-control-row', 'custom');
-    let asideGroup = wizardsWrap.querySelector(
-      '.form-wizards-item-aside--field-control .btn-group, .form-wizards-item-aside .btn-group',
-    );
-    if (!asideGroup) {
-      const aside = document.createElement('div');
-      aside.className = 'form-wizards-item-aside form-wizards-item-aside--field-control';
-      asideGroup = document.createElement('div');
-      asideGroup.className = 'btn-group';
-      aside.append(asideGroup);
-      const bottom = wizardsWrap.querySelector('.form-wizards-item-bottom');
-      if (bottom) {
-        wizardsWrap.insertBefore(aside, bottom);
-      } else {
-        wizardsWrap.append(aside);
-      }
-    }
-    return asideGroup;
-  }
-
-  const wrap = section.querySelector('.form-control-wrap')
-    || section.querySelector('.form-wizards-item-element')
-    || section.querySelector('typo3-formengine-element-color');
-  if (!wrap) {
-    return null;
-  }
-  wrap.setAttribute('data-mosaic-color-control-row', 'custom');
-  return wrap;
 };
 
 const customDesign = (sections) => {
@@ -913,27 +859,6 @@ const initializeEditor = (editor) => {
   });
   if (window.EyeDropper) {
     editor.querySelectorAll('[data-design-eyedropper]').forEach((button) => { button.hidden = false; });
-    customSections.filter((section) => CUSTOM_COLOR_SECTION_IDS.includes(section.dataset.id)).forEach((section) => {
-      const control = fieldControl(section);
-      const mount = ensureCustomColorControlRow(section);
-      if (!control || !mount || mount.querySelector('.mosaic-design-eyedropper')) {
-        return;
-      }
-      const button = window.document.createElement('button');
-      button.type = 'button';
-      button.className = 'btn btn-default btn-sm mosaic-design-eyedropper';
-      button.dataset.mosaicActionTooltip = 'true';
-      button.innerHTML = EYEDROPPER_ICON;
-      button.setAttribute('aria-label', editor.dataset.eyedropperLabel);
-      button.addEventListener('click', () => {
-        new window.EyeDropper().open().then(({ sRGBHex }) => {
-          control.value = sRGBHex;
-          control.dispatchEvent(new Event('input', { bubbles: true }));
-          control.dispatchEvent(new Event('change', { bubbles: true }));
-        }).catch(() => {});
-      });
-      mount.append(button);
-    });
   }
   updateMode();
 };

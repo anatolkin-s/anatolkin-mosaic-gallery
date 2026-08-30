@@ -1035,47 +1035,7 @@
   width: 1.75rem;
 }
 
-/*
- * Custom mode: Core owns typo3-backend-color-picker. Style only the
- * extension-decorated wizards row so TYPO3 13/14 ancestry differences do not
- * drop the field-control aside onto a second line.
- */
-.form-wizards-wrap[data-mosaic-color-control-row="custom"] {
-  align-items: center;
-  display: grid;
-  gap: .4rem;
-  grid-template-columns: minmax(0, 1fr) auto;
-  width: 100%;
-}
-
-.form-wizards-wrap[data-mosaic-color-control-row="custom"] > .form-wizards-item-element {
-  grid-column: 1;
-  grid-row: 1;
-  min-width: 0;
-}
-
-.form-wizards-wrap[data-mosaic-color-control-row="custom"] > .form-wizards-item-aside,
-.form-wizards-wrap[data-mosaic-color-control-row="custom"] > .form-wizards-item-aside--field-control {
-  align-self: center;
-  grid-column: 2;
-  grid-row: 1;
-}
-
-.form-wizards-wrap[data-mosaic-color-control-row="custom"] > .form-wizards-item-bottom {
-  grid-column: 1 / -1;
-}
-
-.form-wizards-wrap[data-mosaic-color-control-row="custom"] .form-control-wrap {
-  max-width: 100% !important;
-}
-
-.form-wizards-wrap[data-mosaic-color-control-row="custom"] typo3-backend-color-picker {
-  display: block;
-  max-width: 100%;
-  width: 100%;
-}
-
-[data-mosaic-color-control-row] .mosaic-design-eyedropper {
+.mosaic-design-configurator__control[data-mosaic-color-control-row="preset"] .mosaic-design-eyedropper {
   flex: 0 0 auto;
 }
 
