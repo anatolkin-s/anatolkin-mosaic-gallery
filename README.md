@@ -177,6 +177,12 @@ FlexForm data, record UIDs, localization relationships, and ordinary `tt_content
 - Compact responsive backend configuration
 - English, German, French, Spanish, and Russian extension interface translations
 
+## What's new in 0.4.3
+
+Version 0.4.3 is a compatibility hotfix for inherited FAL metadata on TYPO3 13.4 and 14.3.
+
+It replaces a custom `sys_file_metadata` QueryBuilder path that could throw `TypeError` on `PDO::PARAM_INT` under TYPO3/DBAL 4 with the native `File::getMetaData()->get()` API. The stable five-key Fluid metadata subset, caption fallback order, alternative-text propagation, and gallery-specific overrides are unchanged. No database migration is required.
+
 ## What's new in 0.4.2
 
 Version 0.4.2 improves custom-template integration, inherited FAL metadata, and GLightbox accessibility without requiring a database migration.
@@ -270,7 +276,7 @@ Configured site languages are discovered from TYPO3 Site Configuration. The five
 
 ## Compatibility and release status
 
-Anatolkin Mosaic Gallery 0.4.2 targets TYPO3 13.4 and TYPO3 14.3.
+Anatolkin Mosaic Gallery 0.4.3 targets TYPO3 13.4 and TYPO3 14.3.
 
 Existing folder galleries, legacy Quick captions, and the `list_type` to `CType` migration path introduced in 0.3.0 remain supported. On TYPO3 13.4, unmigrated plugin records remain usable before that wizard is run. TYPO3 14 installations should complete the wizard first and then use dedicated `CType=mosaicgallery_pi1` records only.
 
