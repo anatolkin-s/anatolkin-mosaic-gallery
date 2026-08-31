@@ -177,6 +177,23 @@ FlexForm data, record UIDs, localization relationships, and ordinary `tt_content
 - Compact responsive backend configuration
 - English, German, French, Spanish, and Russian extension interface translations
 
+## What's new in 0.5.0
+
+Version 0.5.0 adds configurable TypoScript creation defaults for new Mosaic Gallery content elements and improves TYPO3 13/14 backend compatibility.
+
+Highlights:
+
+- Adds configurable TypoScript creation defaults for new Mosaic Gallery content elements.
+- Preserves explicit first-save values while leaving existing and legacy records unchanged.
+- Carries the native TYPO3 FAL metadata fix introduced in 0.4.3.
+- Improves Design Configurator creation-default synchronization and design-override handling.
+- Hides obsolete TYPO3 13 legacy plugin signatures from new-content creation while retaining edit and runtime compatibility for existing legacy records.
+- Keeps Custom-mode color fields Core-native for backend color-control compatibility.
+- Improves responsive Design Configurator layout at narrow backend widths.
+- Supports TYPO3 13.4 and TYPO3 14.3.
+
+No database migration is required for 0.5.0. Existing Mosaic Gallery records retain their stored settings. TypoScript creation defaults affect new records only.
+
 ## What's new in 0.4.3
 
 Version 0.4.3 is a compatibility hotfix for inherited FAL metadata on TYPO3 13.4 and 14.3.
@@ -276,7 +293,7 @@ Configured site languages are discovered from TYPO3 Site Configuration. The five
 
 ## Compatibility and release status
 
-Anatolkin Mosaic Gallery 0.4.3 targets TYPO3 13.4 and TYPO3 14.3.
+Anatolkin Mosaic Gallery 0.5.0 targets TYPO3 13.4 and TYPO3 14.3.
 
 Existing folder galleries, legacy Quick captions, and the `list_type` to `CType` migration path introduced in 0.3.0 remain supported. On TYPO3 13.4, unmigrated plugin records remain usable before that wizard is run. TYPO3 14 installations should complete the wizard first and then use dedicated `CType=mosaicgallery_pi1` records only.
 
