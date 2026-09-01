@@ -204,9 +204,39 @@
   min-width: 0;
 }
 
-@container mosaic-layout-source (max-width: 28rem) {
+.mosaic-layout-header__row--source > .form-section[data-id="settings.folder"] :is(
+  .form-control-wrap,
+  .formengine-field-item,
+  .t3js-formengine-field-item,
+  .form-wizards-wrap
+) {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.mosaic-layout-header__row--source > .form-section[data-id="settings.folder"] .form-wizards-wrap {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  width: 100%;
+}
+
+.mosaic-layout-header__row--source > .form-section[data-id="settings.folder"] .form-wizards-item-element {
+  grid-column: 1;
+  min-width: 0;
+}
+
+.mosaic-layout-header__row--source > .form-section[data-id="settings.folder"] .form-wizards-item-aside {
+  flex: 0 0 auto;
+  grid-column: auto;
+}
+
+.mosaic-layout-header__row--source > .form-section[data-id="settings.folder"] .form-select {
+  min-width: 0;
+  width: 100%;
+}
+
+@container mosaic-layout-source (max-width: 36rem) {
   .mosaic-layout-header__row--source > .form-section[data-id="settings.folder"] {
-    grid-column: span 1;
+    grid-column: 1 / -1;
   }
 }
 

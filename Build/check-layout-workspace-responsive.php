@@ -95,10 +95,37 @@ if (!preg_match(
     $failures[] = 'E: Folder must span two intrinsic tracks at wider source-row widths';
 }
 if (!preg_match(
+    '/@container\s+mosaic-layout-source\s*\([^)]+\)\s*\{[^}]*settings\.folder[^}]*grid-column:\s*1\s*\/\s*-1/s',
+    $css,
+)) {
+    $failures[] = 'E: Folder must span the full source row at narrow local container widths';
+}
+if (preg_match(
     '/@container\s+mosaic-layout-source\s*\([^)]+\)\s*\{[^}]*settings\.folder[^}]*grid-column:\s*span\s*1/s',
     $css,
 )) {
-    $failures[] = 'E: Folder span must reset to one track before narrow overflow';
+    $failures[] = 'E: Folder must not collapse to a single narrow intrinsic track';
+}
+if (!preg_match(
+    '/\[data-id="settings\.folder"\][\s\S]{0,500}\.form-wizards-wrap[\s\S]{0,200}minmax\s*\(\s*0\s*,\s*1fr\s*\)\s*auto/s',
+    $css,
+) || !preg_match(
+    '/\[data-id="settings\.folder"\][\s\S]{0,500}\.form-wizards-item-element[\s\S]{0,120}min-width:\s*0/s',
+    $css,
+)) {
+    $failures[] = 'E: Folder Core field wrapper must remain shrinkable inside its row';
+}
+if (preg_match(
+    '/\[data-id="settings\.folder"\][\s\S]{0,800}(?:display:\s*none|visibility:\s*hidden|overflow-x:\s*hidden)/s',
+    $css,
+)) {
+    $failures[] = 'E: Folder controls must not be hidden or overflow-masked';
+}
+if (!preg_match(
+    '/\[data-id="settings\.folder"\][\s\S]{0,500}\.form-wizards-item-aside[\s\S]{0,120}flex:\s*0\s*0\s*auto/s',
+    $css,
+)) {
+    $failures[] = 'E: Folder Core action buttons must keep fixed auto-sized tracks';
 }
 
 // F. recursive/Subfolders remains compact
@@ -150,6 +177,22 @@ if (preg_match(
     $css,
 )) {
     $failures[] = 'J: Layout workspace must not use absolute-position layout hacks';
+}
+
+// J2. no overflow-x masking on layout workspace
+if (preg_match(
+    '/\.mosaic-layout-(?:header|sheet)[^{]*\{[^}]*overflow-x:\s*hidden/s',
+    $css,
+)) {
+    $failures[] = 'J: Layout workspace must not mask horizontal overflow';
+}
+
+// J3. no viewport-width folder workaround
+if (preg_match(
+    '/@media[^{]+\{[^}]*settings\.folder/s',
+    $css,
+)) {
+    $failures[] = 'J: Folder layout must use local source container queries, not viewport breakpoints';
 }
 
 // K. outer layout sheet simplified or intentionally single-column (no obsolete 12-col requirement)
