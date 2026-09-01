@@ -2,13 +2,26 @@
 declare(strict_types=1);
 
 /**
- * Structural checks for Design Configurator color-control alignment.
- * Custom mode uses Core-native colorpicker only; eyedropper is preset-owned.
+ * Structural checks for Design Configurator color-control architecture.
+ * Custom FlexForm colors use TYPO3 Core type=color; eyedropper is preset-owned.
  * Run: php Build/check-color-control-alignment.php
  */
 
 $root = dirname(__DIR__);
 $failures = [];
+
+/** @var list<string> */
+const CANONICAL_COLOR_FIELDS = [
+    'settings.frameColor',
+    'settings.frameAccentColor',
+    'settings.backgroundColor',
+    'settings.captionColor',
+    'settings.lbOverlay',
+    'settings.lbNavColor',
+    'settings.lbCloseColor',
+    'settings.lbCaptionColor',
+    'settings.lbCaptionBg',
+];
 
 function readFileOrFail(string $path, array &$failures): string
 {
@@ -32,72 +45,121 @@ $element = readFileOrFail(
 );
 $flexForm = readFileOrFail($root . '/Configuration/FlexForms/MosaicGallery.xml', $failures);
 
-// 1. FlexForm Custom color fields still use Core colorpicker
-if (!str_contains($flexForm, '<renderType>colorpicker</renderType>')) {
-    $failures[] = '1: Custom-mode FlexForm color fields must keep Core renderType=colorpicker';
+// A. every canonical Custom color field uses native type=color
+foreach (CANONICAL_COLOR_FIELDS as $field) {
+    if (!preg_match(
+        '/<' . preg_quote($field, '/') . '>\s*<label>[^<]*<\/label>\s*<config>\s*<type>color<\/type>/',
+        $flexForm,
+    )) {
+        $failures[] = "A: {$field} must use native <type>color</type>";
+    }
 }
 
-// 2. JS does NOT decorate .form-wizards-wrap for Custom color controls
+// B. legacy renderType=colorpicker must NOT remain for those fields / FlexForm
+if (str_contains($flexForm, '<renderType>colorpicker</renderType>')) {
+    $failures[] = 'B: FlexForm must not retain renderType=colorpicker for color fields';
+}
+foreach (CANONICAL_COLOR_FIELDS as $field) {
+    if (preg_match(
+        '/<' . preg_quote($field, '/') . '>\s*<label>[^<]*<\/label>\s*<config>([\s\S]*?)<\/config>/',
+        $flexForm,
+        $block,
+    ) && str_contains($block[1], '<eval>')) {
+        $failures[] = "B: {$field} must not keep obsolete eval configuration";
+    }
+}
+
+// Inventory completeness: exactly the expected color fields, no extras of type=color outside inventory
+preg_match_all(
+    '/<(settings\.[A-Za-z0-9_]+)>\s*<label>[^<]*<\/label>\s*<config>\s*<type>color<\/type>/',
+    $flexForm,
+    $found,
+);
+$foundFields = $found[1] ?? [];
+sort($foundFields);
+$expected = CANONICAL_COLOR_FIELDS;
+sort($expected);
+if ($foundFields !== $expected) {
+    $failures[] = 'A/B: type=color inventory mismatch. found=' . implode(',', $foundFields);
+}
+
+// C. Mosaic JS does not decorate/inject into Core color controls
 if (str_contains($js, 'ensureCustomColorControlRow')
     || str_contains($js, 'CUSTOM_COLOR_SECTION_IDS')
     || preg_match("/setAttribute\\(\\s*'data-mosaic-color-control-row'\\s*,\\s*'custom'\\s*\\)/", $js)
     || (str_contains($js, 'form-wizards-wrap') && str_contains($js, 'data-mosaic-color-control-row'))
-) {
-    $failures[] = '2: JS must not decorate .form-wizards-wrap for Custom color controls';
-}
-
-// 3. JS does NOT dynamically add .mosaic-design-eyedropper to Core Custom fields
-if (preg_match('/createElement\\(\\s*[\'"]button[\'"]\\s*\\)[\\s\\S]{0,240}mosaic-design-eyedropper/', $js)
+    || preg_match('/createElement\\(\\s*[\'"]button[\'"]\\s*\\)[\\s\\S]{0,240}mosaic-design-eyedropper/', $js)
     || preg_match('/mosaic-design-eyedropper[\\s\\S]{0,240}(?:append|appendChild)\\s*\\(/', $js)
 ) {
-    $failures[] = '3: JS must not dynamically inject .mosaic-design-eyedropper for Custom colorpickers';
+    $failures[] = 'C: JS must not decorate or inject into Core Custom color controls';
 }
 
-// 4. CSS has NO custom marker
-if (str_contains($css, 'data-mosaic-color-control-row="custom"')
-    || str_contains($css, "data-mosaic-color-control-row='custom'")
-) {
-    $failures[] = '4: CSS must not define data-mosaic-color-control-row="custom"';
-}
-
-// 5. CSS does NOT style Core colorpicker internals for Mosaic alignment
+// D. Mosaic CSS does not depend on Core colorpicker internals for alignment
 if (preg_match('/\\.form-wizards-wrap\\[data-mosaic-color-control-row/', $css)
     || preg_match('/typo3-backend-color-picker/', $css)
     || preg_match('/\\.form-wizards-item-aside--field-control/', $css)
+    || str_contains($css, 'data-mosaic-color-control-row="custom"')
 ) {
-    $failures[] = '5: CSS must not style Core colorpicker / form-wizards internals for Mosaic alignment';
+    $failures[] = 'D: CSS must not style Core colorpicker / form-wizards internals for Mosaic alignment';
 }
 
-// 6. Named preset rows still use preset marker
-if (!str_contains($element, 'data-mosaic-color-control-row="preset"')) {
-    $failures[] = '6: Named-preset rows must keep data-mosaic-color-control-row="preset"';
-}
-
-// 7. Named preset controls remain flex-aligned
-if (!preg_match(
-    '/\\.mosaic-design-configurator__control[^{]*\\{[\\s\\S]*?display:\\s*flex/s',
-    $css,
-) || !str_contains($element, 'mosaic-design-configurator__picker')
+// E. named-preset extension-owned color control still exists
+if (!str_contains($element, 'data-mosaic-color-control-row="preset"')
+    || !str_contains($element, 'mosaic-design-configurator__picker')
     || !str_contains($element, 'data-design-color-picker')
 ) {
-    $failures[] = '7: Named-preset color controls must remain flex-aligned with extension-owned picker';
+    $failures[] = 'E: Named-preset extension-owned color controls must remain';
 }
 
-// 8. Named preset EyeDropper remains optional
+// F. optional named-preset EyeDropper remains guarded
 if (!str_contains($js, 'window.EyeDropper')
     || !preg_match('/if\\s*\\(\\s*window\\.EyeDropper\\s*\\)/', $js)
     || !str_contains($js, '[data-design-eyedropper]')
     || !str_contains($element, 'data-design-eyedropper')
 ) {
-    $failures[] = '8: Named-preset EyeDropper must remain optional behind window.EyeDropper';
+    $failures[] = 'F: Named-preset EyeDropper must remain optional behind window.EyeDropper';
 }
 
-// 9. Reset controls unchanged
+// G. reset controls remain
 if (!str_contains($element, 'data-design-reset-field')
     || !str_contains($js, 'data-design-reset-field')
     || !str_contains($js, 'data-design-reset-all')
 ) {
-    $failures[] = '9: Reset field/all controls must remain present';
+    $failures[] = 'G: Reset field/all controls must remain present';
+}
+
+// H. no legacy Custom augmentation markers return
+if (str_contains($js, 'ensureCustomColorControlRow')
+    || str_contains($js, 'CUSTOM_COLOR_SECTION_IDS')
+    || str_contains($css, 'data-mosaic-color-control-row="custom"')
+) {
+    $failures[] = 'H: Legacy Custom color augmentation markers must remain absent';
+}
+
+// Named preset flex alignment
+if (!preg_match(
+    '/\\.mosaic-design-configurator__control[^{]*\\{[\\s\\S]*?display:\\s*flex/s',
+    $css,
+)) {
+    $failures[] = 'Named-preset color controls must remain flex-aligned';
+}
+
+// Persisted hex defaults remain on migrated fields (compatibility)
+$defaultSamples = [
+    'settings.frameColor' => '#b40000',
+    'settings.backgroundColor' => '#e5e5e5',
+    'settings.lbOverlay' => '#2c5222',
+    'settings.lbNavColor' => '#FFFFFF',
+    'settings.lbCaptionBg' => '#b40000',
+];
+foreach ($defaultSamples as $field => $default) {
+    if (!preg_match(
+        '/<' . preg_quote($field, '/') . '>\s*<label>[^<]*<\/label>\s*<config>[\s\S]*?<default>'
+            . preg_quote($default, '/') . '<\/default>/',
+        $flexForm,
+    )) {
+        $failures[] = "Persisted default for {$field} must remain {$default}";
+    }
 }
 
 if ($failures === []) {

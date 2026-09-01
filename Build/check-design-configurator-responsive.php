@@ -89,14 +89,15 @@ if (preg_match(
     $failures[] = '4: Must not use absolute-position responsive hacks for design grids';
 }
 
-// 5. Core Custom colorpicker augmentation must not return
+// 5. Custom colors stay Core-owned type=color without Mosaic DOM augmentation
 if (str_contains($css, 'data-mosaic-color-control-row="custom"')
     || str_contains($css, 'typo3-backend-color-picker')
     || str_contains($js, 'ensureCustomColorControlRow')
     || str_contains($js, 'CUSTOM_COLOR_SECTION_IDS')
-    || !str_contains($flexForm, '<renderType>colorpicker</renderType>')
+    || str_contains($flexForm, '<renderType>colorpicker</renderType>')
+    || !preg_match('/<type>color<\/type>/', $flexForm)
 ) {
-    $failures[] = '5: Custom mode must remain Core-native colorpicker without Mosaic DOM augmentation';
+    $failures[] = '5: Custom mode must use Core type=color without Mosaic DOM augmentation or legacy colorpicker';
 }
 
 // Groups can collapse via intrinsic sizing

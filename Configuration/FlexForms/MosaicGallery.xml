@@ -291,10 +291,8 @@
           <settings.frameColor>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.primary</label>
             <config>
-              <type>input</type>
-              <renderType>colorpicker</renderType>
+              <type>color</type>
               <size>10</size>
-              <eval>trim</eval>
               <default>#b40000</default>
             </config>
           </settings.frameColor>
@@ -302,10 +300,8 @@
           <settings.frameAccentColor>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.accent</label>
             <config>
-              <type>input</type>
-              <renderType>colorpicker</renderType>
+              <type>color</type>
               <size>10</size>
-              <eval>trim</eval>
               <default></default>
             </config>
           </settings.frameAccentColor>
@@ -378,10 +374,8 @@
           <settings.backgroundColor>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.background</label>
             <config>
-              <type>input</type>
-              <renderType>colorpicker</renderType>
+              <type>color</type>
               <size>10</size>
-              <eval>trim</eval>
               <default>#e5e5e5</default>
             </config>
           </settings.backgroundColor>
@@ -389,10 +383,8 @@
           <settings.captionColor>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.captionColor</label>
             <config>
-              <type>input</type>
-              <renderType>colorpicker</renderType>
+              <type>color</type>
               <size>10</size>
-              <eval>trim</eval>
               <default></default>
             </config>
           </settings.captionColor>
@@ -423,10 +415,8 @@
           <settings.lbOverlay>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.overlay</label>
             <config>
-              <type>input</type>
-              <renderType>colorpicker</renderType>
+              <type>color</type>
               <size>10</size>
-              <eval>trim</eval>
               <default>#2c5222</default>
             </config>
           </settings.lbOverlay>
@@ -444,10 +434,8 @@
           <settings.lbNavColor>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.navigation</label>
             <config>
-              <type>input</type>
-              <renderType>colorpicker</renderType>
+              <type>color</type>
               <size>10</size>
-              <eval>trim</eval>
               <default>#FFFFFF</default>
             </config>
           </settings.lbNavColor>
@@ -455,10 +443,8 @@
           <settings.lbCloseColor>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.close</label>
             <config>
-              <type>input</type>
-              <renderType>colorpicker</renderType>
+              <type>color</type>
               <size>10</size>
-              <eval>trim</eval>
               <default>#FFFFFF</default>
             </config>
           </settings.lbCloseColor>
@@ -466,10 +452,8 @@
           <settings.lbCaptionColor>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.captionColor</label>
             <config>
-              <type>input</type>
-              <renderType>colorpicker</renderType>
+              <type>color</type>
               <size>10</size>
-              <eval>trim</eval>
               <default>#FFFFFF</default>
             </config>
           </settings.lbCaptionColor>
@@ -477,10 +461,8 @@
           <settings.lbCaptionBg>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:design.field.captionBackground</label>
             <config>
-              <type>input</type>
-              <renderType>colorpicker</renderType>
+              <type>color</type>
               <size>16</size>
-              <eval>trim</eval>
               <default>#b40000</default>
             </config>
           </settings.lbCaptionBg>
