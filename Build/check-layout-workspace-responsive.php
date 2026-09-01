@@ -261,6 +261,32 @@ if (!str_contains($js, 'mosaic-layout-header__row--source')
     $failures[] = 'L: consolidateWorkspaces structure markers must remain in design-configurator.js';
 }
 
+// M. explicit manual source-mode selector and compact manual composition
+if (!preg_match('/data-mosaic-source-mode="manual"/', $css) || !preg_match('/imagesSourceRow.*data-mosaic-source-mode/s', $js)) {
+    $failures[] = 'M: Manual source mode must use explicit data-mosaic-source-mode selectors';
+}
+if (!preg_match(
+    '/@container mosaic-layout-source \(min-width:\s*64rem\)[\s\S]{0,900}data-mosaic-source-mode="manual"[\s\S]{0,300}grid-template-columns/s',
+    $css,
+)) {
+    $failures[] = 'M: Manual mode must not reserve folder/sort wide-grid tracks';
+}
+if (!preg_match(
+    '/mosaic-images-sheet\[data-mosaic-source-mode="manual"\][\s\S]{0,300}margin-bottom:\s*\.5rem/s',
+    $css,
+) || !preg_match(
+    '/mosaic-images-sheet\[data-mosaic-source-mode="manual"\][\s\S]{0,500}margin-bottom:\s*\.75rem/s',
+    $css,
+)) {
+    $failures[] = 'M: Manual Images workspace must use compact vertical rhythm without blank spacer panels';
+}
+if (!preg_match(
+    '/@container mosaic-layout-source \(min-width:\s*64rem\)[\s\S]{0,500}grid-template-columns:[\s\S]{0,300}minmax\(\s*7/s',
+    $css,
+)) {
+    $failures[] = 'M: Folder wide source row contract must remain unchanged';
+}
+
 // Obsolete direct-child span rules on layout sheet upper fields should be gone
 if (preg_match(
     '/\.tab-content\s*>\s*\.tab-pane\.active\.mosaic-layout-sheet\s*>\s*\.form-section\[data-id="settings\.folder"\]\s*\{[^}]*grid-column:\s*span\s*6/s',

@@ -255,6 +255,18 @@
   .mosaic-layout-header__row--source > .form-section[data-id="settings.folder"] {
     grid-column: auto;
   }
+
+  .mosaic-images-header__row--source[data-mosaic-source-mode="manual"] {
+    grid-template-columns: minmax(10rem, 14rem) minmax(12rem, 1fr);
+  }
+
+  .mosaic-images-header__row--source[data-mosaic-source-mode="manual"] > .form-section[data-id="settings.source"] .form-select {
+    inline-size: min(100%, 13rem);
+  }
+
+  .mosaic-images-header__row--source[data-mosaic-source-mode="manual"] > .mosaic-layout-header__source-pair--recursive-fallback {
+    grid-column: 2;
+  }
 }
 
 @container mosaic-layout-source (max-width: 63.99rem) and (min-width: 36rem) {
@@ -272,6 +284,10 @@
   .mosaic-layout-header__source-pair--sort-direction {
     grid-column: 1 / -1;
   }
+
+  .mosaic-images-header__row--source[data-mosaic-source-mode="manual"] {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
 }
 
 @container mosaic-layout-source (max-width: 35.99rem) {
@@ -288,6 +304,11 @@
   .mosaic-layout-header__source-pair--recursive-fallback,
   .mosaic-layout-header__source-pair--sort-direction {
     grid-column: 1 / -1;
+  }
+
+  .mosaic-images-header__row--source[data-mosaic-source-mode="manual"] > .form-section[data-id="settings.source"] .form-select {
+    inline-size: 100%;
+    width: 100%;
   }
 }
 
@@ -545,6 +566,19 @@
 .mosaic-images-header {
   margin-bottom: 1rem;
   min-width: 0;
+}
+
+.mosaic-images-header__row--source[data-mosaic-source-mode="manual"] > .mosaic-layout-header__source-pair--recursive-fallback {
+  min-width: 0;
+}
+
+.mosaic-images-sheet[data-mosaic-source-mode="manual"] .mosaic-images-header {
+  margin-bottom: .5rem;
+}
+
+.mosaic-images-sheet[data-mosaic-source-mode="manual"] > .form-section.mosaic-manual-images,
+.mosaic-images-sheet[data-mosaic-source-mode="manual"] > .form-section[data-id="tx_anatolkinmosaicgallery_images"] {
+  margin-bottom: .75rem;
 }
 
 .mosaic-images-header__row--source > .form-section[data-id="settings.useFalCaptions"][data-mosaic-inline-checkbox="true"] {
