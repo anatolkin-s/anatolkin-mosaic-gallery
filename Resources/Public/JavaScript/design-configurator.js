@@ -205,6 +205,27 @@ const fieldControl = (section) => {
   );
 };
 
+const formEngineControlValue = (section, control) => {
+  if (!control) {
+    return '';
+  }
+
+  const visibleValue = String(control.value ?? '');
+  if (visibleValue !== '') {
+    return visibleValue;
+  }
+
+  const canonicalName = control.dataset?.formengineInputName;
+  if (!canonicalName) {
+    return visibleValue;
+  }
+
+  const hidden = [...section.querySelectorAll('input[type="hidden"][name]')]
+    .find((candidate) => candidate.name === canonicalName);
+
+  return hidden?.value ?? visibleValue;
+};
+
 const customDesign = (sections) => {
   const design = {
     preset: 'custom',
@@ -219,7 +240,7 @@ const customDesign = (sections) => {
       return;
     }
     const [path, kind] = mapping;
-    let value = control.value;
+    let value = formEngineControlValue(section, control);
     if (kind === 'boolean') {
       value = control.checked;
     } else if (kind === 'integer') {

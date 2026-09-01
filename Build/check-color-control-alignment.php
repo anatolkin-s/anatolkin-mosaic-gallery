@@ -172,6 +172,71 @@ if (preg_match(
     $failures[] = 'I: must not manually assign canonical hidden color inputs';
 }
 
+// J. Custom native color initial hydration: visible wins, hidden fallback on load
+if (!preg_match('/const formEngineControlValue = \\(section, control\\) => \\{/', $js)) {
+    $failures[] = 'J: formEngineControlValue helper must exist for Core color hydration';
+}
+if (!preg_match(
+    '/formEngineControlValue[\\s\\S]*?visibleValue !== [\'"]{2}/',
+    $js,
+)) {
+    $failures[] = 'J: visible non-empty value must take precedence over hidden canonical value';
+}
+if (!preg_match(
+    '/formEngineControlValue[\\s\\S]*?control\\.dataset\\?\\.formengineInputName/',
+    $js,
+)) {
+    $failures[] = 'J: hydration must resolve canonical name from visible FormEngine input dataset';
+}
+if (!preg_match(
+    '/formEngineControlValue[\\s\\S]*?candidate\\.name === canonicalName/',
+    $js,
+)) {
+    $failures[] = 'J: hidden fallback must match canonical field by exact name equality';
+}
+if (!preg_match('/let value = formEngineControlValue\\(section, control\\)/', $js)) {
+    $failures[] = 'J: customDesign must read canonical values via formEngineControlValue';
+}
+
+/**
+ * Mirror of formEngineControlValue for source-level fixture checks (no browser).
+ *
+ * @return non-empty-string
+ */
+function formEngineControlValueFixture(string $visibleValue, ?string $canonicalName, ?string $hiddenValue): string
+{
+    if ($visibleValue !== '') {
+        return $visibleValue;
+    }
+    if ($canonicalName === null || $canonicalName === '') {
+        return $visibleValue;
+    }
+
+    return $hiddenValue ?? $visibleValue;
+}
+
+$hydrationFixtures = [
+    ['visible' => '', 'canonical' => 'data[foo]', 'hidden' => '#DE0000', 'expected' => '#DE0000'],
+    ['visible' => '#00AA00', 'canonical' => 'data[foo]', 'hidden' => '#DE0000', 'expected' => '#00AA00'],
+    ['visible' => '', 'canonical' => 'data[foo]', 'hidden' => '', 'expected' => ''],
+];
+foreach ($hydrationFixtures as $fixture) {
+    $actual = formEngineControlValueFixture(
+        $fixture['visible'],
+        $fixture['canonical'],
+        $fixture['hidden'],
+    );
+    if ($actual !== $fixture['expected']) {
+        $failures[] = sprintf(
+            'J: hydration fixture failed visible=%s hidden=%s expected=%s got=%s',
+            $fixture['visible'] === '' ? "''" : $fixture['visible'],
+            $fixture['hidden'] === '' ? "''" : $fixture['hidden'],
+            $fixture['expected'],
+            $actual,
+        );
+    }
+}
+
 // Persisted hex defaults remain on migrated fields (compatibility)
 $defaultSamples = [
     'settings.frameColor' => '#b40000',
