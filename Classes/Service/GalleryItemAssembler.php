@@ -124,6 +124,19 @@ final class GalleryItemAssembler
     ): array {
         $aspectRatio = $this->dimensionsResolver->resolveAspectRatio($file, $fileReference);
 
+        if ($fileReference !== null) {
+            return $this->assembleManualReferenceItem(
+                $file,
+                $fileReference,
+                $idx,
+                $metadataOverrides[(string)$file->getUid()] ?? [],
+                $aspectRatio,
+                $layoutMode,
+                $enableLoadMore,
+                $itemsPerPage,
+            );
+        }
+
         try {
             $meta = $useFalCaptions ? $file->getMetaData()->get() : [];
         } catch (\Throwable) {
@@ -156,11 +169,60 @@ final class GalleryItemAssembler
             $alt = '';
         }
 
-        $renderFile = $fileReference ?? $file;
+        return [
+            'file' => $file,
+            'renderFile' => $file,
+            'fileReference' => null,
+            'metadata' => $metadata,
+            'caption' => (string)$caption,
+            'alt' => (string)$alt,
+            'hidden' => ($enableLoadMore && $idx >= $itemsPerPage),
+            'layoutSpan' => $this->dimensionsResolver->resolveLayoutSpan($file, $layoutMode, null),
+            'aspectRatio' => $aspectRatio,
+            'patternWeight' => $this->resolvePatternWeight($idx, $layoutMode),
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $fileOverride
+     * @return array<string, mixed>
+     */
+    private function assembleManualReferenceItem(
+        File $file,
+        FileReference $fileReference,
+        int $idx,
+        array $fileOverride,
+        float $aspectRatio,
+        string $layoutMode,
+        bool $enableLoadMore,
+        int $itemsPerPage,
+    ): array {
+        try {
+            $fileMeta = $file->getMetaData()->get();
+        } catch (\Throwable) {
+            $fileMeta = [];
+        }
+
+        $metadata = [
+            'title' => (string)$fileReference->getProperty('title'),
+            'caption' => (string)($fileMeta['caption'] ?? ''),
+            'description' => (string)$fileReference->getProperty('description'),
+            'alternative' => (string)$fileReference->getProperty('alternative'),
+            'copyright' => (string)($fileMeta['copyright'] ?? ''),
+        ];
+
+        $caption = ManualGalleryMetadataResolver::resolveCaption(
+            (string)$fileReference->getProperty('description'),
+            $fileOverride,
+        );
+        $alt = ManualGalleryMetadataResolver::resolveAlt(
+            (string)$fileReference->getProperty('alternative'),
+            $fileOverride,
+        );
 
         return [
             'file' => $file,
-            'renderFile' => $renderFile,
+            'renderFile' => $fileReference,
             'fileReference' => $fileReference,
             'metadata' => $metadata,
             'caption' => (string)$caption,

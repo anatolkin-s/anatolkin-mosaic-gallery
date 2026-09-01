@@ -241,6 +241,11 @@ const readReferenceIdentifier = (referenceNode, fallbackName) => {
   return value && value !== fallbackName ? value : '';
 };
 
+const isDeletedManualReference = (reference) => (
+  reference.classList.contains('t3js-inline-record-deleted')
+  || reference.classList.contains('form-irre-object--deleted')
+);
+
 const readManualFileReferences = (manualSection) => {
   const recordsContainer = findManualRecordsContainer(manualSection);
   if (!recordsContainer) {
@@ -248,8 +253,7 @@ const readManualFileReferences = (manualSection) => {
   }
 
   const references = [...recordsContainer.querySelectorAll('.form-irre-object')]
-    .filter((reference) => !reference.classList.contains('panel-hidden')
-      && !reference.classList.contains('t3-form-field-container-inline-hidden'));
+    .filter((reference) => !isDeletedManualReference(reference));
 
   const items = [];
   references.forEach((reference) => {

@@ -126,6 +126,24 @@ if ($itemAssembler !== '') {
     if (!str_contains($itemAssembler, "'renderFile'")) {
         $failures[] = 'C: Gallery items must expose renderFile';
     }
+    if (!str_contains($itemAssembler, 'ManualGalleryMetadataResolver')) {
+        $failures[] = 'C: Manual source must resolve inherited metadata via ManualGalleryMetadataResolver';
+    }
+    if (!str_contains($itemAssembler, 'assembleManualReferenceItem')) {
+        $failures[] = 'C: Manual source must use dedicated FileReference assembly path';
+    }
+    if (!preg_match('/resolveCaption\(\s*\(string\)\$fileReference->getProperty\(\'description\'\)/s', $itemAssembler)) {
+        $failures[] = 'C: Manual caption must inherit TYPO3 FileReference description';
+    }
+    if (!preg_match('/resolveAlt\(\s*\(string\)\$fileReference->getProperty\(\'alternative\'\)/s', $itemAssembler)) {
+        $failures[] = 'C: Manual alt must inherit TYPO3 FileReference alternative';
+    }
+    if (!preg_match(
+        '/\$fileReference !== null[\s\S]{0,200}assembleManualReferenceItem/s',
+        $itemAssembler,
+    )) {
+        $failures[] = 'C: Folder assembly path must remain separate from manual FileReference path';
+    }
 }
 
 // D. Rendering
@@ -445,6 +463,29 @@ if ($metadataEditorJs !== '') {
     }
     if (!str_contains($metadataEditorJs, 'dataset.mosaicLiveSource')) {
         $failures[] = 'O: applySourceMode must persist resolved live source on editor dataset';
+    }
+    if (!str_contains($metadataEditorJs, 'isDeletedManualReference')) {
+        $failures[] = 'Q: Live manual reader must distinguish deleted relations from collapsed cards';
+    }
+    if (preg_match('/panel-hidden|t3-form-field-container-inline-hidden/', $metadataEditorJs)) {
+        $failures[] = 'Q: Live manual reader must not treat collapsed/hidden inline UI state as relation removal';
+    }
+    if (!preg_match('/isDeletedManualReference[\s\S]{0,200}t3js-inline-record-deleted/s', $metadataEditorJs)
+        || !preg_match('/isDeletedManualReference[\s\S]{0,300}form-irre-object--deleted/s', $metadataEditorJs)
+    ) {
+        $failures[] = 'Q: Deleted manual relations must be detected via TYPO3 inline delete markers';
+    }
+}
+
+$manualResolverTest = $root . '/Build/test-manual-filereference-metadata-resolver.php';
+if (!is_file($manualResolverTest)) {
+    $failures[] = 'Q: Missing executable manual FileReference metadata resolver test';
+} else {
+    $resolverOutput = [];
+    $resolverExit = 0;
+    exec('php ' . escapeshellarg($manualResolverTest) . ' 2>&1', $resolverOutput, $resolverExit);
+    if ($resolverExit !== 0) {
+        $failures[] = 'Q: Manual FileReference metadata resolver test failed: ' . implode("\n", $resolverOutput);
     }
 }
 
