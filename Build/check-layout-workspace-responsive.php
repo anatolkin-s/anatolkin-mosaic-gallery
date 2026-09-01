@@ -34,16 +34,19 @@ function extractRuleBody(string $css, string $selector): string
 }
 
 $sourceRowRule = extractRuleBody($css, '.mosaic-layout-header__row--source');
+$imagesHeaderRule = extractRuleBody($css, '.mosaic-images-header');
 $settingsRowRule = extractRuleBody($css, '.mosaic-layout-header__row--settings');
 $layoutSheetRule = extractRuleBody($css, '.tab-content > .tab-pane.active.mosaic-layout-sheet');
 
-// A. source row uses contextual container-query grid (wide single row, flexible when wrapped)
+// A. source row uses parent-owned container-query grid (wide single row, flexible when wrapped)
 if ($sourceRowRule === '') {
     $failures[] = 'A: Missing .mosaic-layout-header__row--source rule';
-} elseif (!preg_match('/container-name:\s*mosaic-layout-source/s', $sourceRowRule)) {
-    $failures[] = 'A: Source row must define mosaic-layout-source container';
+} elseif (preg_match('/container-name:\s*mosaic-/s', $sourceRowRule)) {
+    $failures[] = 'A: Source row must not define its own container query context (no self-container regression)';
+} elseif ($imagesHeaderRule === '' || !preg_match('/container-name:\s*mosaic-images-source/s', $imagesHeaderRule)) {
+    $failures[] = 'A: Images header parent must define mosaic-images-source container';
 } elseif (!preg_match(
-    '/@container mosaic-layout-source \(min-width:\s*64rem\)[\s\S]{0,500}grid-template-columns:[\s\S]{0,300}minmax\(\s*7/s',
+    '/@container mosaic-images-source \(min-width:\s*64rem\)[\s\S]{0,500}grid-template-columns:[\s\S]{0,300}minmax\(\s*7/s',
     $css,
 )) {
     $failures[] = 'A: Wide source row must resolve to one compact Source/Folder + pair row via container query';
@@ -91,25 +94,25 @@ if (preg_match(
 
 // E. Folder/Source width is contextual, not globally fixed
 if (!preg_match(
-    '/@container mosaic-layout-source \(min-width:\s*64rem\)[\s\S]{0,700}settings\.source[\s\S]{0,200}inline-size:[\s\S]{0,80}11rem/s',
+    '/@container mosaic-images-source \(min-width:\s*64rem\)[\s\S]{0,700}settings\.source[\s\S]{0,200}inline-size:[\s\S]{0,80}11rem/s',
     $css,
 )) {
     $failures[] = 'E: Wide source row may compact Source select without forcing Sort/Direction to wrap';
 }
 if (!preg_match(
-    '/@container mosaic-layout-source \(max-width:\s*63\.99rem\)[\s\S]{0,700}settings\.source[\s\S]{0,200}inline-size:\s*100%/s',
+    '/@container mosaic-images-source \(max-width:\s*63\.99rem\)[\s\S]{0,700}settings\.source[\s\S]{0,200}inline-size:\s*100%/s',
     $css,
 )) {
     $failures[] = 'E: Wrapped/medium source row must restore flexible/full-width Source';
 }
 if (!preg_match(
-    '/@container mosaic-layout-source \(max-width:\s*35\.99rem\)[\s\S]{0,900}settings\.folder[\s\S]{0,200}(?:inline-size|width):\s*100%/s',
+    '/@container mosaic-images-source \(max-width:\s*35\.99rem\)[\s\S]{0,900}settings\.folder[\s\S]{0,200}(?:inline-size|width):\s*100%/s',
     $css,
 )) {
     $failures[] = 'E: Narrow source row must give Folder full available width';
 }
 if (!preg_match(
-    '/@container mosaic-layout-source \(max-width:\s*35\.99rem\)[\s\S]{0,500}grid-template-columns:\s*minmax\(0,\s*1fr\)/s',
+    '/@container mosaic-images-source \(max-width:\s*35\.99rem\)[\s\S]{0,500}grid-template-columns:\s*minmax\(0,\s*1fr\)/s',
     $css,
 )) {
     $failures[] = 'E: Narrow source row must stack Source and Folder on full-width tracks';
@@ -180,7 +183,7 @@ if (!preg_match(
     '/mosaic-layout-header__source-pair--recursive-fallback[\s\S]{0,400}grid-template-columns:\s*repeat\(2/s',
     $css,
 ) || !preg_match(
-    '/@container mosaic-layout-source[\s\S]{0,800}mosaic-layout-header__source-pair--recursive-fallback/s',
+    '/@container mosaic-images-source[\s\S]{0,800}mosaic-layout-header__source-pair--recursive-fallback/s',
     $css,
 )) {
     $failures[] = 'H2: Subfolders and Metadata fallback must share a stable narrow-width pair row';
@@ -266,7 +269,7 @@ if (!preg_match('/data-mosaic-source-mode="manual"/', $css) || !preg_match('/ima
     $failures[] = 'M: Manual source mode must use explicit data-mosaic-source-mode selectors';
 }
 if (!preg_match(
-    '/@container mosaic-layout-source \(min-width:\s*64rem\)[\s\S]{0,900}data-mosaic-source-mode="manual"[\s\S]{0,300}grid-template-columns/s',
+    '/@container mosaic-images-source \(min-width:\s*64rem\)[\s\S]{0,900}data-mosaic-source-mode="manual"[\s\S]{0,300}grid-template-columns/s',
     $css,
 )) {
     $failures[] = 'M: Manual mode must not reserve folder/sort wide-grid tracks';
@@ -281,7 +284,7 @@ if (!preg_match(
     $failures[] = 'M: Manual Images workspace must use compact vertical rhythm without blank spacer panels';
 }
 if (!preg_match(
-    '/@container mosaic-layout-source \(min-width:\s*64rem\)[\s\S]{0,500}grid-template-columns:[\s\S]{0,300}minmax\(\s*7/s',
+    '/@container mosaic-images-source \(min-width:\s*64rem\)[\s\S]{0,500}grid-template-columns:[\s\S]{0,300}minmax\(\s*7/s',
     $css,
 )) {
     $failures[] = 'M: Folder wide source row contract must remain unchanged';

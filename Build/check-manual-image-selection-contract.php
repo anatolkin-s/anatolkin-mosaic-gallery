@@ -412,6 +412,36 @@ if ($metadataEditorJs !== '') {
     if (!str_contains($metadataEditorJs, 'data-mosaic-metadata-empty-manual') && !str_contains($metadataEditorJs, 'updateEmptyStates')) {
         $failures[] = 'N: Live manual empty-state handling must differ from folder guidance';
     }
+    if (!str_contains($metadataEditorJs, 'parseFileUidLocalValue')) {
+        $failures[] = 'O: metadata-editor must normalize TYPO3 uid_local entity tokens via parseFileUidLocalValue';
+    }
+    if (!preg_match('/readUidLocal[\s\S]{0,400}querySelectorAll/s', $metadataEditorJs)) {
+        $failures[] = 'O: readUidLocal must inspect all uid_local candidates in DOM order';
+    }
+    if (!str_contains($metadataEditorJs, 'findSourceControl')) {
+        $failures[] = 'O: resolveLiveSource must prefer live FormEngine source control via findSourceControl';
+    }
+    if (!preg_match('/resolveLiveSource[\s\S]{0,500}findSourceControl/s', $metadataEditorJs)) {
+        $failures[] = 'O: resolveLiveSource must consult live source control before initial server snapshot';
+    }
+    if (!preg_match('/refreshEditor[\s\S]{0,1200}applySourceMode\(editor\)[\s\S]{0,200}observeManualRelations\(editor\)/s', $metadataEditorJs)) {
+        $failures[] = 'O: refreshEditor must apply source mode before manual relation observers';
+    }
+    if (!str_contains($metadataEditorJs, 'dataset.mosaicLiveSource')) {
+        $failures[] = 'O: applySourceMode must persist resolved live source on editor dataset';
+    }
+}
+
+$uidParserTest = $root . '/Build/test-manual-file-uid-parser.js';
+if (!is_file($uidParserTest)) {
+    $failures[] = 'O: Missing executable uid_local parser test: Build/test-manual-file-uid-parser.js';
+} else {
+    $parserOutput = [];
+    $parserExit = 0;
+    exec('node ' . escapeshellarg($uidParserTest) . ' 2>&1', $parserOutput, $parserExit);
+    if ($parserExit !== 0) {
+        $failures[] = 'O: uid_local parser executable test failed: ' . implode("\n", $parserOutput);
+    }
 }
 
 if ($locallangBe !== '') {

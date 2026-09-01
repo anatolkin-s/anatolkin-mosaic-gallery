@@ -195,8 +195,6 @@
 
 .mosaic-layout-header__row--source {
   align-items: end;
-  container-name: mosaic-layout-source;
-  container-type: inline-size;
   grid-template-columns: minmax(0, 1fr);
 }
 
@@ -239,7 +237,7 @@
   width: 100%;
 }
 
-@container mosaic-layout-source (min-width: 64rem) {
+@container mosaic-images-source (min-width: 64rem) {
   .mosaic-layout-header__row--source {
     grid-template-columns:
       minmax(7.5rem, 0.55fr)
@@ -269,7 +267,7 @@
   }
 }
 
-@container mosaic-layout-source (max-width: 63.99rem) and (min-width: 36rem) {
+@container mosaic-images-source (max-width: 63.99rem) and (min-width: 36rem) {
   .mosaic-layout-header__row--source {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
   }
@@ -290,7 +288,7 @@
   }
 }
 
-@container mosaic-layout-source (max-width: 35.99rem) {
+@container mosaic-images-source (max-width: 35.99rem) {
   .mosaic-layout-header__row--source {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -312,7 +310,7 @@
   }
 }
 
-@container mosaic-layout-source (max-width: 36rem) {
+@container mosaic-images-source (max-width: 36rem) {
   .mosaic-layout-header__row--source > .form-section[data-id="settings.folder"] {
     grid-column: 1 / -1;
   }
@@ -564,6 +562,8 @@
 }
 
 .mosaic-images-header {
+  container-name: mosaic-images-source;
+  container-type: inline-size;
   margin-bottom: 1rem;
   min-width: 0;
 }
@@ -613,7 +613,7 @@
   align-self: end;
 }
 
-@container mosaic-layout-source (max-width: 48rem) {
+@container mosaic-images-source (max-width: 48rem) {
   .mosaic-layout-header__source-pair--recursive-fallback,
   .mosaic-layout-header__source-pair--sort-direction {
     grid-template-columns: repeat(2, minmax(min(7rem, 100%), 1fr));

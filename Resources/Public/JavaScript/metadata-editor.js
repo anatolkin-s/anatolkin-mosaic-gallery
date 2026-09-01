@@ -154,13 +154,65 @@ const findManualRecordsContainer = (manualSection) => {
     ?? filesContainer.querySelector('.t3js-inline-container');
 };
 
+const parseFileUidLocalValue = (value) => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  if (typeof value === 'number' && Number.isInteger(value) && value > 0) {
+    return value;
+  }
+  const normalized = String(value).trim();
+  if (normalized === '') {
+    return null;
+  }
+  if (/^\d+$/.test(normalized)) {
+    const numericUid = Number.parseInt(normalized, 10);
+    return numericUid > 0 ? numericUid : null;
+  }
+  const entityMatch = normalized.match(/^sys_file_(\d+)$/);
+  if (!entityMatch) {
+    return null;
+  }
+  const entityUid = Number.parseInt(entityMatch[1], 10);
+  return entityUid > 0 ? entityUid : null;
+};
+
 const readUidLocal = (referenceNode) => {
-  const input = referenceNode.querySelector([
+  const candidates = referenceNode.querySelectorAll([
     'input[name*="[uid_local]"]',
     'input[data-formengine-input-name*="[uid_local]"]',
   ].join(', '));
-  const fileUid = Number.parseInt(input?.value ?? '', 10);
-  return Number.isInteger(fileUid) && fileUid > 0 ? fileUid : null;
+
+  for (const input of candidates) {
+    const fileUid = parseFileUidLocalValue(input.value);
+    if (fileUid) {
+      return fileUid;
+    }
+  }
+
+  return null;
+};
+
+const findSourceControl = (editor) => {
+  const scopes = [
+    editor.closest('.mosaic-images-sheet'),
+    editor.closest('form'),
+    editor.closest('.tab-content'),
+    document,
+  ].filter(Boolean);
+
+  for (const scope of scopes) {
+    const control = scope.querySelector(
+      '.form-section[data-id="settings.source"] select, '
+      + '.form-section[data-id="settings.source"] input, '
+      + 'select[name*="[source]"], input[name*="[source]"]',
+    );
+    if (control) {
+      return control;
+    }
+  }
+
+  return null;
 };
 
 const readReferenceName = (referenceNode) => {
@@ -218,17 +270,20 @@ const readManualFileReferences = (manualSection) => {
 };
 
 const resolveLiveSource = (editor) => {
-  const form = editor.closest('form');
-  const sourceControl = form?.querySelector(
-    '.form-section[data-id="settings.source"] select, .form-section[data-id="settings.source"] input',
-  );
-  if (!sourceControl) {
-    return editor.dataset.mosaicInitialSource === SOURCE_MANUAL ? SOURCE_MANUAL : 'folder';
+  const sourceControl = findSourceControl(editor);
+  if (sourceControl) {
+    if (sourceControl.type === 'checkbox') {
+      return sourceControl.checked ? SOURCE_MANUAL : 'folder';
+    }
+    return String(sourceControl.value ?? '').trim() === SOURCE_MANUAL ? SOURCE_MANUAL : 'folder';
   }
-  if (sourceControl.type === 'checkbox') {
-    return sourceControl.checked ? SOURCE_MANUAL : 'folder';
+
+  const imagesSheet = editor.closest('.mosaic-images-sheet');
+  if (imagesSheet?.dataset.mosaicSourceMode === SOURCE_MANUAL) {
+    return SOURCE_MANUAL;
   }
-  return String(sourceControl.value ?? '').trim() === SOURCE_MANUAL ? SOURCE_MANUAL : 'folder';
+
+  return editor.dataset.mosaicInitialSource === SOURCE_MANUAL ? SOURCE_MANUAL : 'folder';
 };
 
 const formatImageCount = (editor, count) => {
@@ -413,6 +468,7 @@ const applySourceMode = (editor) => {
   editor.dataset.mosaicLiveSource = source;
 
   if (source === SOURCE_MANUAL) {
+    editor.querySelector('[data-mosaic-manual-live-scaffold]')?.removeAttribute('hidden');
     editor.querySelector(':scope > .mosaic-metadata-items')?.setAttribute('hidden', 'hidden');
     editor.querySelector(':scope > .mosaic-metadata-table-head')?.setAttribute('hidden', 'hidden');
     syncLiveManualMetadata(editor);
@@ -653,8 +709,8 @@ const refreshEditor = (editor) => {
     editor.querySelectorAll('[data-mosaic-file-uid]').forEach((row) => initializeMetadataRow(editor, row));
   }
 
-  observeManualRelations(editor);
   applySourceMode(editor);
+  observeManualRelations(editor);
 };
 
 const initializeEditor = (editor) => {
