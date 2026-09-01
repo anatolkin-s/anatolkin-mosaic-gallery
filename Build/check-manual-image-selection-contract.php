@@ -30,6 +30,7 @@ $manualProvider = readFileOrFail($root . '/Classes/Service/ManualImageProvider.p
 $itemAssembler = readFileOrFail($root . '/Classes/Service/GalleryItemAssembler.php', $failures);
 $dimensions = readFileOrFail($root . '/Classes/Service/GalleryImageDimensionsResolver.php', $failures);
 $metadataElement = readFileOrFail($root . '/Classes/Backend/Form/Element/MetadataOverridesElement.php', $failures);
+$metadataEditorJs = readFileOrFail($root . '/Resources/Public/JavaScript/metadata-editor.js', $failures);
 $locallangBe = readFileOrFail($root . '/Resources/Private/Language/locallang_be.xlf', $failures);
 $template = readFileOrFail($root . '/Resources/Private/Templates/Gallery/List.html', $failures);
 $creationDefaults = readFileOrFail(
@@ -315,6 +316,9 @@ if ($designConfiguratorJs !== '') {
     if (preg_match('/customFileBrowser|custom-file-browser|buildManualFileSelector/i', $designConfiguratorJs)) {
         $failures[] = 'H: Manual source must not introduce a custom file browser';
     }
+    if (!str_contains($designConfiguratorJs, 'mosaic:sourcechange')) {
+        $failures[] = 'M: design-configurator must dispatch mosaic:sourcechange for live metadata source switching';
+    }
     if (!preg_match('/addCompactHelp\(metadataFallback\)/s', $designConfiguratorJs)) {
         $failures[] = 'I: Metadata fallback must use compact-help treatment';
     }
@@ -332,12 +336,60 @@ if ($designConfiguratorJs !== '') {
     }
 }
 
+if ($metadataElement !== '') {
+    if (!str_contains($metadataElement, 'ManualImageProvider')) {
+        $failures[] = 'M: MetadataOverridesElement must keep ManualImageProvider for saved records';
+    }
+    if (!preg_match('/if\s*\(\$contentUid\s*>\s*0\)/', $metadataElement)) {
+        $failures[] = 'M: ManualImageProvider must remain gated to persisted content UID > 0';
+    }
+    if (!str_contains($metadataElement, 'data-mosaic-metadata-item-template')) {
+        $failures[] = 'M: Metadata workspace must expose reusable metadata item template';
+    }
+    if (!str_contains($metadataElement, 'data-mosaic-manual-live-scaffold')) {
+        $failures[] = 'M: Manual live scaffold must exist for unsaved FormEngine bridging';
+    }
+}
+
+if ($metadataEditorJs !== '') {
+    if (!str_contains($metadataEditorJs, 'readManualFileReferences')) {
+        $failures[] = 'M: metadata-editor must read native manual FileReferences from FormEngine DOM';
+    }
+    if (!preg_match('/\[uid_local\]/', $metadataEditorJs)) {
+        $failures[] = 'M: Live manual reader must key metadata by original sys_file uid via uid_local';
+    }
+    if (!str_contains($metadataEditorJs, 'MutationObserver')) {
+        $failures[] = 'M: Live manual sync must observe native relation container mutations';
+    }
+    if (!str_contains($metadataEditorJs, 'syncLiveManualMetadata')) {
+        $failures[] = 'M: Live add/remove/reorder sync must rebuild metadata rows from native relations';
+    }
+    if (!str_contains($metadataEditorJs, 'mosaic:sourcechange')) {
+        $failures[] = 'M: metadata-editor must react to live source changes';
+    }
+    if (str_contains($metadataEditorJs, 'GalleryImageSorter') || str_contains($metadataEditorJs, '.sort(')) {
+        $failures[] = 'M: Manual live metadata must preserve native relation order without sorting';
+    }
+    if (preg_match('/auto\s*save|autosave|DataHandler|process_datamap/i', $metadataEditorJs)) {
+        $failures[] = 'M: Live manual bridge must not auto-save content elements';
+    }
+    if (preg_match('/customFileBrowser|custom-file-browser|buildManualFileSelector/i', $metadataEditorJs)) {
+        $failures[] = 'M: Live manual bridge must not introduce a custom file browser';
+    }
+    if (!str_contains($metadataEditorJs, 'buildMetadataRow')) {
+        $failures[] = 'M: Live metadata rows must clone the shared metadata item template';
+    }
+    if (!str_contains($metadataEditorJs, 'persistVisibleRows')) {
+        $failures[] = 'M: Live rebuilds must preserve stored caption/alt overrides keyed by file UID';
+    }
+}
+
 if ($locallangBe !== '') {
     if (str_contains($locallangBe, 'flexform.source.manual.hint')) {
         $failures[] = 'G: Obsolete manual-source hint label must be removed';
     }
-    if (!str_contains($locallangBe, 'Add images and save the content element to edit image metadata.')) {
-        $failures[] = 'G: Manual metadata empty state must instruct add-images/save, not select-folder';
+    if (!str_contains($locallangBe, 'Add images to edit image metadata.')) {
+        $failures[] = 'G: Manual metadata empty state must instruct add-images without save requirement';
     }
     if (!str_contains($locallangBe, 'workspace.continueToImages')) {
         $failures[] = 'G: Continue to Images label must exist';

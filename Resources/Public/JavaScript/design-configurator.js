@@ -729,6 +729,10 @@ const applySourceAwareWorkspace = (workspaces, source) => {
   imagesSheet.dataset.mosaicSourceMode = resolvedSource;
   imagesSheet.classList.toggle('mosaic-source-manual', resolvedSource === SOURCE_MANUAL);
   imagesSheet.classList.toggle('mosaic-source-folder', resolvedSource !== SOURCE_MANUAL);
+  imagesSheet.dispatchEvent(new CustomEvent('mosaic:sourcechange', {
+    bubbles: true,
+    detail: { source: resolvedSource },
+  }));
 };
 
 const bindSourceAwareWorkspace = (workspaces) => {

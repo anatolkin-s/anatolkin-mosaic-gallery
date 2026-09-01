@@ -161,7 +161,7 @@
     <trans-unit id="metadata.imageCount"><source>%s images</source><target>%s images</target></trans-unit>
     <trans-unit id="metadata.help.open"><source>Show image metadata help</source><target>Afficher l’aide sur les métadonnées d’image</target></trans-unit>
     <trans-unit id="metadata.noImages"><source>No images found in the selected folder.</source><target>Aucune image trouvée dans le dossier sélectionné.</target></trans-unit>
-    <trans-unit id="metadata.noManualImages"><source>Add images and save the content element to edit image metadata.</source><target>Ajoutez des images et enregistrez l'élément de contenu pour modifier les métadonnées.</target></trans-unit>
+    <trans-unit id="metadata.noManualImages"><source>Add images to edit image metadata.</source><target>Ajoutez des images pour modifier les métadonnées.</target></trans-unit>
     <trans-unit id="metadata.folderNotSelected"><source>Select a folder and save the content element to edit image metadata.</source><target>Sélectionnez un dossier et enregistrez l’élément de contenu pour modifier les métadonnées des images.</target></trans-unit>
     <trans-unit id="metadata.folderReadError"><source>Unable to read the selected folder.</source><target>Impossible de lire le dossier sélectionné.</target></trans-unit>
     <trans-unit id="metadata.help.title"><source>Gallery-specific image metadata</source><target>Métadonnées d’image propres à la galerie</target></trans-unit>

@@ -83,6 +83,8 @@ final class MetadataOverridesElement extends AbstractFormElement
         [$languageSummary, $languageHelp] = $this->renderLanguageContext($languageContext);
         $html = $this->renderLabel($fieldId)
             . '<div class="form-control-wrap" data-mosaic-metadata-editor'
+            . ' data-mosaic-initial-source="' . htmlspecialchars($source, ENT_QUOTES) . '"'
+            . ' data-mosaic-image-count-format="' . htmlspecialchars($this->rawLabel('metadata.imageCount'), ENT_QUOTES) . '"'
             . ' data-mosaic-legacy-captions="' . $legacyCaptionLinesJson . '"'
             . ' data-mosaic-edit-label="' . $this->label('metadata.view.edit') . '"'
             . ' data-mosaic-hide-label="' . $this->label('metadata.view.hide') . '"'
@@ -105,38 +107,22 @@ final class MetadataOverridesElement extends AbstractFormElement
             );
 
         if ($isManualSource) {
-            if ($images === []) {
-                $html .= '<p class="form-text">' . $this->label('metadata.noManualImages') . '</p>';
+            $html .= $this->renderManualMetadataWorkspace($images, $storedDocument);
+        } else {
+            $html .= $this->renderManualMetadataWorkspace([], $storedDocument, true);
+            if ($folder === '') {
+                $html .= '<p class="form-text" data-mosaic-metadata-empty-folder>'
+                    . $this->label('metadata.folderNotSelected') . '</p>';
+            } elseif ($folderError) {
+                $html .= '<div class="alert alert-warning">' . $this->label('metadata.folderReadError') . '</div>';
+            } elseif ($images === []) {
+                $html .= '<p class="form-text" data-mosaic-metadata-empty-noimages>'
+                    . $this->label('metadata.noImages') . '</p>';
             }
-        } elseif ($folder === '') {
-            $html .= '<p class="form-text">' . $this->label('metadata.folderNotSelected') . '</p>';
-        } elseif ($folderError) {
-            $html .= '<div class="alert alert-warning">' . $this->label('metadata.folderReadError') . '</div>';
-        } elseif ($images === []) {
-            $html .= '<p class="form-text">' . $this->label('metadata.noImages') . '</p>';
         }
 
-        if ($images !== []) {
-            $html .= '<div class="mosaic-metadata-table-head" aria-hidden="true"><span></span><span>'
-                . $this->label('metadata.filename') . '</span><span>' . $this->label('metadata.caption')
-                . '</span><span>' . $this->label('metadata.alternative') . '</span></div>'
-                . '<div class="mosaic-metadata-items">';
-
-            foreach ($images as $file) {
-                $uid = $file->getUid();
-                $entry = $storedDocument['files'][(string)$uid] ?? [];
-                $caption = $this->normalizeProperty($entry['caption'] ?? null, ['inherit', 'custom']);
-                $alt = $this->normalizeProperty($entry['alt'] ?? null, ['inherit', 'custom', 'empty']);
-                $html .= $this->renderItem(
-                    $uid,
-                    (string)$file->getName(),
-                    (string)$file->getIdentifier(),
-                    $this->getPreviewUrl($file),
-                    $caption,
-                    $alt,
-                );
-            }
-            $html .= '</div>';
+        if (!$isManualSource && $images !== []) {
+            $html .= $this->renderMetadataItems($images, $storedDocument);
         }
 
         $html .= '</div>';
@@ -521,6 +507,79 @@ final class MetadataOverridesElement extends AbstractFormElement
             return ['mode' => 'inherit', 'value' => ''];
         }
         return ['mode' => $property['mode'], 'value' => (string)($property['value'] ?? '')];
+    }
+
+    /** @param list<File> $images @param array{schemaVersion: int, files: array<string, mixed>} $storedDocument */
+    private function renderManualMetadataWorkspace(array $images, array $storedDocument, bool $hidden = false): string
+    {
+        $html = '<div data-mosaic-manual-live-scaffold' . ($hidden ? ' hidden' : '') . '>';
+        $html .= $this->renderMetadataTableHead();
+        $html .= '<div class="mosaic-metadata-items">';
+        foreach ($images as $file) {
+            $uid = $file->getUid();
+            $entry = $storedDocument['files'][(string)$uid] ?? [];
+            $caption = $this->normalizeProperty($entry['caption'] ?? null, ['inherit', 'custom']);
+            $alt = $this->normalizeProperty($entry['alt'] ?? null, ['inherit', 'custom', 'empty']);
+            $html .= $this->renderItem(
+                $uid,
+                (string)$file->getName(),
+                (string)$file->getIdentifier(),
+                $this->getPreviewUrl($file),
+                $caption,
+                $alt,
+            );
+        }
+        $html .= '</div>';
+        $html .= $this->renderItemTemplate();
+        $html .= '<p class="form-text" data-mosaic-metadata-empty-manual'
+            . ($images === [] ? '' : ' hidden')
+            . '>' . $this->label('metadata.noManualImages') . '</p>';
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    /** @param list<File> $images @param array{schemaVersion: int, files: array<string, mixed>} $storedDocument */
+    private function renderMetadataItems(array $images, array $storedDocument): string
+    {
+        $html = $this->renderMetadataTableHead() . '<div class="mosaic-metadata-items">';
+        foreach ($images as $file) {
+            $uid = $file->getUid();
+            $entry = $storedDocument['files'][(string)$uid] ?? [];
+            $caption = $this->normalizeProperty($entry['caption'] ?? null, ['inherit', 'custom']);
+            $alt = $this->normalizeProperty($entry['alt'] ?? null, ['inherit', 'custom', 'empty']);
+            $html .= $this->renderItem(
+                $uid,
+                (string)$file->getName(),
+                (string)$file->getIdentifier(),
+                $this->getPreviewUrl($file),
+                $caption,
+                $alt,
+            );
+        }
+
+        return $html . '</div>';
+    }
+
+    private function renderMetadataTableHead(): string
+    {
+        return '<div class="mosaic-metadata-table-head" aria-hidden="true"><span></span><span>'
+            . $this->label('metadata.filename') . '</span><span>' . $this->label('metadata.caption')
+            . '</span><span>' . $this->label('metadata.alternative') . '</span></div>';
+    }
+
+    private function renderItemTemplate(): string
+    {
+        return '<template data-mosaic-metadata-item-template>'
+            . $this->renderItem(
+                0,
+                '',
+                '',
+                '',
+                ['mode' => 'inherit', 'value' => ''],
+                ['mode' => 'inherit', 'value' => ''],
+            )
+            . '</template>';
     }
 
     /** @param array{mode: string, value: string} $caption @param array{mode: string, value: string} $alt */
