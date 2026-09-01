@@ -21,7 +21,7 @@ const createDocument = (value) => {
   return { schemaVersion: 1, files: {} };
 };
 
-const getViewHost = (editor) => editor.querySelector('.mosaic-metadata-workspace') ?? editor;
+const getViewHost = (editor) => editor;
 
 const updateInputState = (row, property) => {
   const mode = row.querySelector(`[data-mosaic-mode][data-mosaic-property="${property}"]`);

@@ -82,7 +82,7 @@ final class MetadataOverridesElement extends AbstractFormElement
         );
         [$languageSummary, $languageHelp] = $this->renderLanguageContext($languageContext);
         $html = $this->renderLabel($fieldId)
-            . '<div class="form-control-wrap" data-mosaic-metadata-editor'
+            . '<div class="form-control-wrap" data-mosaic-metadata-editor data-mosaic-images-view="table"'
             . ' data-mosaic-initial-source="' . htmlspecialchars($source, ENT_QUOTES) . '"'
             . ' data-mosaic-image-count-format="' . htmlspecialchars($this->rawLabel('metadata.imageCount'), ENT_QUOTES) . '"'
             . ' data-mosaic-legacy-captions="' . $legacyCaptionLinesJson . '"'
@@ -399,7 +399,7 @@ final class MetadataOverridesElement extends AbstractFormElement
             . '<p>' . $this->label('metadata.help.filelist') . '</p>'
             . '<p>' . $this->label('metadata.help.multilingual') . '</p>' . $languageHelp;
 
-        return '<div class="mosaic-metadata-workspace" data-mosaic-images-view="table">'
+        return '<div class="mosaic-metadata-workspace">'
             . '<div class="mosaic-metadata-workspace__top"><div><strong>' . $this->label('metadata.title') . '</strong> '
             . '<span class="badge text-bg-primary">' . $this->label('metadata.recommended') . '</span></div>'
             . '<div class="btn-group btn-group-sm" role="toolbar" aria-label="' . $this->label('metadata.view.label') . '">'

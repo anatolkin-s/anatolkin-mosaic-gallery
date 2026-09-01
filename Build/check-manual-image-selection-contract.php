@@ -406,8 +406,24 @@ if ($metadataEditorJs !== '') {
     if (!str_contains($metadataEditorJs, 'bindRecordsObserver')) {
         $failures[] = 'N: metadata-editor must rebind records observers when _records appears or is replaced';
     }
-    if (!str_contains($metadataEditorJs, 'getViewHost') || !preg_match('/getViewHost\(editor\)[\s\S]{0,120}dataset\.mosaicImagesView/s', $metadataEditorJs)) {
-        $failures[] = 'N: Grid/List/Table view state must use one canonical host element';
+    if (!preg_match('/const getViewHost = \(editor\) => editor;/', $metadataEditorJs)) {
+        $failures[] = 'P: getViewHost must resolve canonical metadata editor root as view-state owner';
+    }
+    if (!preg_match('/getViewHost\(editor\)[\s\S]{0,120}dataset\.mosaicImagesView/s', $metadataEditorJs)) {
+        $failures[] = 'P: applyView must write data-mosaic-images-view to the canonical editor root';
+    }
+    if (!preg_match('/data-mosaic-metadata-editor[^>]*data-mosaic-images-view="table"/s', $metadataElement)) {
+        $failures[] = 'P: Metadata editor root must own initial data-mosaic-images-view before JS init';
+    }
+    if (preg_match('/class="mosaic-metadata-workspace"[^>]*data-mosaic-images-view/s', $metadataElement)) {
+        $failures[] = 'P: mosaic-metadata-workspace must not compete as view-state owner';
+    }
+    $formLayoutCss = readFileOrFail($root . '/Resources/Public/Backend/Css/form-layout.css', $failures);
+    if ($formLayoutCss !== '' && !preg_match(
+        '/\[data-mosaic-images-view="grid"\][\s\S]{0,120}\.mosaic-metadata-items/s',
+        $formLayoutCss,
+    )) {
+        $failures[] = 'P: CSS view selectors must target metadata descendants of canonical editor root';
     }
     if (!str_contains($metadataEditorJs, 'data-mosaic-metadata-empty-manual') && !str_contains($metadataEditorJs, 'updateEmptyStates')) {
         $failures[] = 'N: Live manual empty-state handling must differ from folder guidance';
