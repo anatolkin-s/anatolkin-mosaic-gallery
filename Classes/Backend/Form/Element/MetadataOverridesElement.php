@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace Anatolkin\MosaicGallery\Backend\Form\Element;
 
 use Anatolkin\MosaicGallery\Service\FolderImageProvider;
+use Anatolkin\MosaicGallery\Service\GalleryFlexFormSourceReader;
 use Anatolkin\MosaicGallery\Service\GalleryImageSorter;
+use Anatolkin\MosaicGallery\Service\ManualImageProvider;
 use TYPO3\CMS\Backend\Form\Element\AbstractFormElement;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Database\Connection;
@@ -12,7 +14,6 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Page\JavaScriptModuleInstruction;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\ProcessedFile;
-use TYPO3\CMS\Core\Service\FlexFormService;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Core\Site\SiteFinder;
@@ -30,16 +31,36 @@ final class MetadataOverridesElement extends AbstractFormElement
         $fieldId = StringUtility::getUniqueId('formengine-input-');
         $fieldName = (string)$parameterArray['itemFormElName'];
         $storedDocument = $this->decodeDocument((string)($parameterArray['itemFormElValue'] ?? ''));
-        [$folder, $recursive, $sortBy, $sortDir, $legacyCaptions, $useFalCaptions] = $this->readSettings(
-            $this->data['databaseRow']['pi_flexform'] ?? '',
-        );
+        $gallerySettings = GeneralUtility::makeInstance(GalleryFlexFormSourceReader::class)
+            ->readSettings($this->data['databaseRow']['pi_flexform'] ?? '');
+        $source = $gallerySettings['source'];
+        $folder = $gallerySettings['folder'];
+        $recursive = $gallerySettings['recursive'];
+        $sortBy = $gallerySettings['sortBy'];
+        $sortDir = $gallerySettings['sortDir'];
+        $legacyCaptions = $gallerySettings['captions'];
+        $useFalCaptions = $gallerySettings['useFalCaptions'];
+        $isManualSource = $source === GalleryFlexFormSourceReader::SOURCE_MANUAL;
         $legacyCaptionLines = $this->splitLegacyCaptionLines($legacyCaptions);
         $legacyCaptionsConverted = ($storedDocument['legacyCaptionsConverted'] ?? false) === true;
         $languageContext = $this->resolveLanguageContext();
+        $contentUid = (int)$this->scalarValue($this->data['databaseRow']['uid'] ?? 0);
 
         $images = [];
         $folderError = false;
-        if ($folder !== '') {
+        if ($isManualSource) {
+            if ($contentUid > 0) {
+                $fileReferences = GeneralUtility::makeInstance(ManualImageProvider::class)
+                    ->getFileReferences($contentUid);
+                foreach ($fileReferences as $fileReference) {
+                    try {
+                        $images[] = $fileReference->getOriginalFile();
+                    } catch (\Throwable) {
+                        // Skip broken relations without blocking the metadata workspace.
+                    }
+                }
+            }
+        } elseif ($folder !== '') {
             try {
                 $images = GeneralUtility::makeInstance(FolderImageProvider::class)->getImages($folder, $recursive);
                 if ($sortBy !== 'random') {
@@ -80,15 +101,22 @@ final class MetadataOverridesElement extends AbstractFormElement
                 max(0, count($legacyCaptionLines) - count($images)),
                 $folder !== '' && !$folderError && $images !== [],
                 $useFalCaptions,
+                $isManualSource,
             );
 
-        if ($folder === '') {
+        if ($isManualSource) {
+            if ($images === []) {
+                $html .= '<p class="form-text">' . $this->label('metadata.noManualImages') . '</p>';
+            }
+        } elseif ($folder === '') {
             $html .= '<p class="form-text">' . $this->label('metadata.folderNotSelected') . '</p>';
         } elseif ($folderError) {
             $html .= '<div class="alert alert-warning">' . $this->label('metadata.folderReadError') . '</div>';
         } elseif ($images === []) {
             $html .= '<p class="form-text">' . $this->label('metadata.noImages') . '</p>';
-        } else {
+        }
+
+        if ($images !== []) {
             $html .= '<div class="mosaic-metadata-table-head" aria-hidden="true"><span></span><span>'
                 . $this->label('metadata.filename') . '</span><span>' . $this->label('metadata.caption')
                 . '</span><span>' . $this->label('metadata.alternative') . '</span></div>'
@@ -409,51 +437,6 @@ final class MetadataOverridesElement extends AbstractFormElement
             . $this->label($labelKey) . '</button>';
     }
 
-    /** @return array{0: string, 1: bool, 2: string, 3: string, 4: string, 5: bool} */
-    private function readSettings(mixed $flexForm): array
-    {
-        if (is_string($flexForm) && trim($flexForm) !== '') {
-            try {
-                $flexForm = GeneralUtility::makeInstance(FlexFormService::class)
-                    ->convertFlexFormContentToArray($flexForm);
-            } catch (\Throwable) {
-                return ['', false, 'name', 'asc', '', true];
-            }
-        }
-
-        if (!is_array($flexForm)) {
-            return ['', false, 'name', 'asc', '', true];
-        }
-
-        $folder = $flexForm['settings']['folder']
-            ?? $flexForm['data']['sDEF']['lDEF']['settings.folder']['vDEF']
-            ?? '';
-        $recursive = $flexForm['settings']['recursive']
-            ?? $flexForm['data']['sDEF']['lDEF']['settings.recursive']['vDEF']
-            ?? false;
-        $sortBy = $flexForm['settings']['sortBy']
-            ?? $flexForm['data']['sDEF']['lDEF']['settings.sortBy']['vDEF']
-            ?? 'name';
-        $sortDir = $flexForm['settings']['sortDir']
-            ?? $flexForm['data']['sDEF']['lDEF']['settings.sortDir']['vDEF']
-            ?? 'asc';
-        $captions = $flexForm['settings']['captions']
-            ?? $flexForm['data']['sDEF']['lDEF']['settings.captions']['vDEF']
-            ?? '';
-        $useFalCaptions = $flexForm['settings']['useFalCaptions']
-            ?? $flexForm['data']['sDEF']['lDEF']['settings.useFalCaptions']['vDEF']
-            ?? true;
-
-        return [
-            (string)$this->scalarValue($folder),
-            (bool)$this->scalarValue($recursive),
-            (string)$this->scalarValue($sortBy),
-            (string)$this->scalarValue($sortDir),
-            (string)$this->scalarValue($captions),
-            (bool)$this->scalarValue($useFalCaptions),
-        ];
-    }
-
     /** @return list<string> */
     private function splitLegacyCaptionLines(string $captions): array
     {
@@ -468,8 +451,13 @@ final class MetadataOverridesElement extends AbstractFormElement
         int $unmatchedLineCount,
         bool $hasImages,
         bool $useFalCaptions,
+        bool $isManualSource,
     ): string
     {
+        if ($isManualSource) {
+            return '';
+        }
+
         if ($converted) {
             return '<div class="alert alert-success mosaic-metadata-status">'
                 . $this->label('metadata.conversion.complete') . '</div>';

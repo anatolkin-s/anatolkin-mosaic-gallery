@@ -8,6 +8,14 @@ services:
 
   Anatolkin\MosaicGallery\Service\FolderImageProvider: ~
 
+  Anatolkin\MosaicGallery\Service\ManualImageProvider: ~
+
+  Anatolkin\MosaicGallery\Service\GalleryFlexFormSourceReader: ~
+
+  Anatolkin\MosaicGallery\Service\GalleryImageDimensionsResolver: ~
+
+  Anatolkin\MosaicGallery\Service\GalleryItemAssembler: ~
+
   Anatolkin\MosaicGallery\Service\DesignPresetResolver: ~
 
   Anatolkin\MosaicGallery\Service\GalleryMetadataOverrideResolver: ~

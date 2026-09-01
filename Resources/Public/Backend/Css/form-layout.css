@@ -444,6 +444,22 @@
   margin-bottom: 1rem;
 }
 
+.mosaic-images-sheet > .form-section.mosaic-manual-images,
+.mosaic-images-sheet > .form-section[data-id="tx_anatolkinmosaicgallery_images"] {
+  margin-bottom: 1rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.mosaic-images-sheet > .form-section.mosaic-manual-images :is(
+  .form-control-wrap,
+  .formengine-field-item,
+  .t3js-formengine-field-item
+) {
+  max-width: 100%;
+  min-width: 0;
+}
+
 .mosaic-legacy-captions-disclosure {
   background: var(--typo3-surface-container-low, rgba(0, 0, 0, .025));
   border: 1px solid var(--typo3-component-border-color, #d7d7d7);

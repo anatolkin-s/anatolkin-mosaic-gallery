@@ -533,6 +533,17 @@ const consolidateWorkspaces = (editor) => {
   const form = editor.closest('form');
   const metadataEditor = form?.querySelector('[data-mosaic-metadata-editor]');
   const metadataSection = metadataEditor?.closest('.form-section');
+  const manualImagesSection = form?.querySelector(
+    '.form-section[data-id="tx_anatolkinmosaicgallery_images"]',
+  );
+  if (manualImagesSection) {
+    manualImagesSection.classList.add('mosaic-manual-images');
+    if (metadataSection) {
+      imagesSheet.insertBefore(manualImagesSection, metadataSection);
+    } else {
+      imagesSheet.prepend(manualImagesSection);
+    }
+  }
   const captionsSection = layoutSheet.querySelector(':scope > .form-section[data-id="settings.captions"]');
   if (metadataSection) {
     imagesSheet.append(metadataSection);

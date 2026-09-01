@@ -17,8 +17,13 @@
                   <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.source.folder</label>
                   <value>folder</value>
                 </numIndex>
+                <numIndex index="1">
+                  <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.source.manual</label>
+                  <value>manual</value>
+                </numIndex>
               </items>
               <default>folder</default>
+              <onChange>reload</onChange>
             </config>
           </settings.source>
 
@@ -37,6 +42,7 @@
 
           <settings.recursive>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.recursive</label>
+            <displayCond>FIELD:settings.source:=:folder</displayCond>
             <config>
               <type>check</type>
               <default>1</default>
@@ -45,6 +51,7 @@
 
           <settings.sortBy>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.sortBy</label>
+            <displayCond>FIELD:settings.source:=:folder</displayCond>
             <config>
               <type>select</type>
               <renderType>selectSingle</renderType>
@@ -68,6 +75,7 @@
 
           <settings.sortDir>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.sortDir</label>
+            <displayCond>FIELD:settings.source:=:folder</displayCond>
             <config>
               <type>select</type>
               <renderType>selectSingle</renderType>
@@ -237,6 +245,7 @@
           <settings.captions>
             <label>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:images.quickCaptions</label>
             <description>LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.captions.help</description>
+            <displayCond>FIELD:settings.source:=:folder</displayCond>
             <config>
               <type>text</type>
               <cols>40</cols>

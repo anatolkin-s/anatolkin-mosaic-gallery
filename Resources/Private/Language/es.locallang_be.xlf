@@ -61,6 +61,11 @@
     <trans-unit id="design.preview.sampleCaption"><source>Sample caption</source><target>Leyenda de ejemplo</target></trans-unit>
     <trans-unit id="flexform.source"><source>Source</source><target>Origen</target></trans-unit>
     <trans-unit id="flexform.source.folder"><source>Folder (fileadmin)</source><target>Carpeta (fileadmin)</target></trans-unit>
+    <trans-unit id="flexform.source.manual"><source>Manual images</source><target>Imágenes manuales</target></trans-unit>
+    <trans-unit id="flexform.source.manual.help"><source>Select individual images, crop each one, and drag them into the order you want. Folder sorting options do not apply in this mode.</source><target>Seleccione imágenes individuales, recórtelas y arrástrelas para definir el orden. Las opciones de ordenación de carpeta no se aplican en este modo.</target></trans-unit>
+    <trans-unit id="manualImages.title"><source>Manual images</source><target>Imágenes manuales</target></trans-unit>
+    <trans-unit id="manualImages.description"><source>Select gallery images individually. Use the crop editor on each file reference and drag images to set the display order.</source><target>Seleccione imágenes de la galería individualmente. Use el editor de recorte en cada referencia de archivo y arrastre las imágenes para definir el orden de visualización.</target></trans-unit>
+    <trans-unit id="manualImages.select"><source>Add images</source><target>Añadir imágenes</target></trans-unit>
     <trans-unit id="flexform.folder"><source>Folder</source><target>Carpeta</target></trans-unit>
     <trans-unit id="flexform.recursive"><source>Subfolders</source><target>Subcarpetas</target></trans-unit>
     <trans-unit id="flexform.sortBy"><source>Sort by</source><target>Ordenar por</target></trans-unit>
@@ -155,6 +160,7 @@
     <trans-unit id="metadata.imageCount"><source>%s images</source><target>%s imágenes</target></trans-unit>
     <trans-unit id="metadata.help.open"><source>Show image metadata help</source><target>Mostrar ayuda sobre metadatos de imagen</target></trans-unit>
     <trans-unit id="metadata.noImages"><source>No images found in the selected folder.</source><target>No se encontraron imágenes en la carpeta seleccionada.</target></trans-unit>
+    <trans-unit id="metadata.noManualImages"><source>No manual images selected.</source><target>No hay imágenes manuales seleccionadas.</target></trans-unit>
     <trans-unit id="metadata.folderNotSelected"><source>Select a folder and save the content element to edit image metadata.</source><target>Seleccione una carpeta y guarde el elemento de contenido para editar los metadatos de las imágenes.</target></trans-unit>
     <trans-unit id="metadata.folderReadError"><source>Unable to read the selected folder.</source><target>No se puede leer la carpeta seleccionada.</target></trans-unit>
     <trans-unit id="metadata.help.title"><source>Gallery-specific image metadata</source><target>Metadatos de imagen específicos de la galería</target></trans-unit>

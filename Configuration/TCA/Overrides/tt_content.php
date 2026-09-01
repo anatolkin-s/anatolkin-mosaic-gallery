@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 defined('TYPO3') || die();
 
+use Anatolkin\MosaicGallery\Backend\Form\DisplayCondition\ManualImageSourceCondition;
+use Anatolkin\MosaicGallery\Service\ManualImageProvider;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
@@ -16,6 +18,7 @@ use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
     $pluginGroupLabel = 'LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:plugin.group';
     $flexForm = 'FILE:EXT:anatolkin_mosaic_gallery/Configuration/FlexForms/MosaicGallery.xml';
     $metadataOverridesField = 'tx_anatolkinmosaicgallery_metadata_overrides';
+    $manualImagesField = ManualImageProvider::FIELD_NAME;
     $typo3Version = new Typo3Version();
 
     ExtensionManagementUtility::addTCAcolumns('tt_content', [
@@ -24,6 +27,23 @@ use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
             'config' => [
                 'type' => 'user',
                 'renderType' => 'mosaicGalleryMetadataOverrides',
+            ],
+        ],
+        $manualImagesField => [
+            'label' => 'LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:manualImages.title',
+            'description' => 'LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:manualImages.description',
+            'displayCond' => 'USER:' . ManualImageSourceCondition::class . '->isManualImageSource',
+            'config' => [
+                'type' => 'file',
+                'allowed' => 'common-image-types',
+                'maxitems' => 200,
+                'appearance' => [
+                    'useSortable' => true,
+                    'createNewRelationLinkTitle' => 'LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:manualImages.select',
+                ],
+                'behaviour' => [
+                    'allowLanguageSynchronization' => true,
+                ],
             ],
         ],
     ]);
@@ -53,14 +73,20 @@ use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
     if ($typo3Version->getMajorVersion() >= 14) {
         ExtensionManagementUtility::addToAllTCAtypes(
             'tt_content',
-            $metadataOverridesField,
+            $manualImagesField,
             $pluginSignature,
             'after:pi_flexform',
+        );
+        ExtensionManagementUtility::addToAllTCAtypes(
+            'tt_content',
+            $metadataOverridesField,
+            $pluginSignature,
+            'after:' . $manualImagesField,
         );
     } else {
         ExtensionManagementUtility::addToAllTCAtypes(
             'tt_content',
-            '--div--;' . $pluginTitle . ',pi_flexform,' . $metadataOverridesField,
+            '--div--;' . $pluginTitle . ',pi_flexform,' . $manualImagesField . ',' . $metadataOverridesField,
             $pluginSignature,
             'after:palette:headers',
         );
@@ -75,11 +101,6 @@ use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
             $GLOBALS['TCA']['tt_content']['columns']['list_type']['config']['items'] = [];
         }
 
-        // Keep both legacy signatures in static TCA so DataHandler continues to
-        // accept persisted values. FormEngine UI visibility is filtered request-
-        // specifically by MosaicGalleryLegacyListTypeVisibilityProvider.
-        // Technical group mosaicgallery_legacy is removed from the New Content
-        // Wizard via mod.wizards.newContentElement.wizardItems.removeItems.
         foreach (['mosaicgallery_pi1', 'anatolkinmosaicgallery_pi1'] as $legacyListType) {
             $GLOBALS['TCA']['tt_content']['columns']['list_type']['config']['items'][] = [
                 'label' => 'LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:plugin.legacyCompatibility',
@@ -88,7 +109,7 @@ use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
                 'group' => 'mosaicgallery_legacy',
             ];
             $GLOBALS['TCA']['tt_content']['types']['list']['subtypes_addlist'][$legacyListType]
-                = 'pi_flexform,' . $metadataOverridesField;
+                = 'pi_flexform,' . $manualImagesField . ',' . $metadataOverridesField;
             ExtensionManagementUtility::addPiFlexFormValue($legacyListType, $flexForm);
         }
     }

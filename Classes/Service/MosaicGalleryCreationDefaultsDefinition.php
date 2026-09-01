@@ -12,7 +12,7 @@ final class MosaicGalleryCreationDefaultsDefinition
 {
     /** @var array<string, array{sheet: string, field: string, kind: string, allowed?: list<string>, min?: int, max?: int, allowEmpty?: bool}> */
     private const FIELD_MAP = [
-        'source' => ['sheet' => 'sDEF', 'field' => 'settings.source', 'kind' => 'select', 'allowed' => ['folder']],
+        'source' => ['sheet' => 'sDEF', 'field' => 'settings.source', 'kind' => 'select', 'allowed' => ['folder', 'manual']],
         'folder' => ['sheet' => 'sDEF', 'field' => 'settings.folder', 'kind' => 'string'],
         'recursive' => ['sheet' => 'sDEF', 'field' => 'settings.recursive', 'kind' => 'boolean'],
         'sortBy' => ['sheet' => 'sDEF', 'field' => 'settings.sortBy', 'kind' => 'select', 'allowed' => ['name', 'mtime', 'random']],

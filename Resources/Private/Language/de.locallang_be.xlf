@@ -61,6 +61,11 @@
     <trans-unit id="design.preview.sampleCaption"><source>Sample caption</source><target>Beispielbeschriftung</target></trans-unit>
     <trans-unit id="flexform.source"><source>Source</source><target>Quelle</target></trans-unit>
     <trans-unit id="flexform.source.folder"><source>Folder (fileadmin)</source><target>Ordner (fileadmin)</target></trans-unit>
+    <trans-unit id="flexform.source.manual"><source>Manual images</source><target>Manuelle Bilder</target></trans-unit>
+    <trans-unit id="flexform.source.manual.help"><source>Select individual images, crop each one, and drag them into the order you want. Folder sorting options do not apply in this mode.</source><target>Wählen Sie einzelne Bilder aus, schneiden Sie jedes zu und ordnen Sie sie per Drag-and-drop. Ordner-Sortieroptionen gelten in diesem Modus nicht.</target></trans-unit>
+    <trans-unit id="manualImages.title"><source>Manual images</source><target>Manuelle Bilder</target></trans-unit>
+    <trans-unit id="manualImages.description"><source>Select gallery images individually. Use the crop editor on each file reference and drag images to set the display order.</source><target>Wählen Sie Galeriebilder einzeln aus. Nutzen Sie den Zuschnitt-Editor je Dateireferenz und ordnen Sie die Bilder per Drag-and-drop.</target></trans-unit>
+    <trans-unit id="manualImages.select"><source>Add images</source><target>Bilder hinzufügen</target></trans-unit>
     <trans-unit id="flexform.folder"><source>Folder</source><target>Ordner</target></trans-unit>
     <trans-unit id="flexform.recursive"><source>Subfolders</source><target>Unterordner</target></trans-unit>
     <trans-unit id="flexform.sortBy"><source>Sort by</source><target>Sortieren nach</target></trans-unit>
@@ -155,6 +160,7 @@
     <trans-unit id="metadata.imageCount"><source>%s images</source><target>%s Bilder</target></trans-unit>
     <trans-unit id="metadata.help.open"><source>Show image metadata help</source><target>Hilfe zu Bildmetadaten anzeigen</target></trans-unit>
     <trans-unit id="metadata.noImages"><source>No images found in the selected folder.</source><target>Im ausgewählten Ordner wurden keine Bilder gefunden.</target></trans-unit>
+    <trans-unit id="metadata.noManualImages"><source>No manual images selected.</source><target>Keine manuellen Bilder ausgewählt.</target></trans-unit>
     <trans-unit id="metadata.folderNotSelected"><source>Select a folder and save the content element to edit image metadata.</source><target>Wählen Sie einen Ordner aus und speichern Sie das Inhaltselement, um Bildmetadaten zu bearbeiten.</target></trans-unit>
     <trans-unit id="metadata.folderReadError"><source>Unable to read the selected folder.</source><target>Der ausgewählte Ordner kann nicht gelesen werden.</target></trans-unit>
     <trans-unit id="metadata.help.title"><source>Gallery-specific image metadata</source><target>Galeriespezifische Bildmetadaten</target></trans-unit>

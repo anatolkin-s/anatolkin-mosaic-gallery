@@ -62,6 +62,11 @@
       <trans-unit id="design.preview.sampleCaption"><source>Sample caption</source></trans-unit>
       <trans-unit id="flexform.source"><source>Source</source></trans-unit>
       <trans-unit id="flexform.source.folder"><source>Folder (fileadmin)</source></trans-unit>
+      <trans-unit id="flexform.source.manual"><source>Manual images</source></trans-unit>
+      <trans-unit id="flexform.source.manual.help"><source>Select individual images, crop each one, and drag them into the order you want. Folder sorting options do not apply in this mode.</source></trans-unit>
+      <trans-unit id="manualImages.title"><source>Manual images</source></trans-unit>
+      <trans-unit id="manualImages.description"><source>Select gallery images individually. Use the crop editor on each file reference and drag images to set the display order.</source></trans-unit>
+      <trans-unit id="manualImages.select"><source>Add images</source></trans-unit>
       <trans-unit id="flexform.folder"><source>Folder</source></trans-unit>
       <trans-unit id="flexform.recursive"><source>Subfolders</source></trans-unit>
       <trans-unit id="flexform.sortBy"><source>Sort by</source></trans-unit>
@@ -156,6 +161,7 @@
       <trans-unit id="metadata.imageCount"><source>%s images</source></trans-unit>
       <trans-unit id="metadata.help.open"><source>Show image metadata help</source></trans-unit>
       <trans-unit id="metadata.noImages"><source>No images found in the selected folder.</source></trans-unit>
+      <trans-unit id="metadata.noManualImages"><source>No manual images selected.</source></trans-unit>
       <trans-unit id="metadata.folderNotSelected"><source>Select a folder and save the content element to edit image metadata.</source></trans-unit>
       <trans-unit id="metadata.folderReadError"><source>Unable to read the selected folder.</source></trans-unit>
       <trans-unit id="metadata.help.title"><source>Gallery-specific image metadata</source></trans-unit>
