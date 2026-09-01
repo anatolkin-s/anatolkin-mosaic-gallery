@@ -138,11 +138,54 @@ if (!preg_match(
     $failures[] = 'Existing Custom field intrinsic grid (min 10rem) must remain unchanged';
 }
 
+// Named preset inner grid responds to each group's available width
+$presetGridMatch = [];
+preg_match(
+    '/\.mosaic-design-configurator:not\(\.is-custom\)\s+\.mosaic-design-configurator__grid\s*\{([^}]+)\}/s',
+    $css,
+    $presetGridMatch,
+);
+$presetGridRule = $presetGridMatch[1] ?? '';
+if ($presetGridRule === '') {
+    $failures[] = 'Named preset inner grid must use a scoped intrinsic auto-fit rule';
+} elseif (!preg_match(
+    '/grid-template-columns\s*:\s*repeat\(\s*auto-fit\s*,\s*minmax\s*\(\s*min\s*\(\s*11rem/',
+    $presetGridRule,
+)) {
+    $failures[] = 'Named preset inner grid must use intrinsic auto-fit with min 11rem for color actions';
+} elseif (preg_match('/grid-template-columns\s*:\s*repeat\(\s*[234]\s*,/', $presetGridRule)) {
+    $failures[] = 'Named preset inner grid must not use fixed repeat(2|3|4) columns';
+}
+
+if (preg_match(
+    '/@container[^{]+\{[^}]*\.mosaic-design-configurator__grid[^}]*grid-template-columns\s*:\s*repeat\(\s*[234]\s*,/s',
+    $css,
+)) {
+    $failures[] = 'Named preset __grid must not rely on outer @container fixed column steps';
+}
+
+if (preg_match('/\.mosaic-design-configurator__grid\s*\{[^}]*grid-template-columns\s*:\s*repeat\(\s*4\s*,/', $css)) {
+    $failures[] = 'Global __grid must not keep a fixed repeat(4) preset fallback';
+}
+
 // Preset controls remain independently marked/aligned
 if (!str_contains($element, 'data-mosaic-color-control-row="preset"')
+    || !str_contains($element, 'data-design-color-picker')
+    || !str_contains($element, 'data-design-eyedropper')
+    || !str_contains($element, 'data-design-reset-field')
     || !preg_match('/\.mosaic-design-configurator__control[^{]*\{[\s\S]*?display:\s*flex/s', $css)
 ) {
     $failures[] = 'Preset color controls must remain extension-owned and flex-aligned';
+}
+
+if (preg_match(
+    '/@container[^{]+\{[^}]*(?:data-design-color-picker|data-design-eyedropper|data-design-reset-field)[^}]*(?:display:\s*none|visibility:\s*hidden)/s',
+    $css,
+) || preg_match(
+    '/(?:data-design-color-picker|data-design-eyedropper|data-design-reset-field)[^{]*\{[^}]*(?:display:\s*none|visibility:\s*hidden)/s',
+    $css,
+)) {
+    $failures[] = 'Preset color actions must not be hidden on narrow layouts';
 }
 
 if ($failures === []) {
