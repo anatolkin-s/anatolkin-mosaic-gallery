@@ -149,10 +149,10 @@ $presetGridRule = $presetGridMatch[1] ?? '';
 if ($presetGridRule === '') {
     $failures[] = 'Named preset inner grid must use a scoped intrinsic auto-fit rule';
 } elseif (!preg_match(
-    '/grid-template-columns\s*:\s*repeat\(\s*auto-fit\s*,\s*minmax\s*\(\s*min\s*\(\s*11rem/',
+    '/grid-template-columns\s*:\s*repeat\(\s*auto-fit\s*,\s*minmax\s*\(\s*min\s*\(\s*9\.5rem/',
     $presetGridRule,
 )) {
-    $failures[] = 'Named preset inner grid must use intrinsic auto-fit with min 11rem for color actions';
+    $failures[] = 'Named preset inner grid must use intrinsic auto-fit with ~9.5rem ordinary-field minimum';
 } elseif (preg_match('/grid-template-columns\s*:\s*repeat\(\s*[234]\s*,/', $presetGridRule)) {
     $failures[] = 'Named preset inner grid must not use fixed repeat(2|3|4) columns';
 }
@@ -166,6 +166,26 @@ if (preg_match(
 
 if (preg_match('/\.mosaic-design-configurator__grid\s*\{[^}]*grid-template-columns\s*:\s*repeat\(\s*4\s*,/', $css)) {
     $failures[] = 'Global __grid must not keep a fixed repeat(4) preset fallback';
+}
+
+if (!preg_match(
+    '/\.mosaic-design-configurator__group\s*\{[\s\S]*?container-type:\s*inline-size/s',
+    $css,
+)) {
+    $failures[] = 'L: each design group must be a local inline-size container';
+}
+
+if (!preg_match(
+    '/\[data-design-field-kind="color"\][\s\S]{0,120}grid-column:\s*span\s*2/',
+    $css,
+)) {
+    $failures[] = 'F/L: color fields must be able to span two local tracks';
+}
+
+if (!preg_match('/flex-wrap:\s*nowrap/', $css)
+    || !str_contains($css, 'data-mosaic-color-control-row="preset"')
+) {
+    $failures[] = 'F: color controls must remain one-row (nowrap) flex rows';
 }
 
 // Preset controls remain independently marked/aligned
@@ -185,7 +205,98 @@ if (preg_match(
     '/(?:data-design-color-picker|data-design-eyedropper|data-design-reset-field)[^{]*\{[^}]*(?:display:\s*none|visibility:\s*hidden)/s',
     $css,
 )) {
-    $failures[] = 'Preset color actions must not be hidden on narrow layouts';
+    $failures[] = 'G: Preset color actions must not be hidden on narrow layouts';
+}
+
+// A/B/C. Boolean Design Configurator controls use checkboxes, not On/Off selects
+if (!str_contains($element, 'mosaic-design-configurator__control--checkbox')
+    || !preg_match('/type="checkbox" value="1"/', $element)
+    || !preg_match("/'path'\\s*=>\\s*'shadow'[\\s\\S]{0,80}'type'\\s*=>\\s*'boolean'/", $element)
+) {
+    $failures[] = 'A: named-preset boolean controls must render as checkboxes';
+}
+foreach ([
+    'settings.showCaptions',
+    'settings.enableLightbox',
+    'settings.enableLoadMore',
+    'settings.loadMoreUseFrameStyle',
+] as $booleanProxy) {
+    if (!preg_match(
+        '/renderBooleanProxy\(\s*[\'"]' . preg_quote($booleanProxy, '/') . '[\'"]/',
+        $element,
+    )) {
+        $failures[] = "B: boolean display proxy {$booleanProxy} must use checkbox";
+    }
+}
+if (!preg_match(
+    '/type="checkbox" value="1" data-design-proxy="/',
+    $element,
+) || !str_contains($element, 'mosaic-design-display-controls__field--checkbox')
+) {
+    $failures[] = 'B: boolean display proxies must render checkbox markup';
+}
+if (preg_match(
+    '/data-design-proxy="settings\.(?:showCaptions|enableLightbox|enableLoadMore|loadMoreUseFrameStyle)"[\s\S]{0,200}<option value="0">/',
+    $element,
+) || str_contains($element, 'flexform.designOverride.on')
+    || str_contains($element, 'flexform.designOverride.off')
+) {
+    $failures[] = 'C: Design Configurator must not keep boolean On/Off <select> controls';
+}
+
+// D. checkbox read/write helpers preserve "1"/"0"
+if (!preg_match('/const readControlValue = \\(control\\) => \\{/', $js)
+    || !preg_match('/const writeControlValue = \\(control, value\\) => \\{/', $js)
+    || !preg_match('/control\\.checked \\? [\'"]1[\'"] : [\'"]0[\'"]/', $js)
+    || !preg_match('/control\\.checked = isTruthyBoolean\\(value\\)/', $js)
+    || preg_match('/Boolean\\(\\s*[\'"]0[\'"]\\s*\\)/', $js)
+) {
+    $failures[] = 'D: boolean read/write helpers must preserve "1"/"0" without Boolean("0")';
+}
+if (!str_contains($js, 'readControlValue(proxy)')
+    || !str_contains($js, 'writeControlValue(proxy,')
+    || !str_contains($js, 'writeControlValue(control,')
+) {
+    $failures[] = 'D: proxy/control sync paths must use readControlValue/writeControlValue';
+}
+
+// E. compact numeric marker/sizing
+if (!str_contains($element, 'data-design-compact-value')
+    || !str_contains($js, 'updateCompactValueWidth')
+    || !str_contains($js, '--mosaic-compact-ch')
+    || !preg_match('/\[data-design-compact-value\][^{]*\{[^}]*--mosaic-compact-ch/s', $css)
+) {
+    $failures[] = 'E: compact numeric marker and ch-based sizing must exist';
+}
+
+// H/I/J. Load More lives inside Gallery subgroup; no outer loadMore card; proxies unique
+if (!preg_match('/data-design-subgroup="loadMore"/', $element)
+    || !str_contains($element, 'renderLoadMoreSubgroup')
+) {
+    $failures[] = 'H: Load More must render as a Gallery subgroup';
+}
+if (preg_match("/'loadMore'\\s*=>/", $element)
+    || preg_match('/data-design-group="loadMore"/', $element)
+) {
+    $failures[] = 'I: obsolete outer loadMore design group must be removed';
+}
+foreach (['settings.enableLoadMore', 'settings.loadMoreUseFrameStyle'] as $proxyName) {
+    if (preg_match_all(
+        '/renderBooleanProxy\(\s*[\'"]' . preg_quote($proxyName, '/') . '[\'"]/',
+        $element,
+        $matches,
+    ) !== 1) {
+        $failures[] = "J: {$proxyName} must be rendered exactly once";
+    }
+}
+if (!preg_match(
+    '/data-design-group="gallery"[\s\S]*?data-design-subgroup="loadMore"/',
+    $element,
+) && !preg_match(
+    '/\$group === [\'"]gallery[\'"][\s\S]*?renderLoadMoreSubgroup/',
+    $element,
+)) {
+    $failures[] = 'H: Load More subgroup must be attached under Gallery rendering';
 }
 
 if ($failures === []) {

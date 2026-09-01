@@ -962,7 +962,7 @@
 }
 
 .mosaic-design-configurator:not(.is-custom) .mosaic-design-configurator__grid {
-  grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(9.5rem, 100%), 1fr));
 }
 
 /*
@@ -982,6 +982,8 @@
 .mosaic-design-configurator__group {
   border: 1px solid var(--typo3-component-border-color, #d7d7d7);
   border-radius: .25rem;
+  container-name: mosaic-design-group;
+  container-type: inline-size;
   min-width: 0;
   padding: 1rem;
 }
@@ -989,6 +991,24 @@
 .mosaic-design-configurator__group > h3 {
   font-size: 1rem;
   margin: 0 0 .75rem;
+}
+
+.mosaic-design-configurator__subgroup {
+  border-top: 1px solid var(--typo3-component-border-color, #e5e5e5);
+  margin-top: .85rem;
+  padding-top: .75rem;
+}
+
+.mosaic-design-configurator__subgroup-title {
+  font-size: .85rem;
+  font-weight: 600;
+  margin: 0 0 .5rem;
+}
+
+.mosaic-design-configurator__subgroup-controls {
+  display: grid;
+  gap: .5rem 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(9.5rem, 100%), 1fr));
 }
 
 .mosaic-design-configurator__custom {
@@ -1006,8 +1026,25 @@
   min-width: 0;
 }
 
+.mosaic-design-configurator.is-custom .mosaic-design-configurator__custom input[type="number"] {
+  max-inline-size: min(8rem, 100%);
+}
+
 .mosaic-design-configurator__field {
   min-width: 0;
+}
+
+.mosaic-design-configurator:not(.is-custom)
+  .mosaic-design-configurator__field[data-design-field-kind="color"] {
+  grid-column: span 2;
+  min-width: 0;
+}
+
+@container mosaic-design-group (max-width: 19.5rem) {
+  .mosaic-design-configurator:not(.is-custom)
+    .mosaic-design-configurator__field[data-design-field-kind="color"] {
+    grid-column: 1 / -1;
+  }
 }
 
 /* Named-preset color row: extension-owned flex control. */
@@ -1020,10 +1057,41 @@
   min-width: 0;
 }
 
+.mosaic-design-configurator__control--checkbox {
+  align-items: center;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: .4rem;
+  min-width: 0;
+}
+
+.mosaic-design-configurator__checkbox,
+.mosaic-design-display-controls__field--checkbox {
+  align-items: center;
+  display: inline-flex;
+  gap: .4rem;
+  margin: 0;
+  min-width: 0;
+}
+
+.mosaic-design-configurator__checkbox input[type="checkbox"],
+.mosaic-design-display-controls__field--checkbox input[type="checkbox"] {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
 .mosaic-design-configurator__control .form-control,
 .mosaic-design-configurator__control .form-select {
   flex: 1 1 auto;
   min-width: 0;
+}
+
+.mosaic-design-configurator__control [data-design-compact-value],
+.mosaic-design-display-controls__field [data-design-compact-value] {
+  flex: 0 1 auto;
+  inline-size: calc(var(--mosaic-compact-ch, 4) * 1ch + 2.75rem);
+  max-inline-size: 100%;
+  min-inline-size: 4.75rem;
 }
 
 .mosaic-design-configurator__swatch {

@@ -33,9 +33,7 @@ final class DesignConfiguratorElement extends AbstractFormElement
             'gallery' => 'flexform.frameStyle.gallery',
         ]],
         ['path' => 'borderRadius', 'label' => 'design.field.radius', 'type' => 'integer', 'step' => '1'],
-        ['path' => 'shadow', 'label' => 'design.field.shadow', 'type' => 'boolean', 'options' => [
-            '1' => 'flexform.designOverride.on', '0' => 'flexform.designOverride.off',
-        ]],
+        ['path' => 'shadow', 'label' => 'design.field.shadow', 'type' => 'boolean'],
         ['path' => 'backgroundColor', 'label' => 'design.field.background', 'type' => 'color'],
         ['path' => 'captionColor', 'label' => 'design.field.captionColor', 'type' => 'color'],
         ['path' => 'applyTo', 'label' => 'design.field.backgroundTarget', 'type' => 'select', 'options' => [
@@ -75,7 +73,6 @@ final class DesignConfiguratorElement extends AbstractFormElement
             'lightbox.captionColor', 'lightbox.captionBackground', 'lightbox.captionBackgroundAlpha',
             'lightbox.captionAlign', 'lightbox.captionSize', 'lightbox.captionStyle',
         ],
-        'loadMore' => [],
     ];
 
     public function render(): array
@@ -269,7 +266,11 @@ final class DesignConfiguratorElement extends AbstractFormElement
                     $this->hasPath($overrides, $path),
                 );
             }
-            $html .= '</div><div class="mosaic-design-configurator__custom" data-design-custom-group="'
+            $html .= '</div>';
+            if ($group === 'gallery') {
+                $html .= $this->renderLoadMoreSubgroup($settings);
+            }
+            $html .= '<div class="mosaic-design-configurator__custom" data-design-custom-group="'
                 . $group . '"></div></section>';
         }
         return $html . '</div>';
@@ -278,22 +279,62 @@ final class DesignConfiguratorElement extends AbstractFormElement
     /** @param array<string, mixed> $settings */
     private function renderDisplayControls(string $group, array $settings): string
     {
-        $booleanOptions = '<option value="0">' . $this->label('flexform.designOverride.off') . '</option>'
-            . '<option value="1">' . $this->label('flexform.designOverride.on') . '</option>';
         $field = fn(string $labelKey, string $control): string =>
             '<label class="mosaic-design-display-controls__field"><span>'
             . $this->label($labelKey) . '</span>' . $control . '</label>';
         $proxyDefault = fn(string $fieldName): string => $this->proxyDefaultAttribute($fieldName, $settings);
 
         return match ($group) {
-            'gallery' => $field('design.field.gap', '<input type="number" min="0" class="form-control form-control-sm" data-design-proxy="settings.gap"' . $proxyDefault('settings.gap') . '>')
-                . $field('design.field.captions', '<select class="form-select form-select-sm" data-design-proxy="settings.showCaptions"' . $proxyDefault('settings.showCaptions') . '>' . $booleanOptions . '</select>')
-                . $field('design.field.alignment', '<select class="form-select form-select-sm" data-design-proxy="settings.captionAlign"' . $proxyDefault('settings.captionAlign') . '><option value="left">' . $this->label('flexform.captionAlign.left') . '</option><option value="center">' . $this->label('flexform.captionAlign.center') . '</option><option value="right">' . $this->label('flexform.captionAlign.right') . '</option></select>'),
-            'lightbox' => $field('design.field.enabled', '<select class="form-select form-select-sm" data-design-proxy="settings.enableLightbox"' . $proxyDefault('settings.enableLightbox') . '>' . $booleanOptions . '</select>'),
-            'loadMore' => $field('design.field.enabled', '<select class="form-select form-select-sm" data-design-proxy="settings.enableLoadMore"' . $proxyDefault('settings.enableLoadMore') . '>' . $booleanOptions . '</select>')
-                . $field('design.field.buttonFrame', '<select class="form-select form-select-sm" data-design-proxy="settings.loadMoreUseFrameStyle"' . $proxyDefault('settings.loadMoreUseFrameStyle') . '>' . $booleanOptions . '</select>'),
+            'gallery' => $field(
+                'design.field.gap',
+                '<input type="number" min="0" class="form-control form-control-sm"'
+                    . ' data-design-proxy="settings.gap" data-design-compact-value'
+                    . $proxyDefault('settings.gap') . '>',
+            )
+                . $this->renderBooleanProxy('settings.showCaptions', 'design.field.captions', $settings)
+                . $field(
+                    'design.field.alignment',
+                    '<select class="form-select form-select-sm" data-design-proxy="settings.captionAlign"'
+                        . $proxyDefault('settings.captionAlign') . '>'
+                        . '<option value="left">' . $this->label('flexform.captionAlign.left') . '</option>'
+                        . '<option value="center">' . $this->label('flexform.captionAlign.center') . '</option>'
+                        . '<option value="right">' . $this->label('flexform.captionAlign.right') . '</option>'
+                        . '</select>',
+                ),
+            'lightbox' => $this->renderBooleanProxy(
+                'settings.enableLightbox',
+                'design.field.enabled',
+                $settings,
+            ),
             default => '',
         };
+    }
+
+    /** @param array<string, mixed> $settings */
+    private function renderLoadMoreSubgroup(array $settings): string
+    {
+        return '<div class="mosaic-design-configurator__subgroup" data-design-subgroup="loadMore">'
+            . '<h4 class="mosaic-design-configurator__subgroup-title">'
+            . $this->label('design.group.loadMore') . '</h4>'
+            . '<div class="mosaic-design-configurator__subgroup-controls">'
+            . $this->renderBooleanProxy('settings.enableLoadMore', 'design.field.enabled', $settings)
+            . $this->renderBooleanProxy(
+                'settings.loadMoreUseFrameStyle',
+                'design.field.buttonFrame',
+                $settings,
+            )
+            . '</div></div>';
+    }
+
+    /** @param array<string, mixed> $settings */
+    private function renderBooleanProxy(string $fieldName, string $labelKey, array $settings): string
+    {
+        return '<label class="mosaic-design-display-controls__field'
+            . ' mosaic-design-display-controls__field--checkbox">'
+            . '<input type="checkbox" value="1" data-design-proxy="'
+            . htmlspecialchars($fieldName, ENT_QUOTES) . '"'
+            . $this->proxyDefaultAttribute($fieldName, $settings) . '>'
+            . '<span>' . $this->label($labelKey) . '</span></label>';
     }
 
     /** @param array<string, mixed> $settings */
@@ -428,8 +469,24 @@ final class DesignConfiguratorElement extends AbstractFormElement
         $value = $type === 'boolean' ? ($effectiveValue ? '1' : '0') : (string)$effectiveValue;
         $attributes = ' data-design-control data-design-path="' . htmlspecialchars($path, ENT_QUOTES) . '"'
             . ' data-design-kind="' . $type . '" data-design-base-value="' . $baseJson . '"';
+        $resetButton = '<button type="button" class="btn btn-default btn-sm mosaic-design-reset-field"'
+            . ' data-design-reset-field data-mosaic-action-tooltip aria-label="'
+            . $this->label('design.configurator.reset') . '"'
+            . ($modified ? '' : ' disabled hidden') . '>' . $this->actionIcon('reset') . '</button>';
+        $fieldOpen = '<div class="mosaic-design-configurator__field" data-design-field="'
+            . htmlspecialchars($path, ENT_QUOTES) . '" data-design-field-kind="'
+            . htmlspecialchars($type, ENT_QUOTES) . '">';
 
-        if ($type === 'select' || $type === 'boolean') {
+        if ($type === 'boolean') {
+            return $fieldOpen
+                . '<div class="mosaic-design-configurator__control mosaic-design-configurator__control--checkbox">'
+                . '<label class="mosaic-design-configurator__checkbox">'
+                . '<input type="checkbox" value="1"' . ($value === '1' ? ' checked' : '') . $attributes . '>'
+                . '<span>' . $this->label($control['label']) . '</span></label>'
+                . $resetButton . '</div></div>';
+        }
+
+        if ($type === 'select') {
             $controlHtml = '<select class="form-select form-select-sm"' . $attributes . '>';
             foreach ($control['options'] ?? [] as $optionValue => $labelKey) {
                 $optionValue = (string)$optionValue;
@@ -442,6 +499,7 @@ final class DesignConfiguratorElement extends AbstractFormElement
             $inputAttributes = $inputType === 'number'
                 ? ' min="0"' . ($type === 'alpha' ? ' max="1"' : '')
                     . ' step="' . htmlspecialchars($control['step'] ?? '1', ENT_QUOTES) . '"'
+                    . ' data-design-compact-value'
                 : '';
             $controlHtml = ($type === 'color'
                 ? '<input type="color" class="mosaic-design-configurator__picker" data-design-color-picker'
@@ -457,15 +515,10 @@ final class DesignConfiguratorElement extends AbstractFormElement
                     : '');
         }
 
-        return '<div class="mosaic-design-configurator__field" data-design-field="'
-            . htmlspecialchars($path, ENT_QUOTES) . '"><label class="form-label">' . $this->label($control['label'])
+        return $fieldOpen . '<label class="form-label">' . $this->label($control['label'])
             . '</label><div class="mosaic-design-configurator__control'
             . ($type === 'color' ? '" data-mosaic-color-control-row="preset"' : '"')
-            . '>' . $controlHtml
-            . '<button type="button" class="btn btn-default btn-sm mosaic-design-reset-field"'
-            . ' data-design-reset-field data-mosaic-action-tooltip aria-label="'
-            . $this->label('design.configurator.reset') . '"'
-            . ($modified ? '' : ' disabled hidden') . '>' . $this->actionIcon('reset') . '</button></div></div>';
+            . '>' . $controlHtml . $resetButton . '</div></div>';
     }
 
     private function actionIcon(string $icon): string

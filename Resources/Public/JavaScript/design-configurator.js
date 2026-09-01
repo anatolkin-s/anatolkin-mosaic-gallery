@@ -116,17 +116,49 @@ const canonicalJson = (value) => JSON.stringify(value, (key, item) => {
   }, {});
 });
 
+const isTruthyBoolean = (value) => value === true || value === 1 || value === '1';
+
+const readControlValue = (control) => {
+  if (!control) {
+    return '';
+  }
+  if (control.type === 'checkbox') {
+    return control.checked ? '1' : '0';
+  }
+  return control.value ?? '';
+};
+
+const writeControlValue = (control, value) => {
+  if (!control) {
+    return;
+  }
+  if (control.type === 'checkbox') {
+    control.checked = isTruthyBoolean(value);
+    return;
+  }
+  control.value = value == null ? '' : String(value);
+};
+
+const updateCompactValueWidth = (control) => {
+  if (!control || !control.hasAttribute('data-design-compact-value')) {
+    return;
+  }
+  const length = String(control.value ?? '').length;
+  const ch = Math.min(8, Math.max(3, length + 1));
+  control.style.setProperty('--mosaic-compact-ch', String(ch));
+};
+
 const controlValue = (control, base) => {
   switch (control.dataset.designKind) {
     case 'boolean':
-      return control.value === '1';
+      return isTruthyBoolean(readControlValue(control));
     case 'integer': {
-      const value = Number.parseInt(control.value, 10);
+      const value = Number.parseInt(readControlValue(control), 10);
       return Number.isInteger(value) && value >= 0 ? value : base;
     }
     case 'number':
     case 'alpha': {
-      const value = Number(control.value);
+      const value = Number(readControlValue(control));
       if (!Number.isFinite(value) || value < 0) {
         return base;
       }
@@ -134,12 +166,17 @@ const controlValue = (control, base) => {
       return String(clamped);
     }
     default:
-      return control.value;
+      return readControlValue(control);
   }
 };
 
 const displayValue = (control, value) => {
-  control.value = control.dataset.designKind === 'boolean' ? (value ? '1' : '0') : String(value);
+  if (control.dataset.designKind === 'boolean' || control.type === 'checkbox') {
+    writeControlValue(control, isTruthyBoolean(value) ? '1' : '0');
+  } else {
+    writeControlValue(control, value);
+  }
+  updateCompactValueWidth(control);
   const picker = control.closest('[data-design-field]')?.querySelector('[data-design-color-picker]');
   if (picker && /^#[\da-f]{6}$/i.test(String(value))) {
     picker.value = String(value);
@@ -564,25 +601,9 @@ const initializeEditor = (editor) => {
     return String(proxy.dataset.designProxyDefault);
   };
   const applyValueToCanonical = (control, value) => {
-    if (!control) {
-      return;
-    }
-    if (control.type === 'checkbox') {
-      control.checked = value === '1';
-      control.value = value === '1' ? '1' : '0';
-      return;
-    }
-    control.value = value;
+    writeControlValue(control, value);
   };
-  const liveCanonicalValue = (control) => {
-    if (!control) {
-      return '';
-    }
-    if (control.type === 'checkbox') {
-      return control.checked ? '1' : '0';
-    }
-    return control.value ?? '';
-  };
+  const liveCanonicalValue = (control) => readControlValue(control);
   const initialProxyValue = (control, proxy = null) => {
     const proxyDefault = proxyDefaultValue(proxy);
     if (!control) {
@@ -661,7 +682,7 @@ const initializeEditor = (editor) => {
     }).observe(patternedPreviewGrid);
   }
   const displayState = () => Object.fromEntries(proxyControls.map(
-    (proxy) => [proxy.dataset.designProxy.replace('settings.', ''), proxy.value],
+    (proxy) => [proxy.dataset.designProxy.replace('settings.', ''), readControlValue(proxy)],
   ));
   const updateAccentVisibility = (frameStyle) => {
     const relevant = MULTI_COLOR_FRAME_STYLES.has(frameStyle);
@@ -754,8 +775,9 @@ const initializeEditor = (editor) => {
     const initialValue = initialProxyValue(canonical, proxy);
     // Always initialize the proxy, including when no canonical control exists yet.
     if (initialValue !== '' || proxyDefaultValue(proxy) !== null) {
-      proxy.value = initialValue;
+      writeControlValue(proxy, initialValue);
     }
+    updateCompactValueWidth(proxy);
     if (!canonical) {
       return;
     }
@@ -765,21 +787,27 @@ const initializeEditor = (editor) => {
       canonicalSection.classList.add('mosaic-proxy-storage-field');
     }
     // Keep FormEngine storage aligned with the resolved creation/default value.
-    applyValueToCanonical(canonical, proxy.value);
+    applyValueToCanonical(canonical, readControlValue(proxy));
     proxy.addEventListener('change', () => {
-      applyValueToCanonical(canonical, proxy.value);
+      applyValueToCanonical(canonical, readControlValue(proxy));
+      updateCompactValueWidth(proxy);
       canonical.dispatchEvent(new Event('input', { bubbles: true }));
       canonical.dispatchEvent(new Event('change', { bubbles: true }));
       publishState();
     });
+    proxy.addEventListener('input', () => {
+      updateCompactValueWidth(proxy);
+    });
     const syncProxy = () => {
       // After initialization, live canonical state is authoritative (including Off=0).
-      proxy.value = liveCanonicalValue(canonical);
+      writeControlValue(proxy, liveCanonicalValue(canonical));
+      updateCompactValueWidth(proxy);
       publishState();
     };
     canonical.addEventListener('change', syncProxy);
     canonical.addEventListener('input', syncProxy);
   });
+  editor.querySelectorAll('[data-design-compact-value]').forEach(updateCompactValueWidth);
   sheet.addEventListener('change', (event) => {
     if (currentPreset() === 'custom' && isCustomFieldEvent(event)) {
       publishState();

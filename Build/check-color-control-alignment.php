@@ -143,6 +143,12 @@ if (!preg_match(
 )) {
     $failures[] = 'Named-preset color controls must remain flex-aligned';
 }
+if (!preg_match(
+    '/\\.mosaic-design-configurator__control[^{,]*[,{][\\s\\S]*?flex-wrap:\\s*nowrap/s',
+    $css,
+)) {
+    $failures[] = 'Named-preset color controls must keep HEX/actions on one nowrap row';
+}
 
 // I. Custom native color lifecycle: Core visible input + capture blur, no Mosaic hidden writes
 if (!preg_match(
