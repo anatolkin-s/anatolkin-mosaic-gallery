@@ -37,14 +37,16 @@ $sourceRowRule = extractRuleBody($css, '.mosaic-layout-header__row--source');
 $settingsRowRule = extractRuleBody($css, '.mosaic-layout-header__row--settings');
 $layoutSheetRule = extractRuleBody($css, '.tab-content > .tab-pane.active.mosaic-layout-sheet');
 
-// A. source row uses intrinsic auto-fit/auto-fill sizing
+// A. source row uses contextual container-query grid (wide single row, flexible when wrapped)
 if ($sourceRowRule === '') {
     $failures[] = 'A: Missing .mosaic-layout-header__row--source rule';
+} elseif (!preg_match('/container-name:\s*mosaic-layout-source/s', $sourceRowRule)) {
+    $failures[] = 'A: Source row must define mosaic-layout-source container';
 } elseif (!preg_match(
-    '/grid-template-columns\s*:\s*repeat\(\s*auto-fit\s*,\s*minmax\s*\(\s*min\s*\(/',
-    $sourceRowRule,
+    '/@container mosaic-layout-source \(min-width:\s*64rem\)[\s\S]{0,500}grid-template-columns:[\s\S]{0,300}minmax\(\s*7/s',
+    $css,
 )) {
-    $failures[] = 'A: Source row must use intrinsic repeat(auto-fit, minmax(min(...), 1fr))';
+    $failures[] = 'A: Wide source row must resolve to one compact Source/Folder + pair row via container query';
 }
 
 // B. settings row uses intrinsic auto-fit/auto-fill sizing
@@ -87,24 +89,30 @@ if (preg_match(
     $failures[] = 'D: Obsolete fixed multi-track source/settings column templates must be removed';
 }
 
-// E. Folder has safe width treatment without narrow overflow
+// E. Folder/Source width is contextual, not globally fixed
 if (!preg_match(
-    '/\.mosaic-layout-header__row--source\s*>\s*\.form-section\[data-id="settings\.folder"\]\s*\{[^}]*grid-column:\s*span\s*2/s',
+    '/@container mosaic-layout-source \(min-width:\s*64rem\)[\s\S]{0,700}settings\.source[\s\S]{0,200}inline-size:[\s\S]{0,80}11rem/s',
     $css,
 )) {
-    $failures[] = 'E: Folder must span two intrinsic tracks at wider source-row widths';
+    $failures[] = 'E: Wide source row may compact Source select without forcing Sort/Direction to wrap';
 }
 if (!preg_match(
-    '/@container\s+mosaic-layout-source\s*\([^)]+\)\s*\{[^}]*settings\.folder[^}]*grid-column:\s*1\s*\/\s*-1/s',
+    '/@container mosaic-layout-source \(max-width:\s*63\.99rem\)[\s\S]{0,700}settings\.source[\s\S]{0,200}inline-size:\s*100%/s',
     $css,
 )) {
-    $failures[] = 'E: Folder must span the full source row at narrow local container widths';
+    $failures[] = 'E: Wrapped/medium source row must restore flexible/full-width Source';
 }
-if (preg_match(
-    '/@container\s+mosaic-layout-source\s*\([^)]+\)\s*\{[^}]*settings\.folder[^}]*grid-column:\s*span\s*1/s',
+if (!preg_match(
+    '/@container mosaic-layout-source \(max-width:\s*35\.99rem\)[\s\S]{0,900}settings\.folder[\s\S]{0,200}(?:inline-size|width):\s*100%/s',
     $css,
 )) {
-    $failures[] = 'E: Folder must not collapse to a single narrow intrinsic track';
+    $failures[] = 'E: Narrow source row must give Folder full available width';
+}
+if (!preg_match(
+    '/@container mosaic-layout-source \(max-width:\s*35\.99rem\)[\s\S]{0,500}grid-template-columns:\s*minmax\(0,\s*1fr\)/s',
+    $css,
+)) {
+    $failures[] = 'E: Narrow source row must stack Source and Folder on full-width tracks';
 }
 if (!preg_match(
     '/\[data-id="settings\.folder"\][\s\S]{0,500}\.form-wizards-wrap[\s\S]{0,200}minmax\s*\(\s*0\s*,\s*1fr\s*\)\s*auto/s',

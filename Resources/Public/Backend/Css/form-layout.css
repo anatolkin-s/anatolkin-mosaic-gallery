@@ -194,13 +194,18 @@
 }
 
 .mosaic-layout-header__row--source {
+  align-items: end;
   container-name: mosaic-layout-source;
   container-type: inline-size;
-  grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.mosaic-layout-header__row--source > .form-section[data-id="settings.source"] .form-select {
+  inline-size: min(100%, 100%);
+  width: 100%;
 }
 
 .mosaic-layout-header__row--source > .form-section[data-id="settings.folder"] {
-  grid-column: span 2;
   min-width: 0;
 }
 
@@ -232,6 +237,58 @@
 .mosaic-layout-header__row--source > .form-section[data-id="settings.folder"] .form-select {
   min-width: 0;
   width: 100%;
+}
+
+@container mosaic-layout-source (min-width: 64rem) {
+  .mosaic-layout-header__row--source {
+    grid-template-columns:
+      minmax(7.5rem, 0.55fr)
+      minmax(12rem, 1.65fr)
+      minmax(13rem, 1fr)
+      minmax(13rem, 1fr);
+  }
+
+  .mosaic-layout-header__row--source > .form-section[data-id="settings.source"] .form-select {
+    inline-size: min(100%, 11rem);
+  }
+
+  .mosaic-layout-header__row--source > .form-section[data-id="settings.folder"] {
+    grid-column: auto;
+  }
+}
+
+@container mosaic-layout-source (max-width: 63.99rem) and (min-width: 36rem) {
+  .mosaic-layout-header__row--source {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+  }
+
+  .mosaic-layout-header__row--source > .form-section[data-id="settings.source"] .form-select,
+  .mosaic-layout-header__row--source > .form-section[data-id="settings.folder"] .form-select {
+    inline-size: 100%;
+    width: 100%;
+  }
+
+  .mosaic-layout-header__source-pair--recursive-fallback,
+  .mosaic-layout-header__source-pair--sort-direction {
+    grid-column: 1 / -1;
+  }
+}
+
+@container mosaic-layout-source (max-width: 35.99rem) {
+  .mosaic-layout-header__row--source {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mosaic-layout-header__row--source > .form-section[data-id="settings.source"] .form-select,
+  .mosaic-layout-header__row--source > .form-section[data-id="settings.folder"] .form-select {
+    inline-size: 100%;
+    width: 100%;
+  }
+
+  .mosaic-layout-header__source-pair--recursive-fallback,
+  .mosaic-layout-header__source-pair--sort-direction {
+    grid-column: 1 / -1;
+  }
 }
 
 @container mosaic-layout-source (max-width: 36rem) {
@@ -523,13 +580,8 @@
 }
 
 @container mosaic-layout-source (max-width: 48rem) {
-  .mosaic-layout-header__row--source > .form-section[data-id="settings.folder"] {
-    grid-column: 1 / -1;
-  }
-
   .mosaic-layout-header__source-pair--recursive-fallback,
   .mosaic-layout-header__source-pair--sort-direction {
-    grid-column: 1 / -1;
     grid-template-columns: repeat(2, minmax(min(7rem, 100%), 1fr));
   }
 }
