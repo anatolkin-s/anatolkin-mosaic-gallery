@@ -147,6 +147,8 @@
     <trans-unit id="flexform.lbCaptionStyle.strong"><source>Strong</source><target>Gras</target></trans-unit>
     <trans-unit id="metadata.title"><source>Image metadata</source><target>Métadonnées des images</target></trans-unit>
     <trans-unit id="metadata.caption"><source>Caption</source><target>Légende</target></trans-unit>
+    <trans-unit id="metadata.caption.help"><source>Caption uses the File Title. Description is not used automatically.</source><target>La légende utilise le titre du fichier. La description n’est pas utilisée automatiquement.</target></trans-unit>
+    <trans-unit id="metadata.caption.help.manual"><source>Caption uses Title. For Manual images, a FileReference Title overrides the original File Title. Description is not used automatically.</source><target>La légende utilise le titre. Pour les images manuelles, le titre de la FileReference remplace le titre du fichier d’origine. La description n’est pas utilisée automatiquement.</target></trans-unit>
     <trans-unit id="metadata.alternative"><source>Alternative text</source><target>Texte alternatif</target></trans-unit>
     <trans-unit id="metadata.decorative"><source>Decorative image</source><target>Image décorative</target></trans-unit>
     <trans-unit id="metadata.inherit"><source>Inherit</source><target>Hériter</target></trans-unit>

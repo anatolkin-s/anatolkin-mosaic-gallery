@@ -151,23 +151,17 @@ final class GalleryItemAssembler
             'copyright' => (string)($meta['copyright'] ?? ''),
         ];
 
-        $caption = $useFalCaptions
-            ? ($metadata['caption'] !== ''
-                ? $metadata['caption']
-                : ($metadata['title'] !== '' ? $metadata['title'] : $metadata['description']))
-            : ($legacyCaptionsConverted ? '' : ($legacyLines[$idx] ?? ''));
-
-        $alt = $metadata['alternative'] ?: $caption;
+        if ($useFalCaptions) {
+            $inheritedCaption = (string)$metadata['title'];
+            $inheritedAlt = (string)$metadata['alternative'];
+        } else {
+            $inheritedCaption = $legacyCaptionsConverted ? '' : ($legacyLines[$idx] ?? '');
+            $inheritedAlt = '';
+        }
 
         $fileOverride = $metadataOverrides[(string)$file->getUid()] ?? [];
-        if (($fileOverride['caption']['mode'] ?? null) === 'custom') {
-            $caption = $fileOverride['caption']['value'];
-        }
-        if (($fileOverride['alt']['mode'] ?? null) === 'custom') {
-            $alt = $fileOverride['alt']['value'];
-        } elseif (($fileOverride['alt']['mode'] ?? null) === 'empty') {
-            $alt = '';
-        }
+        $caption = GalleryInheritedMetadataResolver::resolveCaption($inheritedCaption, $fileOverride);
+        $alt = GalleryInheritedMetadataResolver::resolveAlt($inheritedAlt, $fileOverride);
 
         return [
             'file' => $file,
@@ -211,11 +205,11 @@ final class GalleryItemAssembler
             'copyright' => (string)($fileMeta['copyright'] ?? ''),
         ];
 
-        $caption = ManualGalleryMetadataResolver::resolveCaption(
-            (string)$fileReference->getProperty('description'),
+        $caption = GalleryInheritedMetadataResolver::resolveCaption(
+            (string)$fileReference->getProperty('title'),
             $fileOverride,
         );
-        $alt = ManualGalleryMetadataResolver::resolveAlt(
+        $alt = GalleryInheritedMetadataResolver::resolveAlt(
             (string)$fileReference->getProperty('alternative'),
             $fileOverride,
         );

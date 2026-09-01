@@ -708,6 +708,22 @@
   outline-offset: 1px;
 }
 
+.mosaic-metadata-property-help__button {
+  background: transparent;
+  border: 0;
+  color: var(--typo3-text-color-variant, #666);
+  cursor: help;
+  line-height: 1;
+  margin-inline-start: .15rem;
+  padding: 0 2px;
+  vertical-align: middle;
+}
+
+.mosaic-metadata-property-help__button:focus-visible {
+  outline: 2px solid var(--typo3-focus-ring-color, currentColor);
+  outline-offset: 1px;
+}
+
 .mosaic-metadata-help__popup {
   background: var(--typo3-surface-container-high, #fff);
   border: 1px solid var(--typo3-component-border-color, #b5b5b5);

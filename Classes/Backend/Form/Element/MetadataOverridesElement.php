@@ -24,6 +24,8 @@ final class MetadataOverridesElement extends AbstractFormElement
 {
     private const LANGUAGE_FILE = 'LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:';
 
+    private bool $renderIsManualSource = false;
+
     public function render(): array
     {
         $resultArray = $this->initializeResultArray();
@@ -41,6 +43,7 @@ final class MetadataOverridesElement extends AbstractFormElement
         $legacyCaptions = $gallerySettings['captions'];
         $useFalCaptions = $gallerySettings['useFalCaptions'];
         $isManualSource = $source === GalleryFlexFormSourceReader::SOURCE_MANUAL;
+        $this->renderIsManualSource = $isManualSource;
         $legacyCaptionLines = $this->splitLegacyCaptionLines($legacyCaptions);
         $legacyCaptionsConverted = ($storedDocument['legacyCaptionsConverted'] ?? false) === true;
         $languageContext = $this->resolveLanguageContext();
@@ -641,6 +644,13 @@ final class MetadataOverridesElement extends AbstractFormElement
     private function renderPropertyCell(string $propertyName, array $property, bool $allowEmpty): string
     {
         $label = $propertyName === 'caption' ? $this->label('metadata.caption') : $this->label('metadata.alternative');
+        $captionHelp = '';
+        if ($propertyName === 'caption') {
+            $helpKey = $this->renderIsManualSource ? 'metadata.caption.help.manual' : 'metadata.caption.help';
+            $captionHelp = '<button type="button" class="mosaic-metadata-property-help__button"'
+                . ' aria-label="' . $this->label('metadata.help.open') . '" title="'
+                . htmlspecialchars($this->label($helpKey), ENT_QUOTES) . '">&#9432;</button>';
+        }
         $modeLabel = match ($property['mode']) {
             'custom' => $this->label('metadata.custom'),
             'empty' => $this->label('metadata.decorative'),
@@ -652,7 +662,7 @@ final class MetadataOverridesElement extends AbstractFormElement
 
         return '<div class="mosaic-metadata-item__property mosaic-metadata-item__property--' . $propertyName . '">'
             . '<div class="mosaic-metadata-item__summary"><span class="mosaic-metadata-item__summary-label">'
-            . $label . ':</span> <span class="badge text-bg-secondary" data-mosaic-summary-badge="'
+            . $label . ':</span>' . $captionHelp . ' <span class="badge text-bg-secondary" data-mosaic-summary-badge="'
             . $propertyName . '">' . $modeLabel . '</span><span class="mosaic-metadata-item__summary-value"'
             . ' data-mosaic-summary-value="' . $propertyName . '">' . $summaryValue . '</span></div>'
             . '<div class="mosaic-metadata-item__controls" aria-label="' . $label . '">'

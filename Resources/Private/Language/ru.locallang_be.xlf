@@ -147,6 +147,8 @@
     <trans-unit id="flexform.lbCaptionStyle.strong"><source>Strong</source><target>Полужирный</target></trans-unit>
     <trans-unit id="metadata.title"><source>Image metadata</source><target>Метаданные изображений</target></trans-unit>
     <trans-unit id="metadata.caption"><source>Caption</source><target>Подпись</target></trans-unit>
+    <trans-unit id="metadata.caption.help"><source>Caption uses the File Title. Description is not used automatically.</source><target>Подпись использует заголовок файла. Описание не применяется автоматически.</target></trans-unit>
+    <trans-unit id="metadata.caption.help.manual"><source>Caption uses Title. For Manual images, a FileReference Title overrides the original File Title. Description is not used automatically.</source><target>Подпись использует заголовок. Для ручных изображений заголовок FileReference заменяет исходный заголовок файла. Описание не применяется автоматически.</target></trans-unit>
     <trans-unit id="metadata.alternative"><source>Alternative text</source><target>Альтернативный текст</target></trans-unit>
     <trans-unit id="metadata.decorative"><source>Decorative image</source><target>Декоративное изображение</target></trans-unit>
     <trans-unit id="metadata.inherit"><source>Inherit</source><target>Наследовать</target></trans-unit>

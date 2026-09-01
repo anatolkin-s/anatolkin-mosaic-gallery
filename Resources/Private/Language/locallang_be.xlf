@@ -148,6 +148,8 @@
       <trans-unit id="flexform.lbCaptionStyle.strong"><source>Strong</source></trans-unit>
       <trans-unit id="metadata.title"><source>Image metadata</source></trans-unit>
       <trans-unit id="metadata.caption"><source>Caption</source></trans-unit>
+      <trans-unit id="metadata.caption.help"><source>Caption uses the File Title. Description is not used automatically.</source></trans-unit>
+      <trans-unit id="metadata.caption.help.manual"><source>Caption uses Title. For Manual images, a FileReference Title overrides the original File Title. Description is not used automatically.</source></trans-unit>
       <trans-unit id="metadata.alternative"><source>Alternative text</source></trans-unit>
       <trans-unit id="metadata.decorative"><source>Decorative image</source></trans-unit>
       <trans-unit id="metadata.inherit"><source>Inherit</source></trans-unit>

@@ -126,17 +126,20 @@ if ($itemAssembler !== '') {
     if (!str_contains($itemAssembler, "'renderFile'")) {
         $failures[] = 'C: Gallery items must expose renderFile';
     }
-    if (!str_contains($itemAssembler, 'ManualGalleryMetadataResolver')) {
-        $failures[] = 'C: Manual source must resolve inherited metadata via ManualGalleryMetadataResolver';
+    if (!str_contains($itemAssembler, 'GalleryInheritedMetadataResolver')) {
+        $failures[] = 'C: Manual source must resolve inherited metadata via GalleryInheritedMetadataResolver';
     }
     if (!str_contains($itemAssembler, 'assembleManualReferenceItem')) {
         $failures[] = 'C: Manual source must use dedicated FileReference assembly path';
     }
-    if (!preg_match('/resolveCaption\(\s*\(string\)\$fileReference->getProperty\(\'description\'\)/s', $itemAssembler)) {
-        $failures[] = 'C: Manual caption must inherit TYPO3 FileReference description';
+    if (!preg_match('/resolveCaption\(\s*\(string\)\$fileReference->getProperty\(\'title\'\)/s', $itemAssembler)) {
+        $failures[] = 'C: Manual caption must inherit TYPO3 FileReference Title';
     }
     if (!preg_match('/resolveAlt\(\s*\(string\)\$fileReference->getProperty\(\'alternative\'\)/s', $itemAssembler)) {
-        $failures[] = 'C: Manual alt must inherit TYPO3 FileReference alternative';
+        $failures[] = 'C: Manual alt must inherit TYPO3 FileReference Alternative';
+    }
+    if (preg_match('/getProperty\(\'description\'\)[\s\S]{0,200}resolveCaption/s', $itemAssembler)) {
+        $failures[] = 'C: Manual caption must not inherit FileReference Description';
     }
     if (!preg_match(
         '/\$fileReference !== null[\s\S]{0,200}assembleManualReferenceItem/s',
@@ -477,16 +480,20 @@ if ($metadataEditorJs !== '') {
     }
 }
 
-$manualResolverTest = $root . '/Build/test-manual-filereference-metadata-resolver.php';
+$manualResolverTest = $root . '/Build/test-gallery-inherited-metadata-resolver.php';
 if (!is_file($manualResolverTest)) {
-    $failures[] = 'Q: Missing executable manual FileReference metadata resolver test';
+    $failures[] = 'Q: Missing executable inherited metadata resolver test';
 } else {
     $resolverOutput = [];
     $resolverExit = 0;
     exec('php ' . escapeshellarg($manualResolverTest) . ' 2>&1', $resolverOutput, $resolverExit);
     if ($resolverExit !== 0) {
-        $failures[] = 'Q: Manual FileReference metadata resolver test failed: ' . implode("\n", $resolverOutput);
+        $failures[] = 'Q: Inherited metadata resolver test failed: ' . implode("\n", $resolverOutput);
     }
+}
+
+if ($metadataElement !== '' && !str_contains($metadataElement, 'metadata.caption.help')) {
+    $failures[] = 'R: Metadata workspace must document title-based Caption inherit help text';
 }
 
 $uidParserTest = $root . '/Build/test-manual-file-uid-parser.js';

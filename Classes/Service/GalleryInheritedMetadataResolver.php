@@ -4,29 +4,29 @@ declare(strict_types=1);
 namespace Anatolkin\MosaicGallery\Service;
 
 /**
- * Pure resolution for Manual-source gallery metadata inheritance.
+ * Pure resolution for inherited gallery caption/alt semantics.
  *
- * Caption inherits TYPO3 FileReference description (never title).
- * Alt inherits TYPO3 FileReference alternative, with explicit Mosaic empty/custom modes.
+ * Caption Inherit uses Title only (never Description).
+ * Alt Inherit uses Alternative only (never synthesized from Caption/Title/Description).
  */
-final class ManualGalleryMetadataResolver
+final class GalleryInheritedMetadataResolver
 {
     /**
      * @param array<string, mixed> $fileOverride
      */
-    public static function resolveCaption(string $referenceDescription, array $fileOverride): string
+    public static function resolveCaption(string $inheritedTitle, array $fileOverride): string
     {
         if (($fileOverride['caption']['mode'] ?? null) === 'custom') {
             return (string)($fileOverride['caption']['value'] ?? '');
         }
 
-        return $referenceDescription;
+        return $inheritedTitle;
     }
 
     /**
      * @param array<string, mixed> $fileOverride
      */
-    public static function resolveAlt(string $referenceAlternative, array $fileOverride): string
+    public static function resolveAlt(string $inheritedAlternative, array $fileOverride): string
     {
         $mode = $fileOverride['alt']['mode'] ?? null;
         if ($mode === 'custom') {
@@ -36,6 +36,6 @@ final class ManualGalleryMetadataResolver
             return '';
         }
 
-        return $referenceAlternative;
+        return $inheritedAlternative;
     }
 }

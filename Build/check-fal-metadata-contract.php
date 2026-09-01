@@ -30,6 +30,7 @@ function readFileOrFail(string $path, array &$failures): string
 
 $controller = readFileOrFail($root . '/Classes/Controller/GalleryController.php', $failures);
 $assembler = readFileOrFail($root . '/Classes/Service/GalleryItemAssembler.php', $failures);
+$resolver = readFileOrFail($root . '/Classes/Service/GalleryInheritedMetadataResolver.php', $failures);
 
 if ($assembler !== '') {
     $normalized = preg_replace('/\s+/', ' ', $assembler);
@@ -40,6 +41,10 @@ if ($assembler !== '') {
 
     if ($normalized === '' || !str_contains($normalized, '$file->getMetaData()->get()')) {
         $failures[] = 'GalleryItemAssembler must load inherited metadata via $file->getMetaData()->get()';
+    }
+
+    if (!str_contains($assembler, 'GalleryInheritedMetadataResolver')) {
+        $failures[] = 'GalleryItemAssembler must resolve inherited caption/alt via GalleryInheritedMetadataResolver';
     }
 
     if (!str_contains($assembler, "'metadata' => \$metadata")) {
@@ -65,14 +70,28 @@ if ($assembler !== '') {
         }
     }
 
-    $captionFirst = "\$metadata['caption'] !== '' ? \$metadata['caption'] : (\$metadata['title'] !== '' ? \$metadata['title'] : \$metadata['description'])";
-    if ($normalized === '' || !str_contains($normalized, $captionFirst)) {
-        $failures[] = 'FAL caption precedence must be caption -> title -> description';
+    if ($normalized !== '' && str_contains($normalized, "\$metadata['caption'] !== '' ? \$metadata['caption'] : (\$metadata['title'] !== '' ? \$metadata['title'] : \$metadata['description'])")) {
+        $failures[] = 'Folder caption must not use caption -> title -> description fallback';
     }
 
-    $legacyTitleFirst = "\$title !== '' ? \$title : (\$captionMeta !== '' ? \$captionMeta : \$description)";
-    if ($normalized !== '' && str_contains($normalized, $legacyTitleFirst)) {
-        $failures[] = 'Legacy title-first caption precedence must not remain';
+    if ($normalized !== '' && str_contains($normalized, "\$alt = \$metadata['alternative'] ?: \$caption;")) {
+        $failures[] = 'Inherited alt must not synthesize from caption/title/description';
+    }
+
+    if (!preg_match('/\$inheritedCaption = \(string\)\$metadata\[\'title\'\]/s', $assembler)) {
+        $failures[] = 'Folder caption inherit must use localized File Title only';
+    }
+
+    if (!preg_match('/getProperty\(\'title\'\)/s', $assembler)) {
+        $failures[] = 'Manual caption inherit must use TYPO3 FileReference Title via getProperty()';
+    }
+
+    if (!preg_match('/getProperty\(\'alternative\'\)/s', $assembler)) {
+        $failures[] = 'Manual alt inherit must use TYPO3 FileReference Alternative via getProperty()';
+    }
+
+    if (preg_match('/getProperty\(\'description\'\)[\s\S]{0,200}resolveCaption/s', $assembler)) {
+        $failures[] = 'Manual caption must not inherit FileReference Description';
     }
 
     $overridePos = strpos($assembler, '$fileOverride = $metadataOverrides');
@@ -83,13 +102,14 @@ if ($assembler !== '') {
     ) {
         $failures[] = 'Gallery-specific overrides must be applied after inherited metadata and before item assignment';
     }
+}
 
-    if (!str_contains($normalized, "\$alt = \$metadata['alternative'] ?: \$caption;")) {
-        $failures[] = 'Inherited alt fallback must use $metadata[\'alternative\'] ?: $caption to preserve PHP falsy semantics';
+if ($resolver !== '') {
+    if (!str_contains($resolver, 'resolveCaption(string $inheritedTitle')) {
+        $failures[] = 'GalleryInheritedMetadataResolver caption inherit must use inherited Title only';
     }
-
-    if (str_contains($normalized, "\$alt = \$metadata['alternative'] !== ''")) {
-        $failures[] = 'Inherited alt fallback must not use a non-empty-string comparison';
+    if (str_contains($resolver, 'description')) {
+        $failures[] = 'GalleryInheritedMetadataResolver must not reference Description for caption inheritance';
     }
 }
 
@@ -107,7 +127,7 @@ if ($controller !== '') {
     }
 
     if (str_contains($controller, "getQueryBuilderForTable('sys_file_metadata')")
-        || str_contains($controller, 'getQueryBuilderForTable("sys_file_metadata")')
+        || str_contains($controller, "getQueryBuilderForTable(\"sys_file_metadata\")")
     ) {
         $failures[] = 'GalleryController must not query sys_file_metadata directly';
     }
@@ -117,7 +137,19 @@ if ($controller !== '') {
     }
 }
 
-// Caption fallback fixture: description-only metadata resolves caption to description.
+$resolverTest = $root . '/Build/test-gallery-inherited-metadata-resolver.php';
+if (!is_file($resolverTest)) {
+    $failures[] = 'Missing executable inherited metadata resolver test';
+} else {
+    $output = [];
+    $exitCode = 0;
+    exec('php ' . escapeshellarg($resolverTest) . ' 2>&1', $output, $exitCode);
+    if ($exitCode !== 0) {
+        $failures[] = 'Inherited metadata resolver executable test failed: ' . implode("\n", $output);
+    }
+}
+
+// Title-only caption fixture: description-only metadata must not resolve caption.
 $meta = [
     'title' => '',
     'caption' => '',
@@ -125,21 +157,9 @@ $meta = [
     'alternative' => '',
     'copyright' => '',
 ];
-$metadata = [
-    'title' => (string)($meta['title'] ?? ''),
-    'caption' => (string)($meta['caption'] ?? ''),
-    'description' => (string)($meta['description'] ?? ''),
-    'alternative' => (string)($meta['alternative'] ?? ''),
-    'copyright' => (string)($meta['copyright'] ?? ''),
-];
-$caption = $metadata['caption'] !== ''
-    ? $metadata['caption']
-    : ($metadata['title'] !== '' ? $metadata['title'] : $metadata['description']);
-if ($metadata['description'] !== 'Photo by chuttersnap on Unsplash') {
-    $failures[] = 'Fixture metadata.description must remain the Unsplash description string';
-}
-if ($caption !== 'Photo by chuttersnap on Unsplash') {
-    $failures[] = 'Description-only native metadata must resolve caption via caption → title → description';
+$caption = (string)($meta['title'] ?? '');
+if ($caption !== '') {
+    $failures[] = 'Description-only native metadata must not resolve caption when File Title is empty';
 }
 
 if ($failures === []) {
