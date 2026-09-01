@@ -177,11 +177,10 @@
 
 /* Unified workspaces preserve canonical storage while presenting one Layout and one Images surface. */
 .tab-content > .tab-pane.active.mosaic-layout-sheet {
-  column-gap: 1rem;
   container-type: inline-size;
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  row-gap: .75rem;
+  gap: .75rem 1rem;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .mosaic-layout-header,
@@ -189,23 +188,38 @@
   min-width: 0;
 }
 
-.mosaic-layout-header {
-  grid-column: 1 / -1;
-}
-
 .mosaic-layout-header__row {
   display: grid;
-  gap: 5px;
+  gap: .75rem 1rem;
 }
 
 .mosaic-layout-header__row--source {
-  grid-template-columns: minmax(7rem, 2fr) minmax(16rem, 4fr) minmax(7rem, 1fr) minmax(9rem, 3fr) minmax(8rem, 2fr);
+  container-name: mosaic-layout-source;
+  container-type: inline-size;
+  grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
+}
+
+.mosaic-layout-header__row--source > .form-section[data-id="settings.folder"] {
+  grid-column: span 2;
+  min-width: 0;
+}
+
+@container mosaic-layout-source (max-width: 28rem) {
+  .mosaic-layout-header__row--source > .form-section[data-id="settings.folder"] {
+    grid-column: span 1;
+  }
 }
 
 .mosaic-layout-header__row--settings {
   align-items: end;
-  grid-template-columns: minmax(10rem, 1.3fr) minmax(7rem, .7fr) minmax(8rem, .85fr) minmax(7rem, .7fr) minmax(7rem, .7fr) minmax(10rem, 1fr) minmax(10rem, 1fr);
+  container-name: mosaic-layout-settings;
+  container-type: inline-size;
+  grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
   margin-bottom: .75rem;
+}
+
+.mosaic-layout-header__row--settings > .mosaic-design-configurator__toolbar {
+  min-width: min(12rem, 100%);
 }
 
 .mosaic-layout-header__row > .form-section {
@@ -216,10 +230,15 @@
 }
 
 .mosaic-layout-header__row--source > .form-section[data-id="settings.recursive"] {
-  align-self: stretch;
+  align-self: end;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-end;
+  max-width: 100%;
+}
+
+.mosaic-layout-header__row--source > .form-section[data-id="settings.recursive"] :is(.form-check, .form-control-wrap, .form-wizards-wrap) {
+  width: auto;
 }
 
 .mosaic-layout-header__row .form-label {
@@ -236,7 +255,22 @@
 .mosaic-layout-header__row--settings
   > .form-section:is([data-id="settings.maxItemsPerRow"], [data-id="settings.maxWidth"], [data-id="settings.itemsPerPage"], [data-id="settings.loadStep"])
   .form-control {
-  max-width: 9rem;
+  inline-size: min(100%, calc(var(--mosaic-layout-compact-ch, 4) * 1ch + 2.75rem));
+  max-inline-size: 100%;
+  min-inline-size: 4.75rem;
+}
+
+.mosaic-layout-header__row--settings > .form-section[data-id="settings.maxItemsPerRow"] .form-control {
+  --mosaic-layout-compact-ch: 3;
+}
+
+.mosaic-layout-header__row--settings > .form-section[data-id="settings.maxWidth"] .form-control {
+  --mosaic-layout-compact-ch: 6;
+}
+
+.mosaic-layout-header__row--settings > .form-section[data-id="settings.itemsPerPage"] .form-control,
+.mosaic-layout-header__row--settings > .form-section[data-id="settings.loadStep"] .form-control {
+  --mosaic-layout-compact-ch: 4;
 }
 
 .mosaic-layout-header__row--settings > .form-section[data-patterned-density-inactive="true"] {
@@ -339,7 +373,9 @@
 }
 
 .mosaic-layout-header__row .mosaic-design-configurator__preset :is(.form-control, .form-select) {
-  max-width: 13rem;
+  inline-size: min(100%, 13rem);
+  max-inline-size: 100%;
+  min-inline-size: min(100%, 12rem);
 }
 
 .mosaic-design-configurator__preset-name {
@@ -353,6 +389,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 3px 5px;
+  max-width: 100%;
 }
 
 .mosaic-layout-header__row--settings
@@ -369,31 +406,8 @@
   width: auto;
 }
 
-.tab-content > .tab-pane.active.mosaic-layout-sheet
-  > .form-section:is([data-id="settings.source"], [data-id="settings.recursive"]) {
-  grid-column: span 3;
-}
-
-.tab-content > .tab-pane.active.mosaic-layout-sheet > .form-section[data-id="settings.folder"] {
-  grid-column: span 6;
-}
-
-.tab-content > .tab-pane.active.mosaic-layout-sheet
-  > .form-section:is(
-    [data-id="settings.sortBy"],
-    [data-id="settings.sortDir"],
-    [data-id="settings.maxWidth"],
-    [data-id="settings.itemsPerPage"],
-    [data-id="settings.loadStep"],
-    [data-id="settings.useFalCaptions"]
-  ) {
-  border-top: 0;
-  grid-column: span 2;
-  padding-top: 0;
-}
-
 .tab-content > .tab-pane.active.mosaic-layout-sheet > .form-section[data-id="settings.designOverrides"] {
-  grid-column: 1 / -1;
+  min-width: 0;
 }
 
 .mosaic-images-sheet > .form-section {
@@ -856,64 +870,6 @@
     inset-inline-start: auto;
     inset-inline-end: 0;
     max-width: min(22rem, calc(100vw - 3rem));
-  }
-}
-
-@container (max-width: 1099px) {
-  .mosaic-layout-header__row--source,
-  .mosaic-layout-header__row--settings {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-
-  .mosaic-layout-header__row--source > .form-section[data-id="settings.source"],
-  .mosaic-layout-header__row--source > .form-section[data-id="settings.recursive"] {
-    grid-column: span 2;
-  }
-
-  .mosaic-layout-header__row--source > .form-section[data-id="settings.folder"] {
-    grid-column: span 4;
-  }
-
-  .mosaic-layout-header__row--source
-    > .form-section:is([data-id="settings.sortBy"], [data-id="settings.sortDir"]) {
-    grid-column: span 3;
-  }
-
-  .mosaic-layout-header__row--settings > .form-section {
-    grid-column: span 2;
-  }
-
-  .mosaic-layout-header__row--settings > .mosaic-design-configurator__toolbar {
-    grid-column: span 2;
-  }
-
-  .tab-content > .tab-pane.active.mosaic-layout-sheet
-    > .form-section:is(
-      [data-id="settings.sortBy"],
-      [data-id="settings.sortDir"],
-      [data-id="settings.maxWidth"],
-      [data-id="settings.itemsPerPage"],
-      [data-id="settings.loadStep"],
-      [data-id="settings.useFalCaptions"]
-    ) {
-    grid-column: span 4;
-  }
-}
-
-@container (max-width: 699px) {
-  .mosaic-layout-header__row--source,
-  .mosaic-layout-header__row--settings {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .mosaic-layout-header__row--source > .form-section,
-  .mosaic-layout-header__row--settings > .form-section,
-  .mosaic-layout-header__row--settings > .mosaic-design-configurator__toolbar {
-    grid-column: 1 / -1;
-  }
-
-  .tab-content > .tab-pane.active.mosaic-layout-sheet > .form-section {
-    grid-column: 1 / -1 !important;
   }
 }
 
