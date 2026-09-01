@@ -116,19 +116,19 @@ if (str_contains($setup, 'tt_content.list.20.')) {
     $failures[] = 'ext_typoscript_setup.typoscript must not contain list.20 aliases';
 }
 
-if (!str_contains($emconf, "'version' => '0.5.1'")) {
-    $failures[] = 'ext_emconf.php version must be 0.5.1 for the release';
+if (!str_contains($emconf, "'version' => '0.6.0'")) {
+    $failures[] = 'ext_emconf.php version must be 0.6.0 for the release';
 }
 
 $descriptionMatch = [];
 preg_match("/'description'\\s*=>\\s*'((?:\\\\'|[^'])*)'/", $emconf, $descriptionMatch);
 $emconfDescription = $descriptionMatch[1] ?? '';
 foreach ([
-    'composer require anatolkin/anatolkin-mosaic-gallery:^0.5' => 'TER description must document Composer fresh install',
+    'composer require anatolkin/anatolkin-mosaic-gallery:^0.6' => 'TER description must document Composer fresh install',
     'composer update anatolkin/anatolkin-mosaic-gallery -W' => 'TER description must document Composer update',
     'php vendor/bin/typo3 extension:setup' => 'TER description must document extension:setup',
     'Sets for this Site' => 'TER description must document Site Set integration',
-    'No database migration is required for 0.5.1' => 'TER description must state no database migration for 0.5.1',
+    'No database migration is required for 0.6.0' => 'TER description must state no database migration for 0.6.0',
 ] as $needle => $message) {
     if (!str_contains($emconfDescription, $needle)) {
         $failures[] = $message;

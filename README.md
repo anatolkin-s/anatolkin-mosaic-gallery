@@ -2,7 +2,7 @@
 
 ## Overview
 
-Anatolkin Mosaic Gallery is a TYPO3 extension for responsive FAL image galleries. Images come from one TYPO3 Fileadmin folder, with optional inclusion of its subfolders. Editors can choose from multiple gallery layouts, customize gallery and lightbox appearance, manage per-image Caption and Alternative text overrides, and open images in an optional GLightbox-based lightbox.
+Anatolkin Mosaic Gallery is a TYPO3 extension for responsive FAL image galleries. Images can come from a Fileadmin folder (with optional subfolders) or from individually selected Manual Images using native TYPO3 FAL FileReferences. Editors can choose from multiple gallery layouts, customize gallery and lightbox appearance, manage per-image Caption and Alternative text overrides, and open images in an optional GLightbox-based lightbox.
 
 ## Requirements
 
@@ -18,7 +18,7 @@ Choose the path that matches your TYPO3 installation.
 Recommended for Composer-based TYPO3 projects:
 
 ```bash
-composer require anatolkin/anatolkin-mosaic-gallery:^0.5
+composer require anatolkin/anatolkin-mosaic-gallery:^0.6
 ```
 
 Then apply extension setup:
@@ -75,7 +75,7 @@ Run `extension:setup` after every install or update of this package. Existing Si
 If `composer.json` pins an older exact release and blocks the update, widen the project constraint first, for example:
 
 ```bash
-composer require anatolkin/anatolkin-mosaic-gallery:^0.5 -W
+composer require anatolkin/anatolkin-mosaic-gallery:^0.6 -W
 ```
 
 Do not edit `composer.lock` manually.
@@ -169,6 +169,15 @@ vendor/bin/typo3 upgrade:list
 vendor/bin/typo3 upgrade:run mosaicGalleryCTypeMigration
 ```
 
+Updating from 0.5.x to 0.6.0 does **not** require the legacy CType migration wizard. That wizard remains only for genuinely old `CType=list` plugin records (see below). Run extension setup after updating:
+
+```bash
+composer update anatolkin/anatolkin-mosaic-gallery -W
+php vendor/bin/typo3 extension:setup
+```
+
+Version 0.6.0 requires no database migration.
+
 Updating from 0.5.0 to 0.5.1 does **not** require this wizard. Version 0.5.1 itself requires no database migration.
 
 On TYPO3 13.4, a compatibility bridge restores frontend rendering and backend editing of leftover plugin records **before** the wizard is run. The wizard remains the recommended permanent conversion. Complete that conversion before upgrading the TYPO3 Core to 14.
@@ -212,17 +221,19 @@ FlexForm data, record UIDs, localization relationships, and ordinary `tt_content
 ## Basic usage
 
 1. Create an **Anatolkin Mosaic Gallery** content element from the **Gallery** group.
-2. Select a Fileadmin folder.
-3. Enable **Include subfolders** if images from nested folders should be included.
-4. Choose filename, modification-time, or random ordering. Filename and modification-time sorting support ascending and descending directions.
-5. Configure captions, lightbox, Load More, image width, spacing, and visual options.
-6. Save the content element. Use **Image metadata** for stable per-image Caption and Alternative text values.
+2. Choose **Folder** or **Manual images** as the image source.
+3. For Folder: select a Fileadmin folder and enable **Include subfolders** if needed.
+4. For Manual images: add images through the native TYPO3 FileReference selector; order them manually.
+5. Choose filename, modification-time, or random ordering (Folder source). Filename and modification-time sorting support ascending and descending directions.
+6. Configure captions, lightbox, Load More, image width, spacing, and visual options.
+7. Save the content element. Use **Image metadata** for stable per-image Caption and Alternative text values.
 
 ## Current features
 
-- Fileadmin folder image source with optional recursive subfolder inclusion
+- **Folder** image source with optional recursive subfolder inclusion
+- **Manual Images** source with native TYPO3 FAL FileReferences, manual ordering, and per-reference crop support
 - Filename and modification-time sorting, including ascending and descending directions
-- Random display ordering
+- Random display ordering (Folder source)
 - Five responsive gallery layouts: Masonry, Mosaic, Patterned Mosaic, Justified Rows, and Uniform Grid
 - Configurable Patterned Mosaic density on wide screens
 - Configurable image width, gap, frames, frame accents, corner radius, background, shadow, captions, and layout behavior
@@ -232,9 +243,70 @@ FlexForm data, record UIDs, localization relationships, and ordinary `tt_content
 - Progressive image loading with configurable initial batch, Load More step, and Lightbox refresh
 - Per-gallery UID-linked Caption and Alternative text metadata overrides
 - Images workspace with Grid, List, and Table metadata views
+- Live metadata synchronization for Manual Images during add/remove/reorder before Save
 - Multilingual metadata workflow integrated with TYPO3 content localization
 - Compact responsive backend configuration
 - English, German, French, Spanish, and Russian extension interface translations
+
+## What's new in 0.6.0
+
+Version 0.6.0 adds **Manual Images** — a native TYPO3 FAL FileReference workflow alongside the existing Folder gallery source.
+
+### Manual Images
+
+- Select individual FAL images instead of scanning a folder
+- Uses native TYPO3 `sys_file_reference` records with manual ordering
+- Multi-select before Save
+- Per-image crop editor through TYPO3 FileReferences
+- Native FileReference Link, Title, and Alternative Text fields
+- Mosaic Caption and Alternative text overrides per image
+- Grid, List, and Table metadata editor views
+- Live metadata rows during add, remove, and reorder before Save
+- Collapse-safe backend behavior on TYPO3 13.4 and 14.3 (collapsed or lazy-loaded FileReference cards do not drop metadata rows)
+
+### Folder mode
+
+- Remains dynamic folder-based gallery generation
+- No FileReferences are created merely to render a folder gallery
+
+### Caption semantics (0.6.0)
+
+**Caption** is the short image title/label shown with the gallery. It is **not** the FAL Description field.
+
+| Source | Inherited Caption uses |
+|--------|------------------------|
+| **Folder** | FAL **File Title** for the current language |
+| **Manual Images** | TYPO3 **FileReference Title**, with TYPO3's normal fallback to the underlying **File Title** |
+
+- If Title is empty, inherited Caption is empty.
+- **Description is not automatically used as Caption.**
+- **Mosaic Custom Caption** overrides inherited Title.
+- **Alternative text** remains independent (File or FileReference Alternative Text, with Mosaic Custom / Empty modes).
+
+Description and lightbox-description support are intentionally deferred to a future release.
+
+### Upgrade note from 0.5.x
+
+This is **not** a database migration. Existing content records and metadata overrides are preserved.
+
+Starting with 0.6.0, **Folder inherited Caption uses File Title only**. In 0.5.x, inherited Caption could fall back from Title to Description when Title was empty. After updating, a Folder gallery that relied on Description because its File Title was empty may show **no Caption**.
+
+Safe remedies:
+
+- Set a **File Title** in Filelist metadata, or
+- Use a **Mosaic Custom Caption** for that image.
+
+No compatibility shim, record mutation, or Upgrade Wizard is provided for this semantic correction.
+
+### Data preservation
+
+- No database migration is required for 0.6.0.
+- Existing Mosaic metadata overrides (`custom` / `inherit` / `empty`) remain valid.
+- Existing Folder galleries remain Folder galleries.
+- Existing 0.5.x content records do not require conversion.
+- Manual Images uses TYPO3 native `sys_file_reference` records when that source is chosen.
+
+Verified on TYPO3 13.4.34 and TYPO3 14.3.6.
 
 ## What's new in 0.5.1
 
@@ -335,11 +407,11 @@ Each gallery item also exposes localized `sys_file_metadata` as a stable subset:
 - `{it.metadata.alternative}`
 - `{it.metadata.copyright}`
 
-`{it.caption}` and `{it.alt}` remain the final resolved values after gallery-specific overrides. When **Use file metadata as fallback** is enabled, the visible caption fallback order is:
+`{it.caption}` and `{it.alt}` remain the final resolved values after gallery-specific overrides.
 
-```text
-caption → title → description
-```
+**Folder source:** when **Use file metadata as fallback** is enabled and Caption is set to Inherit, the visible caption uses the localized **File Title**. Description is not used automatically.
+
+**Manual Images source:** when Caption is set to Inherit, the visible caption uses the **FileReference Title** (with TYPO3's normal fallback to File Title). Description is not used automatically.
 
 ## Image metadata behavior
 
@@ -347,11 +419,11 @@ The Image metadata editor stores gallery-specific values on the current `tt_cont
 
 For each image:
 
-- **Caption** can inherit the existing fallback or use a gallery-specific custom value.
-- **Alternative text** can inherit, use a custom value, or be explicitly empty for a decorative image.
-- **Use file metadata as fallback** allows metadata maintained through TYPO3 Filelist to supply inherited values.
+- **Caption** can inherit the File or FileReference **Title** (depending on source) or use a gallery-specific custom value.
+- **Alternative text** can inherit File or FileReference Alternative Text, use a custom value, or be explicitly empty for a decorative image.
+- **Use file metadata as fallback** (Folder source) allows metadata maintained through TYPO3 Filelist to supply inherited Title and Alternative Text values.
 
-The editor reads images from the saved folder settings. Save folder and sorting changes before editing or converting metadata.
+For Folder galleries, the editor reads images from the saved folder settings. For Manual Images, images come from native FileReferences on the content element. Save source and ordering changes before editing metadata.
 
 ## Legacy Quick captions
 
@@ -373,7 +445,7 @@ Configured site languages are discovered from TYPO3 Site Configuration. The five
 
 ## Compatibility and release status
 
-Anatolkin Mosaic Gallery 0.5.1 targets TYPO3 13.4 and TYPO3 14.3.
+Anatolkin Mosaic Gallery 0.6.0 targets TYPO3 13.4 and TYPO3 14.3.
 
 Existing folder galleries, legacy Quick captions, and the `list_type` to `CType` migration path introduced in 0.3.0 remain supported. On TYPO3 13.4, unmigrated plugin records remain usable before that wizard is run. TYPO3 14 installations should complete the wizard first and then use dedicated `CType=mosaicgallery_pi1` records only.
 
