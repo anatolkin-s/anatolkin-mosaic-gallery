@@ -193,6 +193,70 @@ const readUidLocal = (referenceNode) => {
   return null;
 };
 
+const parseManualReferenceMap = (editor) => {
+  try {
+    const parsed = JSON.parse(editor.dataset.mosaicManualReferenceMap ?? '{}');
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch (error) {
+    return {};
+  }
+};
+
+const ensureRelationIdentityMap = (state) => {
+  if (!state.relationIdentityMap) {
+    state.relationIdentityMap = {
+      byObjectId: {},
+      byReferenceUid: {},
+    };
+  }
+  return state.relationIdentityMap;
+};
+
+const rememberManualReferenceIdentity = (state, reference, fileUid) => {
+  if (!Number.isInteger(fileUid) || fileUid <= 0) {
+    return;
+  }
+  const identityMap = ensureRelationIdentityMap(state);
+  const objectId = reference.dataset.objectId ?? '';
+  const referenceUid = Number.parseInt(reference.dataset.objectUid ?? '', 10);
+  if (objectId !== '') {
+    identityMap.byObjectId[objectId] = fileUid;
+  }
+  if (Number.isInteger(referenceUid) && referenceUid > 0) {
+    identityMap.byReferenceUid[String(referenceUid)] = fileUid;
+  }
+};
+
+const resolveManualReferenceFileUid = (reference, editor, state) => {
+  const liveUid = readUidLocal(reference);
+  if (liveUid) {
+    rememberManualReferenceIdentity(state, reference, liveUid);
+    return liveUid;
+  }
+
+  const identityMap = state?.relationIdentityMap;
+  const objectId = reference.dataset.objectId ?? '';
+  if (objectId !== '' && identityMap?.byObjectId?.[objectId]) {
+    return identityMap.byObjectId[objectId];
+  }
+
+  const referenceUid = String(reference.dataset.objectUid ?? '');
+  if (referenceUid !== '' && identityMap?.byReferenceUid?.[referenceUid]) {
+    return identityMap.byReferenceUid[referenceUid];
+  }
+
+  const serverMap = parseManualReferenceMap(editor);
+  if (referenceUid !== '' && serverMap[referenceUid]) {
+    const fileUid = Number.parseInt(String(serverMap[referenceUid]), 10);
+    if (Number.isInteger(fileUid) && fileUid > 0) {
+      rememberManualReferenceIdentity(state, reference, fileUid);
+      return fileUid;
+    }
+  }
+
+  return null;
+};
+
 const findSourceControl = (editor) => {
   const scopes = [
     editor.closest('.mosaic-images-sheet'),
@@ -246,7 +310,7 @@ const isDeletedManualReference = (reference) => (
   || reference.classList.contains('form-irre-object--deleted')
 );
 
-const readManualFileReferences = (manualSection) => {
+const readManualFileReferences = (manualSection, editor, state) => {
   const recordsContainer = findManualRecordsContainer(manualSection);
   if (!recordsContainer) {
     return [];
@@ -257,7 +321,7 @@ const readManualFileReferences = (manualSection) => {
 
   const items = [];
   references.forEach((reference) => {
-    const fileUid = readUidLocal(reference);
+    const fileUid = resolveManualReferenceFileUid(reference, editor, state);
     if (!fileUid) {
       return;
     }
@@ -453,7 +517,12 @@ const syncLiveManualMetadata = (editor) => {
   persistVisibleRows(editor);
   const storage = editor.querySelector('[data-mosaic-metadata-storage]');
   const storedDocument = createDocument(storage?.value ?? '');
-  const references = readManualFileReferences(manualSection);
+  let state = editorState.get(editor);
+  if (!state) {
+    state = {};
+    editorState.set(editor, state);
+  }
+  const references = readManualFileReferences(manualSection, editor, state);
 
   items.replaceChildren();
   references.forEach((reference) => {

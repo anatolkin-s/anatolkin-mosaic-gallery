@@ -478,6 +478,36 @@ if ($metadataEditorJs !== '') {
     ) {
         $failures[] = 'Q: Deleted manual relations must be detected via TYPO3 inline delete markers';
     }
+    if (!str_contains($metadataEditorJs, 'resolveManualReferenceFileUid')) {
+        $failures[] = 'S: Manual relation identity must not depend on expanded uid_local inputs only';
+    }
+    if (!str_contains($metadataEditorJs, 'mosaicManualReferenceMap') || !str_contains($metadataEditorJs, 'parseManualReferenceMap')) {
+        $failures[] = 'S: metadata-editor must consume server bootstrap referenceUid -> fileUid map';
+    }
+    if (!str_contains($metadataEditorJs, 'relationIdentityMap') || !str_contains($metadataEditorJs, 'rememberManualReferenceIdentity')) {
+        $failures[] = 'S: metadata-editor must cache unsaved relation identity in runtime editor state';
+    }
+    if (preg_match('/t3js-not-loaded[\s\S]{0,120}isDeletedManualReference/s', $metadataEditorJs)) {
+        $failures[] = 'S: t3js-not-loaded collapsed state must not be treated as deletion';
+    }
+    if (!preg_match('/data-mosaic-manual-reference-map/s', $metadataElement)) {
+        $failures[] = 'S: MetadataOverridesElement must bootstrap persisted referenceUid -> fileUid map';
+    }
+    if (!preg_match('/manualReferenceMap\[\(string\)\$referenceUid\]\s*=\s*\$fileUid/s', $metadataElement)) {
+        $failures[] = 'S: Persisted reference map must key sys_file_reference UID to original sys_file.uid';
+    }
+}
+
+$identityResolverTest = $root . '/Build/test-manual-reference-identity-resolver.js';
+if (!is_file($identityResolverTest)) {
+    $failures[] = 'S: Missing executable manual reference identity resolver test';
+} else {
+    $identityOutput = [];
+    $identityExit = 0;
+    exec('node ' . escapeshellarg($identityResolverTest) . ' 2>&1', $identityOutput, $identityExit);
+    if ($identityExit !== 0) {
+        $failures[] = 'S: Manual reference identity resolver test failed: ' . implode("\n", $identityOutput);
+    }
 }
 
 $manualResolverTest = $root . '/Build/test-gallery-inherited-metadata-resolver.php';

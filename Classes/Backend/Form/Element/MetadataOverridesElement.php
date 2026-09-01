@@ -50,6 +50,7 @@ final class MetadataOverridesElement extends AbstractFormElement
         $contentUid = (int)$this->scalarValue($this->data['databaseRow']['uid'] ?? 0);
 
         $images = [];
+        $manualReferenceMap = [];
         $folderError = false;
         if ($isManualSource) {
             if ($contentUid > 0) {
@@ -57,7 +58,13 @@ final class MetadataOverridesElement extends AbstractFormElement
                     ->getFileReferences($contentUid);
                 foreach ($fileReferences as $fileReference) {
                     try {
-                        $images[] = $fileReference->getOriginalFile();
+                        $file = $fileReference->getOriginalFile();
+                        $images[] = $file;
+                        $referenceUid = $fileReference->getUid();
+                        $fileUid = $file->getUid();
+                        if ($referenceUid > 0 && $fileUid > 0) {
+                            $manualReferenceMap[(string)$referenceUid] = $fileUid;
+                        }
                     } catch (\Throwable) {
                         // Skip broken relations without blocking the metadata workspace.
                     }
@@ -83,11 +90,16 @@ final class MetadataOverridesElement extends AbstractFormElement
             (string)json_encode($legacyCaptionLines, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
             ENT_QUOTES,
         );
+        $manualReferenceMapJson = htmlspecialchars(
+            (string)json_encode($manualReferenceMap, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            ENT_QUOTES,
+        );
         [$languageSummary, $languageHelp] = $this->renderLanguageContext($languageContext);
         $html = $this->renderLabel($fieldId)
             . '<div class="form-control-wrap" data-mosaic-metadata-editor data-mosaic-images-view="table"'
             . ' data-mosaic-initial-source="' . htmlspecialchars($source, ENT_QUOTES) . '"'
             . ' data-mosaic-image-count-format="' . htmlspecialchars($this->rawLabel('metadata.imageCount'), ENT_QUOTES) . '"'
+            . ' data-mosaic-manual-reference-map="' . $manualReferenceMapJson . '"'
             . ' data-mosaic-legacy-captions="' . $legacyCaptionLinesJson . '"'
             . ' data-mosaic-edit-label="' . $this->label('metadata.view.edit') . '"'
             . ' data-mosaic-hide-label="' . $this->label('metadata.view.hide') . '"'
