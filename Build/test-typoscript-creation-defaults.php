@@ -370,8 +370,10 @@ if (preg_match('/proxyControls\.forEach\(\(proxy\) => \{[\s\S]*?if \(!canonical\
 ) {
     $failures[] = 'Case B JS must not return early before proxy initialization';
 }
-if (!str_contains($js, 'initialProxyValue(canonical, proxy)')) {
-    $failures[] = 'Case B JS must compute initialProxyValue before canonical-only return';
+if (!str_contains($js, 'resolveInitialProxyValue(canonical, proxy)')
+    && !str_contains($js, 'initialProxyValue(canonical, proxy)')
+) {
+    $failures[] = 'Case B JS must compute initial proxy value before canonical-only return';
 }
 
 // C. missing boolean default is not silently treated as "0" when attribute absent

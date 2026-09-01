@@ -139,6 +139,75 @@ const writeControlValue = (control, value) => {
   control.value = value == null ? '' : String(value);
 };
 
+const normalizeSingleCheckboxValue = (value) => (isTruthyBoolean(value) ? '1' : '0');
+
+const isFormEngineCheckbox = (control) => Boolean(
+  control
+  && control.type === 'checkbox'
+  && control.dataset?.formengineInputName,
+);
+
+const formEngineCheckboxStorage = (control) => {
+  if (!isFormEngineCheckbox(control)) {
+    return null;
+  }
+  const scope = control.closest('.form-section') ?? control.closest('form') ?? document;
+  const canonicalName = control.dataset.formengineInputName;
+  return [...scope.querySelectorAll('input[type="hidden"][name]')]
+    .find((candidate) => candidate.name === canonicalName) ?? null;
+};
+
+const notifyFormEngineControlChange = (control) => {
+  if (!control) {
+    return;
+  }
+  control.dispatchEvent(new Event('input', { bubbles: true }));
+  control.dispatchEvent(new Event('change', { bubbles: true }));
+};
+
+const readCanonicalControlValue = (control) => {
+  if (!control) {
+    return '';
+  }
+  if (isFormEngineCheckbox(control)) {
+    const hidden = formEngineCheckboxStorage(control);
+    if (hidden) {
+      return normalizeSingleCheckboxValue(hidden.value);
+    }
+    return readControlValue(control);
+  }
+  const section = control.closest('.form-section');
+  if (section && control.dataset?.formengineInputName) {
+    return formEngineControlValue(section, control);
+  }
+  return readControlValue(control);
+};
+
+const writeCanonicalControlValue = (control, value, options = {}) => {
+  if (!control) {
+    return false;
+  }
+  const notify = options.notify !== false;
+  if (isFormEngineCheckbox(control)) {
+    const hidden = formEngineCheckboxStorage(control);
+    if (!hidden) {
+      return false;
+    }
+    const normalized = normalizeSingleCheckboxValue(value);
+    control.checked = isTruthyBoolean(normalized);
+    hidden.value = normalized;
+    if (notify) {
+      notifyFormEngineControlChange(control);
+    }
+    return readCanonicalControlValue(control) === normalized;
+  }
+  writeControlValue(control, value);
+  if (notify) {
+    notifyFormEngineControlChange(control);
+  }
+  return true;
+};
+
 const updateCompactValueWidth = (control) => {
   if (!control || !control.hasAttribute('data-design-compact-value')) {
     return;
@@ -279,7 +348,9 @@ const customDesign = (sections) => {
     const [path, kind] = mapping;
     let value = formEngineControlValue(section, control);
     if (kind === 'boolean') {
-      value = control.checked;
+      value = isFormEngineCheckbox(control)
+        ? isTruthyBoolean(readCanonicalControlValue(control))
+        : control.checked;
     } else if (kind === 'integer') {
       value = Math.max(0, Number.parseInt(value, 10) || 0);
     }
@@ -600,10 +671,26 @@ const initializeEditor = (editor) => {
     }
     return String(proxy.dataset.designProxyDefault);
   };
-  const applyValueToCanonical = (control, value) => {
+  const applyValueToCanonical = (control, value, options = {}) => {
+    if (!control) {
+      return;
+    }
+    if (isFormEngineCheckbox(control)) {
+      writeCanonicalControlValue(control, value, options);
+      return;
+    }
     writeControlValue(control, value);
   };
-  const liveCanonicalValue = (control) => readControlValue(control);
+  const liveCanonicalValue = (control) => readCanonicalControlValue(control);
+  const resolveInitialProxyValue = (control, proxy = null) => {
+    if (control && isFormEngineCheckbox(control)) {
+      const hidden = formEngineCheckboxStorage(control);
+      if (hidden) {
+        return normalizeSingleCheckboxValue(hidden.value);
+      }
+    }
+    return initialProxyValue(control, proxy);
+  };
   const initialProxyValue = (control, proxy = null) => {
     const proxyDefault = proxyDefaultValue(proxy);
     if (!control) {
@@ -684,6 +771,29 @@ const initializeEditor = (editor) => {
   const displayState = () => Object.fromEntries(proxyControls.map(
     (proxy) => [proxy.dataset.designProxy.replace('settings.', ''), readControlValue(proxy)],
   ));
+  const initialProxyValues = new Map();
+  const updateProxyFieldState = (proxy) => {
+    if (!proxy) {
+      return;
+    }
+    const fieldName = proxy.dataset.designProxy;
+    const initial = initialProxyValues.get(fieldName);
+    const current = readControlValue(proxy);
+    const modified = initial !== undefined && canonicalJson(current) !== canonicalJson(initial);
+    const reset = proxy.closest('[data-design-proxy-field]')
+      ?.querySelector('[data-design-proxy-reset]');
+    if (reset) {
+      reset.disabled = !modified;
+      reset.hidden = !modified;
+    }
+  };
+  const proxyDirty = () => proxyControls.some((proxy) => {
+    const initial = initialProxyValues.get(proxy.dataset.designProxy);
+    if (initial === undefined) {
+      return false;
+    }
+    return canonicalJson(readControlValue(proxy)) !== canonicalJson(initial);
+  });
   const updateAccentVisibility = (frameStyle) => {
     const relevant = MULTI_COLOR_FRAME_STYLES.has(frameStyle);
     const configuratorAccent = editor.querySelector('[data-design-field="frameAccentColor"]');
@@ -719,7 +829,9 @@ const initializeEditor = (editor) => {
   const updateStatus = () => {
     const preset = currentPreset();
     const count = countLeaves(overrides);
-    const dirty = preset !== savedPreset || canonicalJson(overrides) !== canonicalJson(savedDocument);
+    const overridesDirty = preset !== savedPreset
+      || canonicalJson(overrides) !== canonicalJson(savedDocument);
+    const dirty = overridesDirty || proxyDirty();
     const statusPrefix = editor.querySelector('[data-design-status-prefix]');
     const statusName = editor.querySelector('[data-design-status-name]');
     const statusDetail = editor.querySelector('[data-design-status-detail]');
@@ -772,13 +884,15 @@ const initializeEditor = (editor) => {
   presetSelector.addEventListener('change', updateMode);
   proxyControls.forEach((proxy) => {
     const canonical = canonicalControl(proxy.dataset.designProxy);
-    const initialValue = initialProxyValue(canonical, proxy);
+    const initialValue = resolveInitialProxyValue(canonical, proxy);
     // Always initialize the proxy, including when no canonical control exists yet.
     if (initialValue !== '' || proxyDefaultValue(proxy) !== null) {
       writeControlValue(proxy, initialValue);
     }
     updateCompactValueWidth(proxy);
     if (!canonical) {
+      initialProxyValues.set(proxy.dataset.designProxy, readControlValue(proxy));
+      updateProxyFieldState(proxy);
       return;
     }
     const canonicalSection = canonical.closest('.form-section');
@@ -787,12 +901,22 @@ const initializeEditor = (editor) => {
       canonicalSection.classList.add('mosaic-proxy-storage-field');
     }
     // Keep FormEngine storage aligned with the resolved creation/default value.
-    applyValueToCanonical(canonical, readControlValue(proxy));
+    applyValueToCanonical(canonical, readControlValue(proxy), { notify: false });
+    initialProxyValues.set(
+      proxy.dataset.designProxy,
+      isFormEngineCheckbox(canonical)
+        ? readCanonicalControlValue(canonical)
+        : readControlValue(proxy),
+    );
+    updateProxyFieldState(proxy);
     proxy.addEventListener('change', () => {
-      applyValueToCanonical(canonical, readControlValue(proxy));
+      const intended = readControlValue(proxy);
+      if (!writeCanonicalControlValue(canonical, intended)) {
+        return;
+      }
       updateCompactValueWidth(proxy);
-      canonical.dispatchEvent(new Event('input', { bubbles: true }));
-      canonical.dispatchEvent(new Event('change', { bubbles: true }));
+      updateProxyFieldState(proxy);
+      updateStatus();
       publishState();
     });
     proxy.addEventListener('input', () => {
@@ -802,6 +926,8 @@ const initializeEditor = (editor) => {
       // After initialization, live canonical state is authoritative (including Off=0).
       writeControlValue(proxy, liveCanonicalValue(canonical));
       updateCompactValueWidth(proxy);
+      updateProxyFieldState(proxy);
+      updateStatus();
       publishState();
     };
     canonical.addEventListener('change', syncProxy);
@@ -901,6 +1027,28 @@ const initializeEditor = (editor) => {
         updateFieldState(control, false);
         persist();
       }
+      return;
+    }
+    const resetProxy = event.target.closest('[data-design-proxy-reset]');
+    if (resetProxy) {
+      const proxyField = resetProxy.closest('[data-design-proxy-field]');
+      const proxy = proxyField?.querySelector('[data-design-proxy]');
+      if (!proxy) {
+        return;
+      }
+      const canonical = canonicalControl(proxy.dataset.designProxy);
+      const initial = initialProxyValues.get(proxy.dataset.designProxy);
+      if (initial === undefined) {
+        return;
+      }
+      writeControlValue(proxy, initial);
+      if (canonical && !writeCanonicalControlValue(canonical, initial)) {
+        return;
+      }
+      updateCompactValueWidth(proxy);
+      updateProxyFieldState(proxy);
+      updateStatus();
+      publishState();
       return;
     }
     if (event.target.closest('[data-design-reset-all]')) {

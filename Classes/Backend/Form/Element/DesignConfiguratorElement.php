@@ -279,20 +279,19 @@ final class DesignConfiguratorElement extends AbstractFormElement
     /** @param array<string, mixed> $settings */
     private function renderDisplayControls(string $group, array $settings): string
     {
-        $field = fn(string $labelKey, string $control): string =>
-            '<label class="mosaic-design-display-controls__field"><span>'
-            . $this->label($labelKey) . '</span>' . $control . '</label>';
         $proxyDefault = fn(string $fieldName): string => $this->proxyDefaultAttribute($fieldName, $settings);
 
         return match ($group) {
-            'gallery' => $field(
+            'gallery' => $this->renderDisplayProxyField(
+                'settings.gap',
                 'design.field.gap',
                 '<input type="number" min="0" class="form-control form-control-sm"'
                     . ' data-design-proxy="settings.gap" data-design-compact-value'
                     . $proxyDefault('settings.gap') . '>',
             )
                 . $this->renderBooleanProxy('settings.showCaptions', 'design.field.captions', $settings)
-                . $field(
+                . $this->renderDisplayProxyField(
+                    'settings.captionAlign',
                     'design.field.alignment',
                     '<select class="form-select form-select-sm" data-design-proxy="settings.captionAlign"'
                         . $proxyDefault('settings.captionAlign') . '>'
@@ -311,6 +310,40 @@ final class DesignConfiguratorElement extends AbstractFormElement
     }
 
     /** @param array<string, mixed> $settings */
+    private function renderDisplayProxyField(string $fieldName, string $labelKey, string $controlHtml): string
+    {
+        return '<div class="mosaic-design-display-controls__proxy" data-design-proxy-field="'
+            . htmlspecialchars($fieldName, ENT_QUOTES) . '">'
+            . '<label class="mosaic-design-display-controls__field"><span>'
+            . $this->label($labelKey) . '</span>' . $controlHtml . '</label>'
+            . $this->renderProxyResetButton()
+            . '</div>';
+    }
+
+    /** @param array<string, mixed> $settings */
+    private function renderBooleanProxy(string $fieldName, string $labelKey, array $settings): string
+    {
+        return '<div class="mosaic-design-display-controls__proxy" data-design-proxy-field="'
+            . htmlspecialchars($fieldName, ENT_QUOTES) . '">'
+            . '<label class="mosaic-design-display-controls__field'
+            . ' mosaic-design-display-controls__field--checkbox">'
+            . '<input type="checkbox" value="1" data-design-proxy="'
+            . htmlspecialchars($fieldName, ENT_QUOTES) . '"'
+            . $this->proxyDefaultAttribute($fieldName, $settings) . '>'
+            . '<span>' . $this->label($labelKey) . '</span></label>'
+            . $this->renderProxyResetButton()
+            . '</div>';
+    }
+
+    private function renderProxyResetButton(): string
+    {
+        return '<button type="button" class="btn btn-default btn-sm mosaic-design-reset-proxy"'
+            . ' data-design-proxy-reset data-mosaic-action-tooltip disabled hidden aria-label="'
+            . $this->label('design.configurator.reset') . '">'
+            . $this->actionIcon('reset') . '</button>';
+    }
+
+    /** @param array<string, mixed> $settings */
     private function renderLoadMoreSubgroup(array $settings): string
     {
         return '<div class="mosaic-design-configurator__subgroup" data-design-subgroup="loadMore">'
@@ -324,17 +357,6 @@ final class DesignConfiguratorElement extends AbstractFormElement
                 $settings,
             )
             . '</div></div>';
-    }
-
-    /** @param array<string, mixed> $settings */
-    private function renderBooleanProxy(string $fieldName, string $labelKey, array $settings): string
-    {
-        return '<label class="mosaic-design-display-controls__field'
-            . ' mosaic-design-display-controls__field--checkbox">'
-            . '<input type="checkbox" value="1" data-design-proxy="'
-            . htmlspecialchars($fieldName, ENT_QUOTES) . '"'
-            . $this->proxyDefaultAttribute($fieldName, $settings) . '>'
-            . '<span>' . $this->label($labelKey) . '</span></label>';
     }
 
     /** @param array<string, mixed> $settings */

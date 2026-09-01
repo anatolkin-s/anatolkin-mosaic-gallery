@@ -171,11 +171,36 @@ if (!preg_match("/sheet\\.addEventListener\\(\\s*'change'[\\s\\S]*?isCustomField
 if (preg_match("/dispatchEvent\\(\\s*new Event\\(\\s*'blur'/", $js)) {
     $failures[] = 'I: must not dispatch synthetic blur events for Custom color sync';
 }
-if (preg_match(
-    '/querySelector\\([^)]*type=["\']hidden["\'][^)]*\\)[\\s\\S]{0,120}\\.value\\s*=/',
+if (preg_match("/\\.click\\(\\)|dispatchEvent\\(\\s*new MouseEvent\\(\\s*'click'|dispatchEvent\\(\\s*new Event\\(\\s*'click'/", $js)) {
+    $failures[] = 'I: must not synthesize Core checkbox click events';
+}
+if (!preg_match('/const formEngineCheckboxStorage = \\(control\\) => \\{/', $js)
+    || !preg_match('/const readCanonicalControlValue = \\(control\\) => \\{/', $js)
+    || !preg_match('/const writeCanonicalControlValue = \\(control, value, options = \\{\\}\\) => \\{/', $js)
+) {
+    $failures[] = 'I: canonical FormEngine checkbox adapter helpers must exist';
+}
+if (!preg_match('/formEngineCheckboxStorage[\\s\\S]*?candidate\\.name === canonicalName/', $js)
+    || !preg_match('/writeCanonicalControlValue[\\s\\S]*?hidden\\.value = normalized/', $js)
+) {
+    $failures[] = 'I: canonical checkbox writes must match hidden storage by exact name and sync "1"/"0"';
+}
+if (!preg_match('/applyValueToCanonical[\\s\\S]*?writeCanonicalControlValue/', $js)
+    || !preg_match('/liveCanonicalValue = \\(control\\) => readCanonicalControlValue\\(control\\)/', $js)
+) {
+    $failures[] = 'I: proxy/canonical sync must use canonical checkbox adapter';
+}
+$formEngineColorHydrationMatch = [];
+preg_match(
+    '/const formEngineControlValue = \\(section, control\\) => \\{([^}]+)\\}/s',
     $js,
-)) {
-    $failures[] = 'I: must not manually assign canonical hidden color inputs';
+    $formEngineColorHydrationMatch,
+);
+$formEngineColorHydrationBody = $formEngineColorHydrationMatch[1] ?? '';
+if ($formEngineColorHydrationBody === ''
+    || preg_match('/hidden(?:\\?\\.|\\.)value\\s*=/', $formEngineColorHydrationBody)
+) {
+    $failures[] = 'I: color hydration must remain read-only for Core hidden fields';
 }
 
 // J. Custom native color initial hydration: visible wins, hidden fallback on load

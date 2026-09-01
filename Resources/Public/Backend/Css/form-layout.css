@@ -1122,6 +1122,23 @@
   min-width: 0;
 }
 
+.mosaic-design-display-controls__proxy {
+  align-items: end;
+  display: flex;
+  gap: .4rem;
+  min-width: 0;
+}
+
+.mosaic-design-display-controls__proxy > .mosaic-design-display-controls__field {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mosaic-design-display-controls__proxy [data-design-proxy-reset] {
+  flex: 0 0 auto;
+  margin-bottom: .05rem;
+}
+
 .mosaic-design-display-controls__field > span {
   display: block;
   margin-bottom: .2rem;

@@ -299,6 +299,30 @@ if (!preg_match(
     $failures[] = 'H: Load More subgroup must be attached under Gallery rendering';
 }
 
+// Display proxy persistence + reset semantics
+if (!str_contains($element, 'data-design-proxy-reset')
+    || !str_contains($element, 'data-design-proxy-field')
+    || !str_contains($js, 'initialProxyValues')
+    || !str_contains($js, 'updateProxyFieldState')
+    || !str_contains($js, 'proxyDirty')
+) {
+    $failures[] = 'K/M: display proxy baseline, reset, and dirty tracking must exist';
+}
+if (!preg_match('/writeCanonicalControlValue\\(\\s*canonical, intended\\)/', $js)
+    || !preg_match('/data-design-proxy-reset/', $js)
+) {
+    $failures[] = 'L: proxy reset must write through canonical adapter';
+}
+if (!preg_match('/const dirty = overridesDirty \\|\\| proxyDirty\\(\\)/', $js)
+    || !preg_match('/countLeaves\\(\\s*overrides\\s*\\)/', $js)
+) {
+    $failures[] = 'M/N: Unsaved status must include proxy dirty while override count stays separate';
+}
+$resolver = readFileOrFail($root . '/Classes/Service/DesignPresetResolver.php', $failures);
+if (preg_match('/showCaptions|enableLightbox|enableLoadMore|loadMoreUseFrameStyle/', $resolver)) {
+    $failures[] = 'O: display proxies must not be added to DesignPresetResolver documents';
+}
+
 if ($failures === []) {
     fwrite(STDOUT, "Design configurator responsive layout checks passed.\n");
     exit(0);
