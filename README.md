@@ -11,41 +11,85 @@ Anatolkin Mosaic Gallery is a TYPO3 extension for responsive FAL image galleries
 
 ## Installation
 
-For Composer-based TYPO3 installations:
+Choose the path that matches your TYPO3 installation.
+
+### Composer — fresh install
+
+Recommended for Composer-based TYPO3 projects:
 
 ```bash
-composer require anatolkin/anatolkin-mosaic-gallery
+composer require anatolkin/anatolkin-mosaic-gallery:^0.5
 ```
 
-Apply the TYPO3 extension setup and clear caches as appropriate for the installation:
+Then apply extension setup:
 
 ```bash
 php vendor/bin/typo3 extension:setup
+```
+
+Optionally, when configuration or assets appear stale:
+
+```bash
 php vendor/bin/typo3 cache:flush
 ```
 
-### Site Set integration (recommended)
-
-For sites using TYPO3 Site Sets:
+In the TYPO3 backend, add the Site Set:
 
 1. Open **Site Management → Sites**.
 2. Edit the site configuration.
 3. Under **Sets for this Site**, add **Anatolkin Mosaic Gallery**.
-4. Save the site configuration and flush caches.
+4. Save the site configuration.
 
-This is the recommended frontend TypoScript integration for TYPO3 13.4 and 14.3 sites using Site Sets.
+Site Set integration is the recommended frontend TypoScript integration for TYPO3 13.4 and 14.3.
 
-### Legacy TypoScript integration
-
-Installations intentionally using TypoScript records instead of Site Sets remain supported. Add the static TypoScript include **Anatolkin Mosaic Gallery (Assets & Masonry)** to the site template.
-
-As an alternative, add this explicit import to the site's TypoScript **Setup**, not Constants:
+**Legacy TypoScript alternative:** add the static TypoScript include **Anatolkin Mosaic Gallery (Assets & Masonry)** to the site template, or add this explicit import to the site's TypoScript **Setup** (not Constants):
 
 ```typoscript
 @import 'EXT:anatolkin_mosaic_gallery/Configuration/TypoScript/setup.typoscript'
 ```
 
-A site should normally use one integration method. Do not include the same Mosaic Gallery TypoScript through a Site Set, static include, and manual import at the same time.
+Use one integration method only. Do not include the same Mosaic Gallery TypoScript through a Site Set, static include, and manual import at the same time.
+
+### Updating with Composer
+
+Normal update:
+
+```bash
+composer update anatolkin/anatolkin-mosaic-gallery -W
+```
+
+Then run extension setup:
+
+```bash
+php vendor/bin/typo3 extension:setup
+```
+
+Optionally:
+
+```bash
+php vendor/bin/typo3 cache:flush
+```
+
+Run `extension:setup` after every install or update of this package. Existing Site Set or TypoScript integration should normally remain enabled; verify gallery backend editing and frontend output after updating.
+
+If `composer.json` pins an older exact release and blocks the update, widen the project constraint first, for example:
+
+```bash
+composer require anatolkin/anatolkin-mosaic-gallery:^0.5 -W
+```
+
+Do not edit `composer.lock` manually.
+
+### TER / classic installation
+
+For non-Composer / classic TYPO3 installations, install **Anatolkin Mosaic Gallery** from the TYPO3 Extension Repository through the Extension Manager.
+
+After installation:
+
+1. Ensure the extension is active and setup has been applied in TYPO3.
+2. For Site Set sites, add the **Anatolkin Mosaic Gallery** Site Set under **Site Management → Sites**.
+3. Otherwise use the legacy TypoScript integration documented above.
+4. Flush TYPO3 caches if configuration or assets appear stale.
 
 ### Site defaults for new galleries
 
@@ -94,7 +138,9 @@ Canonical Mosaic Gallery content uses:
 CType=mosaicgallery_pi1
 ```
 
-Older installations stored galleries as plugins:
+### Legacy plugin records still present?
+
+If legacy records still exist as:
 
 ```text
 CType=list
@@ -108,9 +154,22 @@ CType=list
 list_type=anatolkinmosaicgallery_pi1
 ```
 
+then on TYPO3 13.4 users should check and run the migration wizard **before** moving the installation to TYPO3 14.
+
 Whether migration is needed is determined from those database records, not from the installed extension version. Do not edit `tt_content` rows manually.
 
 The TYPO3 upgrade wizard identifier is `mosaicGalleryCTypeMigration`. It may be checked again if matching legacy rows appear later. It does not run automatically during Composer install, extension setup, or normal frontend or backend requests.
+
+**Backend:** **Admin Tools → System → Upgrade → Upgrade Wizard**
+
+**CLI (Composer installations):**
+
+```bash
+vendor/bin/typo3 upgrade:list
+vendor/bin/typo3 upgrade:run mosaicGalleryCTypeMigration
+```
+
+Updating from 0.5.0 to 0.5.1 does **not** require this wizard. Version 0.5.1 itself requires no database migration.
 
 On TYPO3 13.4, a compatibility bridge restores frontend rendering and backend editing of leftover plugin records **before** the wizard is run. The wizard remains the recommended permanent conversion. Complete that conversion before upgrading the TYPO3 Core to 14.
 
@@ -176,6 +235,27 @@ FlexForm data, record UIDs, localization relationships, and ordinary `tt_content
 - Multilingual metadata workflow integrated with TYPO3 content localization
 - Compact responsive backend configuration
 - English, German, French, Spanish, and Russian extension interface translations
+
+## What's new in 0.5.1
+
+Version 0.5.1 is a corrective compatibility and backend UX release for TYPO3 13.4 and 14.3.
+
+Highlights:
+
+- Restores Core-native TYPO3 color controls for Custom design values.
+- Fixes native color-picker live-preview lifecycle.
+- Fixes persisted color hydration after reload and save.
+- Fixes display-proxy checkbox persistence for captions, lightbox, Load More, and Load More frame styling.
+- Fixes post-save FormEngine proxy lifecycle, especially on TYPO3 13.
+- Improves Design Configurator responsiveness.
+- Improves named-preset controls with color and reset actions.
+- Uses compact responsive numeric controls.
+- Moves Load More controls into the Gallery section.
+- Improves upper Layout workspace responsiveness.
+- Fixes narrow Folder field overflow while keeping Browse and delete controls visible.
+- Verified on TYPO3 13.4.34 and TYPO3 14.3.6.
+
+No database migration is required for 0.5.1. Existing stored gallery values remain compatible.
 
 ## What's new in 0.5.0
 
@@ -293,7 +373,7 @@ Configured site languages are discovered from TYPO3 Site Configuration. The five
 
 ## Compatibility and release status
 
-Anatolkin Mosaic Gallery 0.5.0 targets TYPO3 13.4 and TYPO3 14.3.
+Anatolkin Mosaic Gallery 0.5.1 targets TYPO3 13.4 and TYPO3 14.3.
 
 Existing folder galleries, legacy Quick captions, and the `list_type` to `CType` migration path introduced in 0.3.0 remain supported. On TYPO3 13.4, unmigrated plugin records remain usable before that wizard is run. TYPO3 14 installations should complete the wizard first and then use dedicated `CType=mosaicgallery_pi1` records only.
 
