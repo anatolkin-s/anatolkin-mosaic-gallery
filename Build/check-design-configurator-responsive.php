@@ -308,10 +308,15 @@ if (!str_contains($element, 'data-design-proxy-reset')
 ) {
     $failures[] = 'K/M: display proxy baseline, reset, and dirty tracking must exist';
 }
-if (!preg_match('/writeCanonicalControlValue\\(\\s*canonical, intended\\)/', $js)
+if (!preg_match('/writeCanonicalControlValue\\(\\s*liveCanonical, intended\\)/', $js)
     || !preg_match('/data-design-proxy-reset/', $js)
 ) {
     $failures[] = 'L: proxy reset must write through canonical adapter';
+}
+if (!preg_match('/refreshProxyBaselinesAfterPersist/', $js)
+    || !preg_match('/bindDisplayProxies\\(\\{ rebindAfterPersist: true \\}\\)/', $js)
+) {
+    $failures[] = 'Post-save proxy refresh must rebuild baselines from persisted canonical fields';
 }
 if (!preg_match('/const dirty = overridesDirty \\|\\| proxyDirty\\(\\)/', $js)
     || !preg_match('/countLeaves\\(\\s*overrides\\s*\\)/', $js)

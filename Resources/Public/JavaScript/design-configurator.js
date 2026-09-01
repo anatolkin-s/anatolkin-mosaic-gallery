@@ -189,16 +189,26 @@ const writeCanonicalControlValue = (control, value, options = {}) => {
   }
   const notify = options.notify !== false;
   if (isFormEngineCheckbox(control)) {
+    const normalized = normalizeSingleCheckboxValue(value);
+    const current = readCanonicalControlValue(control);
+    if (current === normalized) {
+      control.checked = isTruthyBoolean(normalized);
+      if (notify) {
+        notifyFormEngineControlChange(control);
+      }
+      return true;
+    }
     const hidden = formEngineCheckboxStorage(control);
     if (!hidden) {
       return false;
     }
-    const normalized = normalizeSingleCheckboxValue(value);
-    control.checked = isTruthyBoolean(normalized);
-    hidden.value = normalized;
-    if (notify) {
-      notifyFormEngineControlChange(control);
+    if (options.notify === false) {
+      control.checked = isTruthyBoolean(normalized);
+      hidden.value = normalized;
+      return readCanonicalControlValue(control) === normalized;
     }
+    control.checked = isTruthyBoolean(current);
+    control.click();
     return readCanonicalControlValue(control) === normalized;
   }
   writeControlValue(control, value);
@@ -574,6 +584,27 @@ const consolidateWorkspaces = (editor) => {
   return layoutSheet;
 };
 
+const PROXY_CANONICAL_FIELD_IDS = new Set([
+  'settings.gap',
+  'settings.showCaptions',
+  'settings.captionAlign',
+  'settings.enableLightbox',
+  'settings.enableLoadMore',
+  'settings.loadMoreUseFrameStyle',
+]);
+
+const isProxyCanonicalSection = (node) => {
+  if (!(node instanceof Element)) {
+    return false;
+  }
+  if (node.matches('.form-section[data-id]')) {
+    return PROXY_CANONICAL_FIELD_IDS.has(node.dataset.id ?? '');
+  }
+  return [...node.querySelectorAll('.form-section[data-id]')].some(
+    (section) => PROXY_CANONICAL_FIELD_IDS.has(section.dataset.id ?? ''),
+  );
+};
+
 const initializeEditor = (editor) => {
   if (editor.dataset.mosaicDesignInitialized === 'true') {
     return;
@@ -639,7 +670,7 @@ const initializeEditor = (editor) => {
     const section = event.target.closest('.form-section[data-id]');
     return Boolean(section && Object.prototype.hasOwnProperty.call(CUSTOM_FIELDS, section.dataset.id));
   };
-  const proxyControls = [...editor.querySelectorAll('[data-design-proxy]')];
+  const listProxyControls = () => [...editor.querySelectorAll('[data-design-proxy]')];
   const formScope = (() => {
     let scope = sheet.parentElement;
     while (scope && scope !== storage.form) {
@@ -768,10 +799,12 @@ const initializeEditor = (editor) => {
       }
     }).observe(patternedPreviewGrid);
   }
-  const displayState = () => Object.fromEntries(proxyControls.map(
+  const displayState = () => Object.fromEntries(listProxyControls().map(
     (proxy) => [proxy.dataset.designProxy.replace('settings.', ''), readControlValue(proxy)],
   ));
   const initialProxyValues = new Map();
+  let proxyBindingController = new AbortController();
+  let proxySyncLock = false;
   const updateProxyFieldState = (proxy) => {
     if (!proxy) {
       return;
@@ -787,7 +820,7 @@ const initializeEditor = (editor) => {
       reset.hidden = !modified;
     }
   };
-  const proxyDirty = () => proxyControls.some((proxy) => {
+  const proxyDirty = () => listProxyControls().some((proxy) => {
     const initial = initialProxyValues.get(proxy.dataset.designProxy);
     if (initial === undefined) {
       return false;
@@ -882,58 +915,139 @@ const initializeEditor = (editor) => {
   };
 
   presetSelector.addEventListener('change', updateMode);
-  proxyControls.forEach((proxy) => {
-    const canonical = canonicalControl(proxy.dataset.designProxy);
-    const initialValue = resolveInitialProxyValue(canonical, proxy);
-    // Always initialize the proxy, including when no canonical control exists yet.
-    if (initialValue !== '' || proxyDefaultValue(proxy) !== null) {
-      writeControlValue(proxy, initialValue);
+
+  const bindDisplayProxies = ({ rebindAfterPersist = false } = {}) => {
+    proxyBindingController.abort();
+    proxyBindingController = new AbortController();
+    const { signal } = proxyBindingController;
+
+    if (rebindAfterPersist) {
+      initialProxyValues.clear();
     }
-    updateCompactValueWidth(proxy);
-    if (!canonical) {
-      initialProxyValues.set(proxy.dataset.designProxy, readControlValue(proxy));
+
+    listProxyControls().forEach((proxy) => {
+      const fieldName = proxy.dataset.designProxy;
+      const resolveCanonical = () => canonicalControl(fieldName);
+      const canonical = resolveCanonical();
+      const persistedValue = canonical
+        ? liveCanonicalValue(canonical)
+        : resolveInitialProxyValue(null, proxy);
+
+      if (rebindAfterPersist || !initialProxyValues.has(fieldName)) {
+        if (persistedValue !== '' || proxyDefaultValue(proxy) !== null) {
+          writeControlValue(proxy, persistedValue);
+        }
+        initialProxyValues.set(fieldName, canonical
+          ? liveCanonicalValue(canonical)
+          : readControlValue(proxy));
+      }
+
+      updateCompactValueWidth(proxy);
       updateProxyFieldState(proxy);
-      return;
-    }
-    const canonicalSection = canonical.closest('.form-section');
-    if (canonicalSection) {
-      canonicalSection.hidden = true;
-      canonicalSection.classList.add('mosaic-proxy-storage-field');
-    }
-    // Keep FormEngine storage aligned with the resolved creation/default value.
-    applyValueToCanonical(canonical, readControlValue(proxy), { notify: false });
-    initialProxyValues.set(
-      proxy.dataset.designProxy,
-      isFormEngineCheckbox(canonical)
-        ? readCanonicalControlValue(canonical)
-        : readControlValue(proxy),
-    );
-    updateProxyFieldState(proxy);
-    proxy.addEventListener('change', () => {
-      const intended = readControlValue(proxy);
-      if (!writeCanonicalControlValue(canonical, intended)) {
+
+      if (!canonical) {
         return;
       }
-      updateCompactValueWidth(proxy);
-      updateProxyFieldState(proxy);
-      updateStatus();
-      publishState();
+
+      const canonicalSection = canonical.closest('.form-section');
+      if (canonicalSection) {
+        canonicalSection.hidden = true;
+        canonicalSection.classList.add('mosaic-proxy-storage-field');
+      }
+
+      applyValueToCanonical(canonical, readControlValue(proxy), { notify: false });
+
+      proxy.addEventListener('change', () => {
+        if (proxySyncLock) {
+          return;
+        }
+        proxySyncLock = true;
+        try {
+          const liveCanonical = resolveCanonical();
+          if (!liveCanonical) {
+            return;
+          }
+          const intended = readControlValue(proxy);
+          if (!writeCanonicalControlValue(liveCanonical, intended)) {
+            return;
+          }
+          updateCompactValueWidth(proxy);
+          updateProxyFieldState(proxy);
+          updateStatus();
+          publishState();
+        } finally {
+          proxySyncLock = false;
+        }
+      }, { signal });
+
+      proxy.addEventListener('input', () => {
+        updateCompactValueWidth(proxy);
+      }, { signal });
+
+      const syncProxy = () => {
+        if (proxySyncLock) {
+          return;
+        }
+        proxySyncLock = true;
+        try {
+          const liveCanonical = resolveCanonical();
+          if (!liveCanonical) {
+            return;
+          }
+          writeControlValue(proxy, liveCanonicalValue(liveCanonical));
+          updateCompactValueWidth(proxy);
+          updateProxyFieldState(proxy);
+          updateStatus();
+          publishState();
+        } finally {
+          proxySyncLock = false;
+        }
+      };
+      canonical.addEventListener('change', syncProxy, { signal });
+      canonical.addEventListener('input', syncProxy, { signal });
     });
-    proxy.addEventListener('input', () => {
-      updateCompactValueWidth(proxy);
-    });
-    const syncProxy = () => {
-      // After initialization, live canonical state is authoritative (including Off=0).
-      writeControlValue(proxy, liveCanonicalValue(canonical));
-      updateCompactValueWidth(proxy);
-      updateProxyFieldState(proxy);
-      updateStatus();
-      publishState();
+
+    editor.querySelectorAll('[data-design-compact-value]').forEach(updateCompactValueWidth);
+  };
+
+  const refreshProxyBaselinesAfterPersist = () => {
+    if (!editor.isConnected) {
+      return;
+    }
+    overrides = parseDocument(storage.value);
+    bindDisplayProxies({ rebindAfterPersist: true });
+    updateStatus();
+    publishState();
+  };
+
+  bindDisplayProxies();
+
+  if (formScope && typeof MutationObserver === 'function') {
+    let refreshScheduled = false;
+    const scheduleProxyRefresh = () => {
+      if (refreshScheduled) {
+        return;
+      }
+      refreshScheduled = true;
+      window.requestAnimationFrame(() => {
+        refreshScheduled = false;
+        refreshProxyBaselinesAfterPersist();
+      });
     };
-    canonical.addEventListener('change', syncProxy);
-    canonical.addEventListener('input', syncProxy);
-  });
-  editor.querySelectorAll('[data-design-compact-value]').forEach(updateCompactValueWidth);
+    new MutationObserver((mutations) => {
+      if (mutations.some((mutation) => [...mutation.addedNodes].some(isProxyCanonicalSection))) {
+        scheduleProxyRefresh();
+      }
+    }).observe(formScope, { childList: true, subtree: true });
+  }
+
+  const editForm = storage.form || editor.closest('form');
+  editForm?.addEventListener('submit', () => {
+    window.requestAnimationFrame(() => {
+      refreshProxyBaselinesAfterPersist();
+    });
+  }, { capture: true });
+
   sheet.addEventListener('change', (event) => {
     if (currentPreset() === 'custom' && isCustomFieldEvent(event)) {
       publishState();
@@ -1041,14 +1155,22 @@ const initializeEditor = (editor) => {
       if (initial === undefined) {
         return;
       }
-      writeControlValue(proxy, initial);
-      if (canonical && !writeCanonicalControlValue(canonical, initial)) {
+      if (proxySyncLock) {
         return;
       }
-      updateCompactValueWidth(proxy);
-      updateProxyFieldState(proxy);
-      updateStatus();
-      publishState();
+      proxySyncLock = true;
+      try {
+        writeControlValue(proxy, initial);
+        if (canonical && !writeCanonicalControlValue(canonical, initial)) {
+          return;
+        }
+        updateCompactValueWidth(proxy);
+        updateProxyFieldState(proxy);
+        updateStatus();
+        publishState();
+      } finally {
+        proxySyncLock = false;
+      }
       return;
     }
     if (event.target.closest('[data-design-reset-all]')) {

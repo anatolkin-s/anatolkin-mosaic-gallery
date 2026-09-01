@@ -362,18 +362,15 @@ assertSame(
     'Case B absent canonical uses data-design-proxy-default',
     $failures,
 );
-if (!str_contains($js, 'Always initialize the proxy')) {
-    $failures[] = 'Case B JS must initialize proxy before optional canonical wiring';
+if (!str_contains($js, 'bindDisplayProxies')
+    || !str_contains($js, 'resolveInitialProxyValue')
+) {
+    $failures[] = 'Case B JS must initialize proxies through bindDisplayProxies with resolved defaults';
 }
-if (preg_match('/proxyControls\.forEach\(\(proxy\) => \{[\s\S]*?if \(!canonical\) \{\s*return;/m', $js)
-    && !str_contains($js, 'initialProxyValue(canonical, proxy)')
+if (preg_match('/listProxyControls\(\)\.forEach[\s\S]*?if \(!canonical\) \{\s*return;/m', $js)
+    && !str_contains($js, 'resolveInitialProxyValue')
 ) {
     $failures[] = 'Case B JS must not return early before proxy initialization';
-}
-if (!str_contains($js, 'resolveInitialProxyValue(canonical, proxy)')
-    && !str_contains($js, 'initialProxyValue(canonical, proxy)')
-) {
-    $failures[] = 'Case B JS must compute initial proxy value before canonical-only return';
 }
 
 // C. missing boolean default is not silently treated as "0" when attribute absent
