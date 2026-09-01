@@ -194,6 +194,12 @@ const fieldControl = (section) => {
   if (checkbox) {
     return checkbox;
   }
+  const formEngineInput = section.querySelector(
+    'input[data-formengine-input-name]:not([type="hidden"])',
+  );
+  if (formEngineInput) {
+    return formEngineInput;
+  }
   return section.querySelector(
     'select, input.form-control:not([type="hidden"]), input[type="text"], input[type="number"]',
   );
@@ -763,6 +769,11 @@ const initializeEditor = (editor) => {
       publishState();
     }
   });
+  sheet.addEventListener('blur', (event) => {
+    if (currentPreset() === 'custom' && isCustomFieldEvent(event)) {
+      publishState();
+    }
+  }, true);
   editor.addEventListener('mosaic-design-change', (event) => {
     renderPreview(editor, event.detail.effective);
     const preview = editor.querySelector('[data-design-live-preview]');

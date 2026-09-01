@@ -144,6 +144,34 @@ if (!preg_match(
     $failures[] = 'Named-preset color controls must remain flex-aligned';
 }
 
+// I. Custom native color lifecycle: Core visible input + capture blur, no Mosaic hidden writes
+if (!preg_match(
+    '/const fieldControl = \\(section\\) => \\{[\\s\\S]*?input\\[data-formengine-input-name\\]:not\\(\\[type="hidden"\\]\\)/',
+    $js,
+)) {
+    $failures[] = 'I: fieldControl must prefer Core visible FormEngine input before generic fallbacks';
+}
+if (!preg_match(
+    "/sheet\\.addEventListener\\(\\s*'blur'\\s*,\\s*\\(event\\)\\s*=>\\s*\\{[\\s\\S]*?isCustomFieldEvent\\(\\s*event\\s*\\)[\\s\\S]*?\\}\\s*,\\s*true\\s*\\)/",
+    $js,
+)) {
+    $failures[] = 'I: Custom field lifecycle must observe blur in capture phase on sheet';
+}
+if (!preg_match("/sheet\\.addEventListener\\(\\s*'change'[\\s\\S]*?isCustomFieldEvent\\(\\s*event\\s*\\)/", $js)
+    || !preg_match("/sheet\\.addEventListener\\(\\s*'input'[\\s\\S]*?isCustomFieldEvent\\(\\s*event\\s*\\)/", $js)
+) {
+    $failures[] = 'I: sheet must retain input and change listeners for Custom fields';
+}
+if (preg_match("/dispatchEvent\\(\\s*new Event\\(\\s*'blur'/", $js)) {
+    $failures[] = 'I: must not dispatch synthetic blur events for Custom color sync';
+}
+if (preg_match(
+    '/querySelector\\([^)]*type=["\']hidden["\'][^)]*\\)[\\s\\S]{0,120}\\.value\\s*=/',
+    $js,
+)) {
+    $failures[] = 'I: must not manually assign canonical hidden color inputs';
+}
+
 // Persisted hex defaults remain on migrated fields (compatibility)
 $defaultSamples = [
     'settings.frameColor' => '#b40000',
