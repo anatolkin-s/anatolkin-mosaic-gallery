@@ -319,6 +319,12 @@ if ($designConfiguratorJs !== '') {
     if (!str_contains($designConfiguratorJs, 'mosaic:sourcechange')) {
         $failures[] = 'M: design-configurator must dispatch mosaic:sourcechange for live metadata source switching';
     }
+    if (!str_contains($designConfiguratorJs, 'data-mosaic-source-mode') || !str_contains($designConfiguratorJs, 'imagesSourceRow')) {
+        $failures[] = 'N: Images source row must expose explicit data-mosaic-source-mode state';
+    }
+    if (!str_contains($designConfiguratorJs, 'mosaic:workspaceconsolidated')) {
+        $failures[] = 'N: design-configurator must dispatch mosaic:workspaceconsolidated after workspace consolidation';
+    }
     if (!preg_match('/addCompactHelp\(metadataFallback\)/s', $designConfiguratorJs)) {
         $failures[] = 'I: Metadata fallback must use compact-help treatment';
     }
@@ -381,6 +387,30 @@ if ($metadataEditorJs !== '') {
     }
     if (!str_contains($metadataEditorJs, 'persistVisibleRows')) {
         $failures[] = 'M: Live rebuilds must preserve stored caption/alt overrides keyed by file UID';
+    }
+    if (!str_contains($metadataEditorJs, 'mosaicMetadataInitialized')) {
+        $failures[] = 'N: metadata-editor must mark initialized editors with data-mosaic-metadata-initialized';
+    }
+    if (!str_contains($metadataEditorJs, 'refreshEditor') || !str_contains($metadataEditorJs, 'bootstrapForm')) {
+        $failures[] = 'N: metadata-editor must bootstrap editors via lifecycle-aware refresh/bootstrap helpers';
+    }
+    if (!str_contains($metadataEditorJs, 'setupFormBootstrapObserver') || !str_contains($metadataEditorJs, 'findManualFilesContainer')) {
+        $failures[] = 'N: metadata-editor must observe FormEngine form roots and native files containers';
+    }
+    if (!str_contains($metadataEditorJs, 'mosaic:workspaceconsolidated')) {
+        $failures[] = 'N: metadata-editor must refresh after workspace consolidation events';
+    }
+    if (!str_contains($metadataEditorJs, 'AbortController') || !str_contains($metadataEditorJs, 'editorState')) {
+        $failures[] = 'N: metadata-editor initialization must be idempotent via bounded lifecycle state';
+    }
+    if (!str_contains($metadataEditorJs, 'bindRecordsObserver')) {
+        $failures[] = 'N: metadata-editor must rebind records observers when _records appears or is replaced';
+    }
+    if (!str_contains($metadataEditorJs, 'getViewHost') || !preg_match('/getViewHost\(editor\)[\s\S]{0,120}dataset\.mosaicImagesView/s', $metadataEditorJs)) {
+        $failures[] = 'N: Grid/List/Table view state must use one canonical host element';
+    }
+    if (!str_contains($metadataEditorJs, 'data-mosaic-metadata-empty-manual') && !str_contains($metadataEditorJs, 'updateEmptyStates')) {
+        $failures[] = 'N: Live manual empty-state handling must differ from folder guidance';
     }
 }
 

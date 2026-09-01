@@ -729,9 +729,13 @@ const applySourceAwareWorkspace = (workspaces, source) => {
   imagesSheet.dataset.mosaicSourceMode = resolvedSource;
   imagesSheet.classList.toggle('mosaic-source-manual', resolvedSource === SOURCE_MANUAL);
   imagesSheet.classList.toggle('mosaic-source-folder', resolvedSource !== SOURCE_MANUAL);
+  workspaces.imagesSourceRow?.setAttribute('data-mosaic-source-mode', resolvedSource);
   imagesSheet.dispatchEvent(new CustomEvent('mosaic:sourcechange', {
     bubbles: true,
     detail: { source: resolvedSource },
+  }));
+  imagesSheet.closest('form')?.dispatchEvent(new CustomEvent('mosaic:workspaceconsolidated', {
+    bubbles: true,
   }));
 };
 
@@ -881,6 +885,9 @@ const consolidateWorkspaces = (editor) => {
 
   const workspaces = { layoutSheet, imagesSheet, imagesSourceRow };
   workspaceRegistry.set(editor, workspaces);
+  imagesSheet.closest('form')?.dispatchEvent(new CustomEvent('mosaic:workspaceconsolidated', {
+    bubbles: true,
+  }));
   return workspaces;
 };
 

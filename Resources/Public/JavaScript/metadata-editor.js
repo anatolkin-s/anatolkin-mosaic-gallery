@@ -2,6 +2,9 @@ const SOURCE_MANUAL = 'manual';
 const MANUAL_IMAGES_FIELD = 'tx_anatolkinmosaicgallery_images';
 const MANUAL_IMAGES_FIELD_MARKER = `[${MANUAL_IMAGES_FIELD}]`;
 
+const editorState = new WeakMap();
+const formBootstrapState = new WeakMap();
+
 const createDocument = (value) => {
   try {
     const document = JSON.parse(value);
@@ -17,6 +20,8 @@ const createDocument = (value) => {
   }
   return { schemaVersion: 1, files: {} };
 };
+
+const getViewHost = (editor) => editor.querySelector('.mosaic-metadata-workspace') ?? editor;
 
 const updateInputState = (row, property) => {
   const mode = row.querySelector(`[data-mosaic-mode][data-mosaic-property="${property}"]`);
@@ -50,7 +55,8 @@ const updateSummary = (editor, row, property) => {
 const applyView = (editor, view) => {
   const allowedViews = new Set(['grid', 'list', 'table']);
   const nextView = allowedViews.has(view) ? view : 'table';
-  editor.dataset.mosaicImagesView = nextView;
+  const viewHost = getViewHost(editor);
+  viewHost.dataset.mosaicImagesView = nextView;
   editor.querySelectorAll('[data-mosaic-images-view-button]').forEach((button) => {
     button.setAttribute('aria-pressed', button.dataset.mosaicImagesViewButton === nextView ? 'true' : 'false');
   });
@@ -130,16 +136,19 @@ const findManualImagesSection = (formScope) => {
   return marker.closest('.mosaic-manual-images') ?? null;
 };
 
-const findManualRecordsContainer = (manualSection) => {
+const findManualFilesContainer = (manualSection) => {
   if (!manualSection) {
     return null;
   }
 
-  const filesContainer = manualSection.querySelector(
+  return manualSection.querySelector(
     `typo3-formengine-container-files[data-form-field*="${MANUAL_IMAGES_FIELD_MARKER}"], `
     + `[data-form-field*="${MANUAL_IMAGES_FIELD_MARKER}"]`,
-  ) ?? manualSection;
+  );
+};
 
+const findManualRecordsContainer = (manualSection) => {
+  const filesContainer = findManualFilesContainer(manualSection) ?? manualSection;
   return filesContainer.querySelector('[id$="_records"]')
     ?? filesContainer.querySelector('[data-sortable-record-uids]')
     ?? filesContainer.querySelector('.t3js-inline-container');
@@ -418,14 +427,28 @@ const applySourceMode = (editor) => {
   updateImageCount(editor, folderCount);
 };
 
+const disconnectManualObservers = (state) => {
+  state.filesObserver?.disconnect();
+  state.recordsObserver?.disconnect();
+  state.filesObserver = null;
+  state.recordsObserver = null;
+  state.filesObserverTarget = null;
+  state.recordsObserverTarget = null;
+};
+
 const observeManualRelations = (editor) => {
-  const form = editor.closest('form');
-  const manualSection = findManualImagesSection(form);
-  const recordsContainer = findManualRecordsContainer(manualSection);
-  if (!recordsContainer || recordsContainer.dataset.mosaicManualObserver === 'true') {
+  const state = editorState.get(editor);
+  if (!state) {
     return;
   }
-  recordsContainer.dataset.mosaicManualObserver = 'true';
+
+  const form = editor.closest('form');
+  const manualSection = findManualImagesSection(form);
+  const filesContainer = findManualFilesContainer(manualSection);
+  if (!filesContainer) {
+    disconnectManualObservers(state);
+    return;
+  }
 
   let frame = null;
   const scheduleSync = () => {
@@ -440,25 +463,60 @@ const observeManualRelations = (editor) => {
     });
   };
 
-  const observer = new MutationObserver((mutations) => {
-    const relevant = mutations.some((mutation) => {
-      const target = mutation.target instanceof Element ? mutation.target : mutation.target.parentElement;
-      return target && !target.closest('[data-mosaic-metadata-items]');
-    });
-    if (relevant) {
-      scheduleSync();
+  const bindRecordsObserver = () => {
+    const recordsContainer = findManualRecordsContainer(manualSection);
+    if (!recordsContainer) {
+      state.recordsObserver?.disconnect();
+      state.recordsObserver = null;
+      state.recordsObserverTarget = null;
+      return;
     }
-  });
+    if (state.recordsObserverTarget === recordsContainer) {
+      return;
+    }
+    state.recordsObserver?.disconnect();
+    state.recordsObserver = new MutationObserver((mutations) => {
+      const relevant = mutations.some((mutation) => {
+        const target = mutation.target instanceof Element ? mutation.target : mutation.target.parentElement;
+        return target && !target.closest('[data-mosaic-metadata-items]');
+      });
+      if (relevant) {
+        scheduleSync();
+      }
+    });
+    state.recordsObserver.observe(recordsContainer, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'hidden'],
+    });
+    state.recordsObserverTarget = recordsContainer;
+    scheduleSync();
+  };
 
-  observer.observe(recordsContainer, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ['class', 'hidden'],
-  });
+  if (state.filesObserverTarget !== filesContainer) {
+    state.filesObserver?.disconnect();
+    state.filesObserver = new MutationObserver((mutations) => {
+      const relevant = mutations.some((mutation) => {
+        const target = mutation.target instanceof Element ? mutation.target : mutation.target.parentElement;
+        return target && !target.closest('[data-mosaic-metadata-items]');
+      });
+      if (!relevant) {
+        return;
+      }
+      bindRecordsObserver();
+      scheduleSync();
+    });
+    state.filesObserver.observe(filesContainer, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'hidden', 'id'],
+    });
+    state.filesObserverTarget = filesContainer;
+  }
 
-  recordsContainer._mosaicManualObserver = observer;
-  scheduleSync();
+  bindRecordsObserver();
 };
 
 const convertLegacyCaptions = (editor) => {
@@ -519,16 +577,10 @@ const convertLegacyCaptions = (editor) => {
   }
 };
 
-const initializeEditor = (editor) => {
-  if (editor.dataset.mosaicMetadataInitialized === 'true') {
-    return;
-  }
-  editor.dataset.mosaicMetadataInitialized = 'true';
-  applyView(editor, readPreferredView());
-  preserveServerFolderItems(editor);
-  editor.querySelectorAll('[data-mosaic-file-uid]').forEach((row) => initializeMetadataRow(editor, row));
-  observeManualRelations(editor);
-  applySourceMode(editor);
+const bindEditorListeners = (editor, state) => {
+  state.abortController?.abort();
+  state.abortController = new AbortController();
+  const { signal } = state.abortController;
 
   editor.addEventListener('change', (event) => {
     const control = event.target.closest('[data-mosaic-property]');
@@ -539,7 +591,8 @@ const initializeEditor = (editor) => {
     updateInputState(row, control.dataset.mosaicProperty);
     updateSummary(editor, row, control.dataset.mosaicProperty);
     persistRow(editor, row);
-  });
+  }, { signal });
+
   editor.addEventListener('input', (event) => {
     const control = event.target.closest('[data-mosaic-value]');
     const row = control?.closest('[data-mosaic-file-uid]');
@@ -547,7 +600,8 @@ const initializeEditor = (editor) => {
       updateSummary(editor, row, control.dataset.mosaicProperty);
       persistRow(editor, row);
     }
-  });
+  }, { signal });
+
   editor.addEventListener('click', (event) => {
     const viewButton = event.target.closest('[data-mosaic-images-view-button]');
     if (viewButton) {
@@ -577,23 +631,116 @@ const initializeEditor = (editor) => {
     if (event.target.closest('[data-mosaic-convert-legacy]')) {
       convertLegacyCaptions(editor);
     }
+  }, { signal });
+};
+
+const refreshEditor = (editor) => {
+  if (!(editor instanceof Element) || !editor.matches('[data-mosaic-metadata-editor]') || !editor.isConnected) {
+    return;
+  }
+
+  let state = editorState.get(editor);
+  if (!state) {
+    state = {};
+    editorState.set(editor, state);
+  }
+
+  if (editor.dataset.mosaicMetadataInitialized !== 'true') {
+    editor.dataset.mosaicMetadataInitialized = 'true';
+    bindEditorListeners(editor, state);
+    preserveServerFolderItems(editor);
+    applyView(editor, readPreferredView());
+    editor.querySelectorAll('[data-mosaic-file-uid]').forEach((row) => initializeMetadataRow(editor, row));
+  }
+
+  observeManualRelations(editor);
+  applySourceMode(editor);
+};
+
+const initializeEditor = (editor) => {
+  refreshEditor(editor);
+};
+
+const editorsInRoot = (root) => {
+  if (!(root instanceof Element)) {
+    return [];
+  }
+  if (root.matches('[data-mosaic-metadata-editor]')) {
+    return [root];
+  }
+  return [...root.querySelectorAll('[data-mosaic-metadata-editor]')];
+};
+
+const bootstrapForm = (form) => {
+  if (!(form instanceof HTMLFormElement)) {
+    return;
+  }
+  editorsInRoot(form).forEach((editor) => {
+    refreshEditor(editor);
   });
 };
 
-const handleSourceChange = (event) => {
-  const form = event.target.closest('form');
-  if (!form) {
+const resolveFormBootstrapRoot = () => (
+  document.querySelector('form[name="editform"]')
+  ?? document.querySelector('form#EditDocumentController')
+  ?? document.querySelector('.t3js-module-body form')
+  ?? document.querySelector('form')
+);
+
+const setupFormBootstrapObserver = () => {
+  const form = resolveFormBootstrapRoot();
+  if (!form || formBootstrapState.has(form)) {
     return;
   }
-  form.querySelectorAll('[data-mosaic-metadata-editor]').forEach((editor) => {
-    applySourceMode(editor);
-    observeManualRelations(editor);
+
+  const observer = new MutationObserver((mutations) => {
+    const touched = mutations.some((mutation) => {
+      if (mutation.type === 'childList') {
+        return [...mutation.addedNodes].some((node) => {
+          if (!(node instanceof Element)) {
+            return false;
+          }
+          return node.matches('[data-mosaic-metadata-editor]')
+            || node.querySelector('[data-mosaic-metadata-editor]')
+            || node.matches(`typo3-formengine-container-files[data-form-field*="${MANUAL_IMAGES_FIELD_MARKER}"]`)
+            || node.querySelector(`typo3-formengine-container-files[data-form-field*="${MANUAL_IMAGES_FIELD_MARKER}"]`);
+        });
+      }
+      return false;
+    });
+    if (touched) {
+      bootstrapForm(form);
+    }
   });
+
+  observer.observe(form, { childList: true, subtree: true });
+  formBootstrapState.set(form, observer);
+};
+
+const handleSourceChange = () => {
+  const form = resolveFormBootstrapRoot();
+  if (form) {
+    bootstrapForm(form);
+  }
+};
+
+const handleWorkspaceConsolidated = (event) => {
+  const form = event.target.closest('form') ?? resolveFormBootstrapRoot();
+  if (form) {
+    bootstrapForm(form);
+  }
 };
 
 const initialize = () => {
-  document.querySelectorAll('[data-mosaic-metadata-editor]').forEach(initializeEditor);
+  const form = resolveFormBootstrapRoot();
+  if (form) {
+    bootstrapForm(form);
+    setupFormBootstrapObserver();
+  } else {
+    document.querySelectorAll('[data-mosaic-metadata-editor]').forEach(initializeEditor);
+  }
   document.addEventListener('mosaic:sourcechange', handleSourceChange);
+  document.addEventListener('mosaic:workspaceconsolidated', handleWorkspaceConsolidated);
 };
 
 initialize();
