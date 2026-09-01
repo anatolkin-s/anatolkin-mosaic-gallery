@@ -146,7 +146,7 @@ final class DesignConfiguratorElement extends AbstractFormElement
             . ' data-site-default-label="' . $this->label('design.configurator.siteDefault') . '"'
             . ' data-eyedropper-label="' . $this->label('design.configurator.eyedropper') . '"'
             . ' data-modified-label="' . $this->label('design.configurator.modified') . '"'
-            . ' data-manual-source-hint="' . htmlspecialchars($this->label('flexform.source.manual.hint'), ENT_QUOTES) . '">'
+            . ' data-continue-to-images-label="' . htmlspecialchars($this->label('workspace.continueToImages'), ENT_QUOTES) . '">'
             . '<input type="hidden" id="' . htmlspecialchars($fieldId, ENT_QUOTES) . '"'
             . ' name="' . htmlspecialchars($fieldName, ENT_QUOTES) . '" value="' . $hiddenValue . '"'
             . ' data-formengine-input-name="' . htmlspecialchars($fieldName, ENT_QUOTES) . '"'

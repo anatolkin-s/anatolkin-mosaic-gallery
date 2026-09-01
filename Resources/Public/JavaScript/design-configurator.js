@@ -63,11 +63,26 @@ const MULTI_COLOR_FRAME_STYLES = new Set([
 ]);
 const SOURCE_FOLDER = 'folder';
 const SOURCE_MANUAL = 'manual';
+const IMAGE_SOURCE_FIELD_IDS = [
+  'settings.source',
+  'settings.folder',
+  'settings.recursive',
+  'settings.sortBy',
+  'settings.sortDir',
+  'settings.useFalCaptions',
+];
 const FOLDER_ONLY_FIELD_IDS = [
   'settings.folder',
   'settings.recursive',
   'settings.sortBy',
   'settings.sortDir',
+];
+const LAYOUT_SETTINGS_FIELD_IDS = [
+  'settings.layoutMode',
+  'settings.maxItemsPerRow',
+  'settings.maxWidth',
+  'settings.itemsPerPage',
+  'settings.loadStep',
 ];
 const workspaceRegistry = new WeakMap();
 
@@ -619,72 +634,65 @@ const activateImagesWorkspaceTab = (workspaces) => {
   return imagesSheet.classList.contains('active');
 };
 
-const scheduleImagesWorkspaceActivation = (workspaces, attempt = 0) => {
-  window.requestAnimationFrame(() => {
-    const activated = activateImagesWorkspaceTab(workspaces);
-    if (!activated && attempt < 8) {
-      window.setTimeout(() => scheduleImagesWorkspaceActivation(workspaces, attempt + 1), 100);
-    }
-  });
-};
-
-const ensureManualSourceHint = (imagesSheet, isManual, hintText) => {
-  const existing = imagesSheet.querySelector('[data-mosaic-manual-source-hint]');
-  if (!isManual || !hintText) {
-    existing?.remove();
-    return;
-  }
-  if (existing) {
-    existing.textContent = hintText;
-    return;
-  }
-  const hint = document.createElement('p');
-  hint.className = 'form-text mosaic-manual-source-hint';
-  hint.dataset.mosaicManualSourceHint = 'true';
-  hint.textContent = hintText;
-  const manualSection = imagesSheet.querySelector('.form-section[data-id="tx_anatolkinmosaicgallery_images"]');
-  if (manualSection) {
-    imagesSheet.insertBefore(hint, manualSection);
-  } else {
-    imagesSheet.prepend(hint);
-  }
-};
-
-const applyFolderOnlyVisibility = (layoutSheet, source) => {
+const applyFolderOnlyVisibility = (imagesSheet, source) => {
   const isManual = source === SOURCE_MANUAL;
   FOLDER_ONLY_FIELD_IDS.forEach((fieldId) => {
-    const section = layoutSheet.querySelector(`.form-section[data-id="${fieldId}"]`);
+    const section = imagesSheet.querySelector(`.form-section[data-id="${fieldId}"]`);
     if (section) {
       section.hidden = isManual;
     }
   });
-  layoutSheet.dataset.mosaicSourceMode = source;
-  layoutSheet.classList.toggle('mosaic-source-manual', isManual);
-  layoutSheet.classList.toggle('mosaic-source-folder', !isManual);
 };
 
-const applySourceAwareWorkspace = (editor, workspaces, source) => {
-  const { layoutSheet, imagesSheet } = workspaces;
-  const resolvedSource = source ?? SOURCE_FOLDER;
-  applyFolderOnlyVisibility(layoutSheet, resolvedSource);
-  ensureManualSourceHint(
-    imagesSheet,
-    resolvedSource === SOURCE_MANUAL,
-    editor.dataset.manualSourceHint ?? '',
-  );
-  if (resolvedSource === SOURCE_MANUAL) {
-    scheduleImagesWorkspaceActivation(workspaces);
+const applyManualFieldVisibility = (imagesSheet, source) => {
+  const manualSection = imagesSheet.querySelector('.form-section[data-id="tx_anatolkinmosaicgallery_images"]');
+  if (manualSection) {
+    manualSection.hidden = source !== SOURCE_MANUAL;
   }
 };
 
-const bindSourceAwareWorkspace = (editor, workspaces) => {
-  const sourceControl = workspaces.layoutSheet.querySelector(
+const applyLegacyCaptionsVisibility = (imagesSheet, source) => {
+  const disclosure = imagesSheet.querySelector('.mosaic-legacy-captions-disclosure');
+  if (disclosure) {
+    disclosure.hidden = source === SOURCE_MANUAL;
+  }
+};
+
+const applySourceAwareWorkspace = (workspaces, source) => {
+  const { imagesSheet } = workspaces;
+  const resolvedSource = source ?? SOURCE_FOLDER;
+  applyFolderOnlyVisibility(imagesSheet, resolvedSource);
+  applyManualFieldVisibility(imagesSheet, resolvedSource);
+  applyLegacyCaptionsVisibility(imagesSheet, resolvedSource);
+  imagesSheet.dataset.mosaicSourceMode = resolvedSource;
+  imagesSheet.classList.toggle('mosaic-source-manual', resolvedSource === SOURCE_MANUAL);
+  imagesSheet.classList.toggle('mosaic-source-folder', resolvedSource !== SOURCE_MANUAL);
+};
+
+const bindSourceAwareWorkspace = (workspaces) => {
+  const sourceControl = workspaces.imagesSheet.querySelector(
     '.form-section[data-id="settings.source"] select, .form-section[data-id="settings.source"] input',
   );
-  const sync = () => applySourceAwareWorkspace(editor, workspaces, readGallerySource(sourceControl));
+  const sync = () => applySourceAwareWorkspace(workspaces, readGallerySource(sourceControl));
   sync();
   sourceControl?.addEventListener('change', sync);
-  editor.dataset.mosaicSourceWorkspaceBound = 'true';
+};
+
+const mountContinueToImages = (editor, workspaces) => {
+  const { layoutSheet } = workspaces;
+  if (!layoutSheet || layoutSheet.querySelector('[data-mosaic-continue-to-images]')) {
+    return;
+  }
+  const nav = document.createElement('div');
+  nav.className = 'mosaic-layout-continue';
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'btn btn-default btn-sm mosaic-layout-continue__button';
+  button.dataset.mosaicContinueToImages = 'true';
+  button.textContent = editor.dataset.continueToImagesLabel ?? 'Continue to Images →';
+  button.addEventListener('click', () => activateImagesWorkspaceTab(workspaces));
+  nav.append(button);
+  layoutSheet.append(nav);
 };
 
 const consolidateWorkspaces = (editor) => {
@@ -709,14 +717,33 @@ const consolidateWorkspaces = (editor) => {
   const manualImagesSection = form?.querySelector(
     '.form-section[data-id="tx_anatolkinmosaicgallery_images"]',
   );
+
+  const imagesHeader = document.createElement('div');
+  imagesHeader.className = 'mosaic-images-header';
+  const imagesSourceRow = document.createElement('div');
+  imagesSourceRow.className = 'mosaic-layout-header__row mosaic-layout-header__row--source mosaic-images-header__row--source';
+  imagesSourceRow.dataset.layoutHeaderRow = 'source';
+  imagesHeader.append(imagesSourceRow);
+  imagesSheet.prepend(imagesHeader);
+
+  const moveFromLayout = (fieldName, target) => {
+    const section = layoutSheet.querySelector(`:scope > .form-section[data-id="${fieldName}"]`);
+    if (section) {
+      target.append(section);
+    }
+    return section;
+  };
+  IMAGE_SOURCE_FIELD_IDS.forEach((fieldName) => moveFromLayout(fieldName, imagesSourceRow));
+
   if (manualImagesSection) {
     manualImagesSection.classList.add('mosaic-manual-images');
-    if (metadataSection) {
+    if (metadataSection && imagesSheet.contains(metadataSection)) {
       imagesSheet.insertBefore(manualImagesSection, metadataSection);
     } else {
-      imagesSheet.prepend(manualImagesSection);
+      imagesHeader.insertAdjacentElement('afterend', manualImagesSection);
     }
   }
+
   const captionsSection = layoutSheet.querySelector(':scope > .form-section[data-id="settings.captions"]');
   if (metadataSection) {
     imagesSheet.append(metadataSection);
@@ -733,15 +760,12 @@ const consolidateWorkspaces = (editor) => {
 
   const header = document.createElement('div');
   header.className = 'mosaic-layout-header';
-  const firstRow = document.createElement('div');
-  firstRow.className = 'mosaic-layout-header__row mosaic-layout-header__row--source';
-  firstRow.dataset.layoutHeaderRow = 'source';
-  const secondRow = document.createElement('div');
-  secondRow.className = 'mosaic-layout-header__row mosaic-layout-header__row--settings';
-  secondRow.dataset.layoutHeaderRow = 'settings';
-  header.append(firstRow);
+  const settingsRow = document.createElement('div');
+  settingsRow.className = 'mosaic-layout-header__row mosaic-layout-header__row--settings';
+  settingsRow.dataset.layoutHeaderRow = 'settings';
+  header.append(settingsRow);
   layoutSheet.prepend(header);
-  editor.prepend(secondRow);
+  editor.prepend(settingsRow);
 
   const moveSection = (fieldName, target) => {
     const section = layoutSheet.querySelector(`:scope > .form-section[data-id="${fieldName}"]`);
@@ -750,22 +774,18 @@ const consolidateWorkspaces = (editor) => {
     }
     return section;
   };
-  ['settings.source', 'settings.folder', 'settings.recursive', 'settings.sortBy', 'settings.sortDir']
-    .forEach((fieldName) => moveSection(fieldName, firstRow));
-  ['settings.layoutMode', 'settings.maxItemsPerRow', 'settings.maxWidth', 'settings.itemsPerPage', 'settings.loadStep', 'settings.useFalCaptions']
-    .forEach((fieldName) => moveSection(fieldName, secondRow));
+  LAYOUT_SETTINGS_FIELD_IDS.forEach((fieldName) => moveSection(fieldName, settingsRow));
 
-  const metadataFallback = secondRow.querySelector('.form-section[data-id="settings.useFalCaptions"]');
-  const maxWidth = secondRow.querySelector('.form-section[data-id="settings.maxWidth"]');
-  const maxItemsPerRow = secondRow.querySelector('.form-section[data-id="settings.maxItemsPerRow"]');
+  const metadataFallback = imagesSourceRow.querySelector('.form-section[data-id="settings.useFalCaptions"]');
+  const maxWidth = settingsRow.querySelector('.form-section[data-id="settings.maxWidth"]');
+  const maxItemsPerRow = settingsRow.querySelector('.form-section[data-id="settings.maxItemsPerRow"]');
   if (metadataFallback) {
     metadataFallback.dataset.mosaicInlineCheckbox = 'true';
   }
   addCompactHelp(maxWidth);
   addCompactHelp(maxItemsPerRow);
-  addCompactHelp(metadataFallback);
 
-  const workspaces = { layoutSheet, imagesSheet };
+  const workspaces = { layoutSheet, imagesSheet, imagesSourceRow };
   workspaceRegistry.set(editor, workspaces);
   return workspaces;
 };
@@ -806,7 +826,8 @@ const initializeEditor = (editor) => {
   if (!storage || !sheet || !presetSelector || !configuratorSection) {
     return;
   }
-  bindSourceAwareWorkspace(editor, workspaces);
+  bindSourceAwareWorkspace(workspaces);
+  mountContinueToImages(editor, workspaces);
 
   const customSections = [...sheet.querySelectorAll(':scope > .form-section')].filter(
     (section) => Object.prototype.hasOwnProperty.call(CUSTOM_FIELDS, section.dataset.id),

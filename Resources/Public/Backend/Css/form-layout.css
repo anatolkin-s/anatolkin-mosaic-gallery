@@ -460,8 +460,33 @@
   min-width: 0;
 }
 
-.mosaic-manual-source-hint {
-  margin-bottom: .75rem;
+.mosaic-images-header {
+  margin-bottom: 1rem;
+  min-width: 0;
+}
+
+.mosaic-images-header__row--source > .form-section[data-id="settings.useFalCaptions"][data-mosaic-inline-checkbox="true"] {
+  align-items: center;
+  align-self: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 5px;
+  max-width: 100%;
+}
+
+.mosaic-images-header__row--source > .form-section[data-id="settings.useFalCaptions"][data-mosaic-inline-checkbox="true"]
+  :is(.form-check, .form-control-wrap, .form-wizards-wrap) {
+  flex: 0 0 auto;
+  margin: 0;
+  width: auto;
+}
+
+.mosaic-layout-continue {
+  margin-top: 1rem;
+  text-align: end;
+}
+
+.mosaic-layout-continue__button {
   max-width: 100%;
 }
 

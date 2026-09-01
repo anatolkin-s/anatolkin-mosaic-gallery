@@ -30,10 +30,7 @@ $manualProvider = readFileOrFail($root . '/Classes/Service/ManualImageProvider.p
 $itemAssembler = readFileOrFail($root . '/Classes/Service/GalleryItemAssembler.php', $failures);
 $dimensions = readFileOrFail($root . '/Classes/Service/GalleryImageDimensionsResolver.php', $failures);
 $metadataElement = readFileOrFail($root . '/Classes/Backend/Form/Element/MetadataOverridesElement.php', $failures);
-$displayCond = readFileOrFail(
-    $root . '/Classes/Backend/Form/DisplayCondition/ManualImageSourceCondition.php',
-    $failures,
-);
+$locallangBe = readFileOrFail($root . '/Resources/Private/Language/locallang_be.xlf', $failures);
 $template = readFileOrFail($root . '/Resources/Private/Templates/Gallery/List.html', $failures);
 $creationDefaults = readFileOrFail(
     $root . '/Classes/Service/MosaicGalleryCreationDefaultsDefinition.php',
@@ -82,8 +79,17 @@ if ($tca !== '') {
     if (!str_contains($tca, "'allowLanguageSynchronization' => true")) {
         $failures[] = 'B: Manual images must allow language synchronization';
     }
-    if (!str_contains($tca, 'ManualImageSourceCondition') || !str_contains($tca, 'displayCond')) {
-        $failures[] = 'B: Manual images field must use source-aware displayCond';
+    if (str_contains($tca, 'ManualImageSourceCondition') || preg_match(
+        '/\$manualImagesField[\s\S]{0,400}displayCond/s',
+        $tca,
+    )) {
+        $failures[] = 'B: Manual images field must not use server-side USER displayCond';
+    }
+    if (!str_contains($tca, "'elementBrowserEnabled' => true") || !str_contains($tca, "'fileUploadAllowed' => true")) {
+        $failures[] = 'B: Manual images must enable native element browser and upload controls';
+    }
+    if (!preg_match("/'maxitems'\s*=>\s*200/", $tca)) {
+        $failures[] = 'B: Manual images must allow multi-value relations (maxitems 200)';
     }
 }
 
@@ -151,6 +157,9 @@ if ($metadataElement !== '') {
     if (!str_contains($metadataElement, 'metadata.noManualImages')) {
         $failures[] = 'E: Metadata workspace must define manual-mode empty state label';
     }
+    if (preg_match('/if\s*\(\$isManualSource\)\s*\{[^}]*metadata\.folderNotSelected/s', $metadataElement)) {
+        $failures[] = 'E: Manual mode must not show folder-not-selected messaging';
+    }
     $manualBlockStart = strpos($metadataElement, 'if ($isManualSource) {');
     $folderBranchStart = strpos($metadataElement, "} elseif (\$folder !== '') {");
     $sorterPos = strpos($metadataElement, 'GalleryImageSorter::class');
@@ -164,10 +173,8 @@ if ($metadataElement !== '') {
     }
 }
 
-if ($displayCond !== '') {
-    if (!str_contains($displayCond, 'SOURCE_MANUAL') || !str_contains($displayCond, 'pi_flexform')) {
-        $failures[] = 'E: ManualImageSourceCondition must read pi_flexform for manual source';
-    }
+if (is_file($root . '/Classes/Backend/Form/DisplayCondition/ManualImageSourceCondition.php')) {
+    $failures[] = 'E: ManualImageSourceCondition must be removed after dropping TCA displayCond';
 }
 
 // F. Regression
@@ -208,32 +215,63 @@ if ($sourceReader !== '') {
 
 $designConfiguratorJs = readFileOrFail($root . '/Resources/Public/JavaScript/design-configurator.js', $failures);
 if ($designConfiguratorJs !== '') {
-    if (!str_contains($designConfiguratorJs, 'SOURCE_MANUAL') || !str_contains($designConfiguratorJs, 'SOURCE_FOLDER')) {
-        $failures[] = 'G: design-configurator must recognize manual and folder source modes';
+    if (!str_contains($designConfiguratorJs, 'IMAGE_SOURCE_FIELD_IDS')) {
+        $failures[] = 'G: Images workspace must own source configuration fields explicitly';
     }
-    foreach (['settings.folder', 'settings.recursive', 'settings.sortBy', 'settings.sortDir'] as $fieldId) {
+    foreach (['settings.source', 'settings.folder', 'settings.recursive', 'settings.sortBy', 'settings.sortDir', 'settings.useFalCaptions'] as $fieldId) {
         if (!str_contains($designConfiguratorJs, $fieldId)) {
-            $failures[] = 'G: design-configurator must declare folder-only field ' . $fieldId;
+            $failures[] = 'G: Images workspace must reference field ' . $fieldId;
         }
     }
-    if (!str_contains($designConfiguratorJs, 'FOLDER_ONLY_FIELD_IDS')) {
-        $failures[] = 'G: design-configurator must use an explicit folder-only field inventory';
-    }
-    if (!str_contains($designConfiguratorJs, 'applyFolderOnlyVisibility')
-        || !str_contains($designConfiguratorJs, 'section.hidden = isManual')
+    if (!str_contains($designConfiguratorJs, 'LAYOUT_SETTINGS_FIELD_IDS')
+        || !str_contains($designConfiguratorJs, 'settings.layoutMode')
     ) {
-        $failures[] = 'G: Manual source must hide folder-only controls without destroying them';
+        $failures[] = 'G: Layout workspace must retain presentation settings separately from Images source';
     }
-    if (!str_contains($designConfiguratorJs, 'activateImagesWorkspaceTab')
-        || !str_contains($designConfiguratorJs, 'scheduleImagesWorkspaceActivation')
+    if (!str_contains($designConfiguratorJs, 'mosaic-images-header')
+        || !preg_match('/moveFromLayout[\s\S]*imagesSourceRow/s', $designConfiguratorJs)
     ) {
-        $failures[] = 'G: Manual source must activate the Mosaic Images workspace tab';
+        $failures[] = 'G: Source row must be mounted in Images workspace, not Layout';
+    }
+    if (!str_contains($designConfiguratorJs, 'mountContinueToImages')
+        || !str_contains($designConfiguratorJs, 'data-mosaic-continue-to-images')
+    ) {
+        $failures[] = 'G: Layout workspace must expose Continue to Images navigation';
+    }
+    if (!str_contains($designConfiguratorJs, 'applyManualFieldVisibility')
+        || !str_contains($designConfiguratorJs, 'manualSection.hidden = source !== SOURCE_MANUAL')
+    ) {
+        $failures[] = 'G: JavaScript must own manual relation visibility';
+    }
+    if (!str_contains($designConfiguratorJs, 'applyLegacyCaptionsVisibility')) {
+        $failures[] = 'G: Manual mode must hide legacy Quick captions disclosure';
+    }
+    if (str_contains($designConfiguratorJs, 'scheduleImagesWorkspaceActivation')
+        || str_contains($designConfiguratorJs, 'ensureManualSourceHint')
+        || str_contains($designConfiguratorJs, 'manualSourceHint')
+    ) {
+        $failures[] = 'G: Obsolete manual redirect/hint machinery must be removed';
+    }
+    if (!str_contains($designConfiguratorJs, 'activateImagesWorkspaceTab')) {
+        $failures[] = 'G: Images tab activation helper must remain for Continue to Images';
     }
     if (!str_contains($designConfiguratorJs, 'tx_anatolkinmosaicgallery_images')) {
         $failures[] = 'G: Native manual TCA relation must remain wired in the Images workspace';
     }
     if (preg_match('/customFileBrowser|custom-file-browser|buildManualFileSelector/i', $designConfiguratorJs)) {
         $failures[] = 'G: Manual source must not introduce a custom file browser';
+    }
+}
+
+if ($locallangBe !== '') {
+    if (str_contains($locallangBe, 'flexform.source.manual.hint')) {
+        $failures[] = 'G: Obsolete manual-source hint label must be removed';
+    }
+    if (!str_contains($locallangBe, 'Add images and save the content element to edit image metadata.')) {
+        $failures[] = 'G: Manual metadata empty state must instruct add-images/save, not select-folder';
+    }
+    if (!str_contains($locallangBe, 'workspace.continueToImages')) {
+        $failures[] = 'G: Continue to Images label must exist';
     }
 }
 

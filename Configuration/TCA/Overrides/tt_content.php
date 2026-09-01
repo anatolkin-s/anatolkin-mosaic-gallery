@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 defined('TYPO3') || die();
 
-use Anatolkin\MosaicGallery\Backend\Form\DisplayCondition\ManualImageSourceCondition;
 use Anatolkin\MosaicGallery\Service\ManualImageProvider;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Information\Typo3Version;
@@ -32,7 +31,6 @@ use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
         $manualImagesField => [
             'label' => 'LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:manualImages.title',
             'description' => 'LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:manualImages.description',
-            'displayCond' => 'USER:' . ManualImageSourceCondition::class . '->isManualImageSource',
             'config' => [
                 'type' => 'file',
                 'allowed' => 'common-image-types',
@@ -40,6 +38,8 @@ use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
                 'appearance' => [
                     'useSortable' => true,
                     'createNewRelationLinkTitle' => 'LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:manualImages.select',
+                    'elementBrowserEnabled' => true,
+                    'fileUploadAllowed' => true,
                 ],
                 'behaviour' => [
                     'allowLanguageSynchronization' => true,

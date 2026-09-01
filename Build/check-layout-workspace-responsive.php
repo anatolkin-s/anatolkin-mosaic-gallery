@@ -153,15 +153,15 @@ if (!preg_match(
     $failures[] = 'G: Upper numeric fields must use ch-based compact inline sizing';
 }
 
-// H. metadata fallback remains compact
+// H. metadata fallback remains compact in Images source row
 if (!preg_match(
-    '/\.mosaic-layout-header__row--settings[\s\S]{0,200}\[data-id="settings\.useFalCaptions"\]\[data-mosaic-inline-checkbox="true"\]/s',
+    '/\.mosaic-images-header__row--source[\s\S]{0,200}\[data-id="settings\.useFalCaptions"\]\[data-mosaic-inline-checkbox="true"\]/s',
     $css,
 ) || !preg_match(
     '/\[data-id="settings\.useFalCaptions"\]\[data-mosaic-inline-checkbox="true"\][^{]*\{[^}]*width:\s*auto/s',
     $css,
 )) {
-    $failures[] = 'H: Metadata fallback checkbox must remain compact inline';
+    $failures[] = 'H: Metadata fallback checkbox must remain compact inline in Images workspace';
 }
 
 // I. no TYPO3-major responsive branching on layout workspace
@@ -216,11 +216,11 @@ $requiredSettingsFields = [
     'settings.maxWidth',
     'settings.itemsPerPage',
     'settings.loadStep',
-    'settings.useFalCaptions',
 ];
-foreach ($requiredSourceFields as $field) {
-    if (!str_contains($js, "'{$field}'") && !str_contains($js, "\"{$field}\"")) {
-        $failures[] = "L: consolidateWorkspaces must preserve source field {$field}";
+$requiredImagesSourceFields = array_merge($requiredSourceFields, ['settings.useFalCaptions']);
+foreach ($requiredImagesSourceFields as $field) {
+    if (!str_contains($js, 'IMAGE_SOURCE_FIELD_IDS') || (!str_contains($js, "'{$field}'") && !str_contains($js, "\"{$field}\""))) {
+        $failures[] = "L: Images workspace must own source field {$field}";
     }
 }
 foreach ($requiredSettingsFields as $field) {
@@ -230,6 +230,7 @@ foreach ($requiredSettingsFields as $field) {
 }
 if (!str_contains($js, 'mosaic-layout-header__row--source')
     || !str_contains($js, 'mosaic-layout-header__row--settings')
+    || !str_contains($js, 'mosaic-images-header')
     || !str_contains($js, 'consolidateWorkspaces')
 ) {
     $failures[] = 'L: consolidateWorkspaces structure markers must remain in design-configurator.js';
