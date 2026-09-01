@@ -39,9 +39,10 @@
     <div class="mosaic-sizer"></div>
 
     <f:for each="{items}" as="it">
-      <f:variable name="previewUrl" value="{f:uri.image(image: it.file, maxWidth: maxWidth)}" />
+      <f:variable name="previewUrl" value="{f:uri.image(image: it.renderFile, maxWidth: maxWidth)}" />
+      <f:variable name="lightboxUrl" value="{f:uri.image(image: it.renderFile)}" />
       <figure class="mosaic-item {f:if(condition: it.hidden, then: 'is-hidden')}" data-layout-span="{it.layoutSpan}" data-pattern-weight="{it.patternWeight}" data-aspect-ratio="{it.aspectRatio}">
-        <a href="{it.file.publicUrl}"
+        <a href="{lightboxUrl}"
            class="{f:if(condition: settings.enableLightbox, then: 'glightbox', else: '')}"
            data-gallery="{galleryGroup}"
            data-title="{it.caption}"

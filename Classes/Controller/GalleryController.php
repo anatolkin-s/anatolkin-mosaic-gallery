@@ -4,24 +4,29 @@ declare(strict_types=1);
 namespace Anatolkin\MosaicGallery\Controller;
 
 use Anatolkin\MosaicGallery\Service\DesignPresetResolver;
-use Anatolkin\MosaicGallery\Service\GalleryMetadataOverrideResolver;
+use Anatolkin\MosaicGallery\Service\GalleryFlexFormSourceReader;
 use Anatolkin\MosaicGallery\Service\GalleryImageSorter;
+use Anatolkin\MosaicGallery\Service\GalleryItemAssembler;
+use Anatolkin\MosaicGallery\Service\GalleryMetadataOverrideResolver;
+use Anatolkin\MosaicGallery\Service\ManualImageProvider;
 use Psr\Http\Message\ResponseInterface;
-use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Page\AssetCollector;
-use TYPO3\CMS\Core\Resource\ResourceFactory;
-use TYPO3\CMS\Core\Resource\Folder;
-use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\LanguageAspect;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
+use TYPO3\CMS\Core\Page\AssetCollector;
+use TYPO3\CMS\Core\Resource\File;
+use TYPO3\CMS\Core\Resource\Folder;
+use TYPO3\CMS\Core\Resource\ResourceFactory;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 final class GalleryController extends ActionController
 {
     public function __construct(
         private readonly DesignPresetResolver $designPresetResolver,
+        private readonly GalleryItemAssembler $galleryItemAssembler,
+        private readonly ManualImageProvider $manualImageProvider,
     ) {
     }
 
@@ -61,15 +66,14 @@ final class GalleryController extends ActionController
             );
         }
 
-        // Settings
-        $source    = (string)($this->settings['source'] ?? 'folder');
-        $folderIn  = (string)($this->settings['folder'] ?? 'fileadmin/gallery/');
+        $source = (string)($this->settings['source'] ?? GalleryFlexFormSourceReader::SOURCE_FOLDER);
+        $folderIn = (string)($this->settings['folder'] ?? 'fileadmin/gallery/');
         $recursive = (bool)($this->settings['recursive'] ?? true);
-        $gapValue  = trim((string)($this->settings['gap'] ?? ''));
-        $gap       = $gapValue === '' ? 12 : (int)$gapValue;
-        $maxWidth  = max(200, (int)($this->settings['maxWidth'] ?? 1800));
-        $sortBy    = (string)($this->settings['sortBy'] ?? 'name');   // name|mtime|random
-        $sortDir   = (string)($this->settings['sortDir'] ?? 'asc');   // asc|desc
+        $gapValue = trim((string)($this->settings['gap'] ?? ''));
+        $gap = $gapValue === '' ? 12 : (int)$gapValue;
+        $maxWidth = max(200, (int)($this->settings['maxWidth'] ?? 1800));
+        $sortBy = (string)($this->settings['sortBy'] ?? 'name');
+        $sortDir = (string)($this->settings['sortDir'] ?? 'asc');
         $layoutMode = (string)($this->settings['layoutMode'] ?? 'masonry');
         if (!\in_array($layoutMode, ['masonry', 'mosaic', 'patterned', 'justified', 'grid'], true)) {
             $layoutMode = 'masonry';
@@ -79,9 +83,8 @@ final class GalleryController extends ActionController
             $maxItemsPerRow = 6;
         }
 
-        $showCaptions   = (bool)($this->settings['showCaptions'] ?? true);
-        $useFalCaptions = (bool)($this->settings['useFalCaptions'] ?? true);
-        $captionAlign   = (string)($this->settings['captionAlign'] ?? 'left');
+        $showCaptions = (bool)($this->settings['showCaptions'] ?? true);
+        $captionAlign = (string)($this->settings['captionAlign'] ?? 'left');
         if (!\in_array($captionAlign, ['left', 'center', 'right'], true)) {
             $captionAlign = 'left';
         }
@@ -90,23 +93,21 @@ final class GalleryController extends ActionController
         $frameBands = $this->resolveFrameBands($design['frameWidth']);
 
         $enableLoadMore = (bool)($this->settings['enableLoadMore'] ?? true);
-        $itemsPerPage   = max(1, (int)($this->settings['itemsPerPage'] ?? 12));
-        $loadStep       = max(1, (int)($this->settings['loadStep'] ?? $itemsPerPage));
+        $itemsPerPage = max(1, (int)($this->settings['itemsPerPage'] ?? 12));
+        $loadStep = max(1, (int)($this->settings['loadStep'] ?? $itemsPerPage));
 
-        $items   = [];
+        $items = [];
         $groupId = 'mosaic-' . $this->resolveContentUid();
+        $metadataDocument = GeneralUtility::makeInstance(GalleryMetadataOverrideResolver::class)
+            ->decodeDocument($this->resolveMetadataOverridesValue());
 
-        if ($source === 'folder') {
+        if ($source === GalleryFlexFormSourceReader::SOURCE_FOLDER) {
             try {
-                $rf     = GeneralUtility::makeInstance(ResourceFactory::class);
+                $rf = GeneralUtility::makeInstance(ResourceFactory::class);
                 $folder = $rf->getFolderObjectFromCombinedIdentifier(
                     $this->toCombinedIdentifier($folderIn)
                 );
-                $files  = $this->collectFiles($folder, $recursive);
-                $metadataDocument = GeneralUtility::makeInstance(GalleryMetadataOverrideResolver::class)
-                    ->decodeDocument($this->resolveMetadataOverridesValue());
-                $metadataOverrides = $metadataDocument['files'];
-                $legacyCaptionsConverted = $metadataDocument['legacyCaptionsConverted'];
+                $files = $this->collectFiles($folder, $recursive);
                 if ($sortBy === 'random') {
                     shuffle($files);
                 } else {
@@ -114,121 +115,54 @@ final class GalleryController extends ActionController
                         ->sortDeterministically($files, $sortBy, $sortDir);
                 }
 
-                $lines = $this->splitLines((string)($this->settings['captions'] ?? ''));
-
-                foreach ($files as $idx => $file) {
-                    $aspectRatio = $this->resolveAspectRatio($file);
-                    // Inherited FAL metadata via TYPO3 Core:
-                    // File → MetaDataAspect → MetaDataRepository → EnrichFileMetaDataEvent
-                    // (frontend FileMetadataOverlayAspect applies language/workspace overlays).
-                    try {
-                        $meta = $useFalCaptions ? $file->getMetaData()->get() : [];
-                    } catch (\Throwable) {
-                        $meta = [];
-                    }
-
-                    // Stable Fluid subset only (same five keys as caption/alt resolution).
-                    $metadata = [
-                        'title' => (string)($meta['title'] ?? ''),
-                        'caption' => (string)($meta['caption'] ?? ''),
-                        'description' => (string)($meta['description'] ?? ''),
-                        'alternative' => (string)($meta['alternative'] ?? ''),
-                        'copyright' => (string)($meta['copyright'] ?? ''),
-                    ];
-
-                    $caption = $useFalCaptions
-                        ? ($metadata['caption'] !== ''
-                            ? $metadata['caption']
-                            : ($metadata['title'] !== '' ? $metadata['title'] : $metadata['description']))
-                        : ($legacyCaptionsConverted ? '' : ($lines[$idx] ?? ''));
-
-                    $alt = $metadata['alternative'] ?: $caption;
-
-                    $fileOverride = $metadataOverrides[(string)$file->getUid()] ?? [];
-                    if (($fileOverride['caption']['mode'] ?? null) === 'custom') {
-                        $caption = $fileOverride['caption']['value'];
-                    }
-                    if (($fileOverride['alt']['mode'] ?? null) === 'custom') {
-                        $alt = $fileOverride['alt']['value'];
-                    } elseif (($fileOverride['alt']['mode'] ?? null) === 'empty') {
-                        $alt = '';
-                    }
-
-                    $items[] = [
-                        'file'    => $file,
-                        'metadata' => $metadata,
-                        'caption' => (string)$caption,
-                        'alt'     => (string)$alt,
-                        'hidden'  => ($enableLoadMore && $idx >= $itemsPerPage),
-                        'layoutSpan' => $this->resolveLayoutSpan($file, $layoutMode),
-                        'aspectRatio' => $aspectRatio,
-                        'patternWeight' => $this->resolvePatternWeight($idx, $layoutMode),
-                    ];
-                }
-            } catch (\Throwable $e) {
+                $items = $this->galleryItemAssembler->assembleFromFiles(
+                    $files,
+                    $this->settings,
+                    $metadataDocument,
+                    $layoutMode,
+                    $enableLoadMore,
+                    $itemsPerPage,
+                );
+            } catch (\Throwable) {
                 // Fail silently for this content element instead of breaking the whole page.
+            }
+        } elseif ($source === GalleryFlexFormSourceReader::SOURCE_MANUAL) {
+            $contentUid = $this->resolveContentUid();
+            if ($contentUid > 0) {
+                $fileReferences = $this->manualImageProvider->getFileReferences($contentUid);
+                $items = $this->galleryItemAssembler->assembleFromFileReferences(
+                    $fileReferences,
+                    $this->settings,
+                    $metadataDocument,
+                    $layoutMode,
+                    $enableLoadMore,
+                    $itemsPerPage,
+                );
             }
         }
 
         $hasMore = $enableLoadMore && \count($items) > $itemsPerPage;
 
         $this->view->assignMultiple([
-            'data'           => $this->resolveContentData(),
-            'items'          => $items,
-            'gap'            => $gap,
-            'maxWidth'       => $maxWidth,
-            'layoutMode'     => $layoutMode,
+            'data' => $this->resolveContentData(),
+            'items' => $items,
+            'gap' => $gap,
+            'maxWidth' => $maxWidth,
+            'layoutMode' => $layoutMode,
             'maxItemsPerRow' => $maxItemsPerRow,
-            'showCaptions'   => $showCaptions,
-            'captionAlign'   => $captionAlign,
-            'design'         => $design,
-            'frameBands'     => $frameBands,
+            'showCaptions' => $showCaptions,
+            'captionAlign' => $captionAlign,
+            'design' => $design,
+            'frameBands' => $frameBands,
             'enableLightbox' => $enableLightbox,
-            'galleryGroup'   => $groupId,
+            'galleryGroup' => $groupId,
             'enableLoadMore' => $enableLoadMore,
-            'itemsPerPage'   => $itemsPerPage,
-            'loadStep'       => $loadStep,
-            'hasMore'        => $hasMore,
+            'itemsPerPage' => $itemsPerPage,
+            'loadStep' => $loadStep,
+            'hasMore' => $hasMore,
         ]);
 
         return $this->htmlResponse();
-    }
-
-    private function resolveLayoutSpan(File $file, string $layoutMode): string
-    {
-        if ($layoutMode !== 'mosaic') {
-            return 'normal';
-        }
-
-        try {
-            $width = (int)$file->getProperty('width');
-            $height = (int)$file->getProperty('height');
-            // A 1.6 ratio reserves two-column spans for clearly wide images rather than ordinary landscapes.
-            return $width > 0 && $height > 0 && ($width / $height) >= 1.6 ? 'wide' : 'normal';
-        } catch (\Throwable) {
-            return 'normal';
-        }
-    }
-
-    private function resolveAspectRatio(File $file): float
-    {
-        try {
-            $width = (int)$file->getProperty('width');
-            $height = (int)$file->getProperty('height');
-            return $width > 0 && $height > 0 ? $width / $height : 1.0;
-        } catch (\Throwable) {
-            return 1.0;
-        }
-    }
-
-    private function resolvePatternWeight(int $index, string $layoutMode): string
-    {
-        if ($layoutMode !== 'patterned') {
-            return 'medium';
-        }
-
-        $weights = ['medium', 'small', 'medium', 'large', 'small', 'medium', 'small', 'large', 'medium', 'small'];
-        return $weights[$index % \count($weights)];
     }
 
     /** @return array{key: string, quarter: string, third: string, forty: string, fortyFive: string, sixty: string, twoThirds: string, threeQuarters: string, total: string} */
@@ -260,6 +194,7 @@ final class GalleryController extends ActionController
         if ($cObj instanceof ContentObjectRenderer) {
             return (int)($cObj->data['uid'] ?? 0);
         }
+
         return 0;
     }
 
@@ -294,16 +229,20 @@ final class GalleryController extends ActionController
 
             return (string)($contentRow['tx_anatolkinmosaicgallery_metadata_overrides'] ?? '');
         }
+
         return '';
     }
 
+    /** @return list<File> */
     private function collectFiles(Folder $folder, bool $recursive): array
     {
-        $result  = [];
+        $result = [];
         $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tif', 'tiff'];
 
         foreach ($folder->getFiles() as $file) {
-            /** @var File $file */
+            if (!$file instanceof File) {
+                continue;
+            }
             $ext = strtolower((string)$file->getExtension());
             if (\in_array($ext, $allowed, true)) {
                 $result[] = $file;
@@ -317,17 +256,6 @@ final class GalleryController extends ActionController
         }
 
         return $result;
-    }
-
-    private function splitLines(string $text): array
-    {
-        $lines = preg_split('/\r\n|\r|\n/', $text);
-        return array_values(
-            array_filter(
-                $lines,
-                static fn($v) => $v !== null
-            )
-        );
     }
 
     private function toCombinedIdentifier(string $input): string
