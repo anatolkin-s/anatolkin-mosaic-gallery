@@ -183,6 +183,29 @@ if ($folderProvider === '') {
     $failures[] = 'F: FolderImageProvider must remain present';
 }
 
+$sourceReaderTest = $root . '/Build/test-flexform-source-reader.php';
+if (!is_file($sourceReaderTest)) {
+    $failures[] = 'F: Executable FormEngine-shape regression fixture must exist at Build/test-flexform-source-reader.php';
+} else {
+    $command = escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($sourceReaderTest);
+    passthru($command, $exitCode);
+    if ($exitCode !== 0) {
+        $failures[] = 'F: FlexForm source reader regression fixture failed (exit ' . $exitCode . ')';
+    }
+}
+
+$sourceReader = readFileOrFail($root . '/Classes/Service/GalleryFlexFormSourceReader.php', $failures);
+if ($sourceReader !== '') {
+    if (preg_match('/\(string\)\(\$settings\[/', $sourceReader)) {
+        $failures[] = 'F: GalleryFlexFormSourceReader must not cast settings arrays directly to string';
+    }
+    if (!str_contains($sourceReader, 'private function stringValue(')
+        || !str_contains($sourceReader, 'private function boolValue(')
+    ) {
+        $failures[] = 'F: GalleryFlexFormSourceReader must normalize settings via bounded stringValue/boolValue helpers';
+    }
+}
+
 if ($failures === []) {
     fwrite(STDOUT, "Manual image selection contract checks passed.\n");
     exit(0);
