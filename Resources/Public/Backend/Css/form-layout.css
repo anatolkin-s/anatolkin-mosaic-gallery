@@ -1063,6 +1063,19 @@
   display: none;
 }
 
+/*
+ * Custom Gallery exposes only three display controls (Gap / Captions /
+ * Alignment). Override the shared 4-column preset grid so those controls
+ * fill the group width and collapse intrinsically.
+ */
+.mosaic-design-configurator.is-custom
+  [data-design-group="gallery"]
+  > [data-design-controls] {
+  display: grid;
+  gap: .75rem 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(8rem, 100%), 1fr));
+}
+
 .mosaic-design-preview {
   --preview-frame-color: #777;
   --preview-frame-accent: #aaa;

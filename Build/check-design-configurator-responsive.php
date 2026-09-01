@@ -108,6 +108,36 @@ if (!preg_match(
     $failures[] = 'Outer groups must use intrinsic auto-fit so they can collapse to one column';
 }
 
+// Custom Gallery display controls (Gap / Captions / Alignment) fill width intrinsically
+$galleryControlsMatch = [];
+preg_match(
+    '/\.mosaic-design-configurator\.is-custom\s+\[data-design-group="gallery"\]\s*>\s*\[data-design-controls\]\s*\{([^}]+)\}/s',
+    $css,
+    $galleryControlsMatch,
+);
+$galleryControlsRule = $galleryControlsMatch[1] ?? '';
+if ($galleryControlsRule === '') {
+    $failures[] = 'Custom Gallery [data-design-controls] must have a scoped responsive/intrinsic grid rule';
+} elseif (!preg_match(
+    '/grid-template-columns\s*:\s*repeat\(\s*auto-fit\s*,\s*minmax\s*\(\s*min\s*\(/',
+    $galleryControlsRule,
+)) {
+    $failures[] = 'Custom Gallery display controls must use intrinsic auto-fit sizing';
+} elseif (preg_match('/grid-template-columns\s*:\s*repeat\(\s*4\s*,/', $galleryControlsRule)) {
+    $failures[] = 'Custom Gallery display controls must not keep a fixed repeat(4, ...) layout';
+}
+if (!str_contains($css, '[data-design-group="gallery"]')) {
+    $failures[] = 'Gallery Custom display-control rule must be scoped to data-design-group="gallery"';
+}
+
+// Existing Custom FlexForm field intrinsic rule remains unchanged
+if (!preg_match(
+    '/\.mosaic-design-configurator\.is-custom\s+\.mosaic-design-configurator__custom\s*\{[\s\S]*?repeat\(\s*auto-fit\s*,\s*minmax\s*\(\s*min\(\s*10rem/',
+    $css,
+)) {
+    $failures[] = 'Existing Custom field intrinsic grid (min 10rem) must remain unchanged';
+}
+
 // Preset controls remain independently marked/aligned
 if (!str_contains($element, 'data-mosaic-color-control-row="preset"')
     || !preg_match('/\.mosaic-design-configurator__control[^{]*\{[\s\S]*?display:\s*flex/s', $css)
