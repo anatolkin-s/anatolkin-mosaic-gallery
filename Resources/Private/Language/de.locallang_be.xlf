@@ -63,6 +63,7 @@
     <trans-unit id="flexform.source.folder"><source>Folder (fileadmin)</source><target>Ordner (fileadmin)</target></trans-unit>
     <trans-unit id="flexform.source.manual"><source>Manual images</source><target>Manuelle Bilder</target></trans-unit>
     <trans-unit id="flexform.source.manual.help"><source>Select individual images, crop each one, and drag them into the order you want. Folder sorting options do not apply in this mode.</source><target>Wählen Sie einzelne Bilder aus, schneiden Sie jedes zu und ordnen Sie sie per Drag-and-drop. Ordner-Sortieroptionen gelten in diesem Modus nicht.</target></trans-unit>
+    <trans-unit id="flexform.source.manual.hint"><source>Select and arrange individual images in the Images tab.</source><target>Wählen und ordnen Sie einzelne Bilder im Reiter „Images“.</target></trans-unit>
     <trans-unit id="manualImages.title"><source>Manual images</source><target>Manuelle Bilder</target></trans-unit>
     <trans-unit id="manualImages.description"><source>Select gallery images individually. Use the crop editor on each file reference and drag images to set the display order.</source><target>Wählen Sie Galeriebilder einzeln aus. Nutzen Sie den Zuschnitt-Editor je Dateireferenz und ordnen Sie die Bilder per Drag-and-drop.</target></trans-unit>
     <trans-unit id="manualImages.select"><source>Add images</source><target>Bilder hinzufügen</target></trans-unit>

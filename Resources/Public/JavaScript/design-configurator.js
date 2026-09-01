@@ -61,6 +61,15 @@ const MULTI_COLOR_FRAME_STYLES = new Set([
   'doubleInnerStrong',
   'gallery',
 ]);
+const SOURCE_FOLDER = 'folder';
+const SOURCE_MANUAL = 'manual';
+const FOLDER_ONLY_FIELD_IDS = [
+  'settings.folder',
+  'settings.recursive',
+  'settings.sortBy',
+  'settings.sortDir',
+];
+const workspaceRegistry = new WeakMap();
 
 const valueAtPath = (document, path) => pathSegments(path).reduce(
   (value, segment) => value && typeof value === 'object' ? value[segment] : undefined,
@@ -514,6 +523,170 @@ const addCompactHelp = (section) => {
   }
 };
 
+const unwrapFormEngineScalar = (value) => {
+  if (Array.isArray(value)) {
+    if (Object.prototype.hasOwnProperty.call(value, 'vDEF')) {
+      return unwrapFormEngineScalar(value.vDEF);
+    }
+    if (value.length === 0) {
+      return null;
+    }
+    if (value.length === 1) {
+      return unwrapFormEngineScalar(value[0]);
+    }
+    return null;
+  }
+  if (value && typeof value === 'object') {
+    return null;
+  }
+  return value;
+};
+
+const normalizeGallerySource = (value) => {
+  const scalar = unwrapFormEngineScalar(value);
+  if (scalar === null || scalar === undefined) {
+    return SOURCE_FOLDER;
+  }
+  return String(scalar).trim() === SOURCE_MANUAL ? SOURCE_MANUAL : SOURCE_FOLDER;
+};
+
+const readGallerySource = (control) => {
+  if (!control) {
+    return SOURCE_FOLDER;
+  }
+  return normalizeGallerySource(readControlValue(control));
+};
+
+const resolveMosaicWorkspaceTabs = (layoutSheet, imagesSheet) => {
+  if (!layoutSheet || !imagesSheet || layoutSheet === imagesSheet) {
+    return null;
+  }
+  const tabContent = layoutSheet.parentElement;
+  if (!tabContent?.classList.contains('tab-content')) {
+    return null;
+  }
+  const panes = [...tabContent.querySelectorAll(':scope > .tab-pane')];
+  if (!panes.includes(layoutSheet) || !panes.includes(imagesSheet)) {
+    return null;
+  }
+  const nav = tabContent.previousElementSibling?.matches('.nav-tabs, .nav, ul.nav')
+    ? tabContent.previousElementSibling
+    : tabContent.parentElement?.querySelector('.nav-tabs, .nav, ul.nav');
+  return {
+    tabContent,
+    nav,
+    layoutSheet,
+    imagesSheet,
+    layoutPaneId: layoutSheet.id,
+    imagesPaneId: imagesSheet.id,
+  };
+};
+
+const activateImagesWorkspaceTab = (workspaces) => {
+  const { layoutSheet, imagesSheet } = workspaces;
+  const tabs = resolveMosaicWorkspaceTabs(layoutSheet, imagesSheet);
+  if (!tabs) {
+    return false;
+  }
+
+  const { nav, tabContent, imagesPaneId, layoutPaneId } = tabs;
+  if (imagesPaneId && nav) {
+    const imagesTrigger = nav.querySelector(
+      `[href="#${CSS.escape(imagesPaneId)}"], [data-bs-target="#${CSS.escape(imagesPaneId)}"]`,
+    );
+    if (imagesTrigger && typeof bootstrap !== 'undefined' && bootstrap.Tab) {
+      bootstrap.Tab.getOrCreateInstance(imagesTrigger).show();
+      return imagesSheet.classList.contains('active');
+    }
+  }
+
+  tabContent.querySelectorAll(':scope > .tab-pane').forEach((pane) => {
+    pane.classList.remove('active', 'show');
+  });
+  imagesSheet.classList.add('active', 'show');
+  layoutSheet.classList.remove('active', 'show');
+
+  if (nav && imagesPaneId && layoutPaneId) {
+    nav.querySelectorAll('.nav-link, [data-bs-toggle="tab"]').forEach((link) => {
+      const target = (link.getAttribute('href') ?? link.getAttribute('data-bs-target') ?? '').replace(/^#/, '');
+      const isImages = target === imagesPaneId;
+      link.classList.toggle('active', isImages);
+      link.setAttribute('aria-selected', isImages ? 'true' : 'false');
+      link.closest('.nav-item')?.classList.toggle('active', isImages);
+    });
+  }
+
+  return imagesSheet.classList.contains('active');
+};
+
+const scheduleImagesWorkspaceActivation = (workspaces, attempt = 0) => {
+  window.requestAnimationFrame(() => {
+    const activated = activateImagesWorkspaceTab(workspaces);
+    if (!activated && attempt < 8) {
+      window.setTimeout(() => scheduleImagesWorkspaceActivation(workspaces, attempt + 1), 100);
+    }
+  });
+};
+
+const ensureManualSourceHint = (imagesSheet, isManual, hintText) => {
+  const existing = imagesSheet.querySelector('[data-mosaic-manual-source-hint]');
+  if (!isManual || !hintText) {
+    existing?.remove();
+    return;
+  }
+  if (existing) {
+    existing.textContent = hintText;
+    return;
+  }
+  const hint = document.createElement('p');
+  hint.className = 'form-text mosaic-manual-source-hint';
+  hint.dataset.mosaicManualSourceHint = 'true';
+  hint.textContent = hintText;
+  const manualSection = imagesSheet.querySelector('.form-section[data-id="tx_anatolkinmosaicgallery_images"]');
+  if (manualSection) {
+    imagesSheet.insertBefore(hint, manualSection);
+  } else {
+    imagesSheet.prepend(hint);
+  }
+};
+
+const applyFolderOnlyVisibility = (layoutSheet, source) => {
+  const isManual = source === SOURCE_MANUAL;
+  FOLDER_ONLY_FIELD_IDS.forEach((fieldId) => {
+    const section = layoutSheet.querySelector(`.form-section[data-id="${fieldId}"]`);
+    if (section) {
+      section.hidden = isManual;
+    }
+  });
+  layoutSheet.dataset.mosaicSourceMode = source;
+  layoutSheet.classList.toggle('mosaic-source-manual', isManual);
+  layoutSheet.classList.toggle('mosaic-source-folder', !isManual);
+};
+
+const applySourceAwareWorkspace = (editor, workspaces, source) => {
+  const { layoutSheet, imagesSheet } = workspaces;
+  const resolvedSource = source ?? SOURCE_FOLDER;
+  applyFolderOnlyVisibility(layoutSheet, resolvedSource);
+  ensureManualSourceHint(
+    imagesSheet,
+    resolvedSource === SOURCE_MANUAL,
+    editor.dataset.manualSourceHint ?? '',
+  );
+  if (resolvedSource === SOURCE_MANUAL) {
+    scheduleImagesWorkspaceActivation(workspaces);
+  }
+};
+
+const bindSourceAwareWorkspace = (editor, workspaces) => {
+  const sourceControl = workspaces.layoutSheet.querySelector(
+    '.form-section[data-id="settings.source"] select, .form-section[data-id="settings.source"] input',
+  );
+  const sync = () => applySourceAwareWorkspace(editor, workspaces, readGallerySource(sourceControl));
+  sync();
+  sourceControl?.addEventListener('change', sync);
+  editor.dataset.mosaicSourceWorkspaceBound = 'true';
+};
+
 const consolidateWorkspaces = (editor) => {
   const imagesSheet = editor.closest('.tab-pane');
   const tabContent = imagesSheet?.parentElement;
@@ -521,7 +694,7 @@ const consolidateWorkspaces = (editor) => {
     (pane) => pane.querySelector(':scope > .form-section[data-id="settings.source"]'),
   );
   if (!imagesSheet || !layoutSheet || imagesSheet === layoutSheet) {
-    return imagesSheet;
+    return { layoutSheet: imagesSheet ?? null, imagesSheet: imagesSheet ?? null };
   }
 
   layoutSheet.classList.add('mosaic-layout-sheet');
@@ -592,7 +765,9 @@ const consolidateWorkspaces = (editor) => {
   addCompactHelp(maxItemsPerRow);
   addCompactHelp(metadataFallback);
 
-  return layoutSheet;
+  const workspaces = { layoutSheet, imagesSheet };
+  workspaceRegistry.set(editor, workspaces);
+  return workspaces;
 };
 
 const PROXY_CANONICAL_FIELD_IDS = new Set([
@@ -623,13 +798,15 @@ const initializeEditor = (editor) => {
   editor.dataset.mosaicDesignInitialized = 'true';
 
   const storage = editor.querySelector('[data-design-storage]');
-  const sheet = consolidateWorkspaces(editor);
+  const workspaces = consolidateWorkspaces(editor);
+  const sheet = workspaces.layoutSheet;
   const presetSection = sheet?.querySelector(':scope > .form-section[data-id="settings.designPreset"]');
   const configuratorSection = editor.closest('.form-section[data-id="settings.designOverrides"]');
   const presetSelector = presetSection?.querySelector('select');
   if (!storage || !sheet || !presetSelector || !configuratorSection) {
     return;
   }
+  bindSourceAwareWorkspace(editor, workspaces);
 
   const customSections = [...sheet.querySelectorAll(':scope > .form-section')].filter(
     (section) => Object.prototype.hasOwnProperty.call(CUSTOM_FIELDS, section.dataset.id),

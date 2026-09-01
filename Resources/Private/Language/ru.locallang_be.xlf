@@ -63,6 +63,7 @@
     <trans-unit id="flexform.source.folder"><source>Folder (fileadmin)</source><target>Папка (fileadmin)</target></trans-unit>
     <trans-unit id="flexform.source.manual"><source>Manual images</source><target>Ручной выбор изображений</target></trans-unit>
     <trans-unit id="flexform.source.manual.help"><source>Select individual images, crop each one, and drag them into the order you want. Folder sorting options do not apply in this mode.</source><target>Выберите отдельные изображения, обрежьте каждое и перетащите их в нужном порядке. Параметры сортировки папки в этом режиме не применяются.</target></trans-unit>
+    <trans-unit id="flexform.source.manual.hint"><source>Select and arrange individual images in the Images tab.</source><target>Выберите и упорядочите отдельные изображения на вкладке Images.</target></trans-unit>
     <trans-unit id="manualImages.title"><source>Manual images</source><target>Ручной выбор изображений</target></trans-unit>
     <trans-unit id="manualImages.description"><source>Select gallery images individually. Use the crop editor on each file reference and drag images to set the display order.</source><target>Выбирайте изображения галереи по отдельности. Используйте редактор обрезки для каждой ссылки на файл и перетаскивайте изображения для задания порядка отображения.</target></trans-unit>
     <trans-unit id="manualImages.select"><source>Add images</source><target>Добавить изображения</target></trans-unit>

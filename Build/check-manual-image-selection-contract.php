@@ -206,6 +206,37 @@ if ($sourceReader !== '') {
     }
 }
 
+$designConfiguratorJs = readFileOrFail($root . '/Resources/Public/JavaScript/design-configurator.js', $failures);
+if ($designConfiguratorJs !== '') {
+    if (!str_contains($designConfiguratorJs, 'SOURCE_MANUAL') || !str_contains($designConfiguratorJs, 'SOURCE_FOLDER')) {
+        $failures[] = 'G: design-configurator must recognize manual and folder source modes';
+    }
+    foreach (['settings.folder', 'settings.recursive', 'settings.sortBy', 'settings.sortDir'] as $fieldId) {
+        if (!str_contains($designConfiguratorJs, $fieldId)) {
+            $failures[] = 'G: design-configurator must declare folder-only field ' . $fieldId;
+        }
+    }
+    if (!str_contains($designConfiguratorJs, 'FOLDER_ONLY_FIELD_IDS')) {
+        $failures[] = 'G: design-configurator must use an explicit folder-only field inventory';
+    }
+    if (!str_contains($designConfiguratorJs, 'applyFolderOnlyVisibility')
+        || !str_contains($designConfiguratorJs, 'section.hidden = isManual')
+    ) {
+        $failures[] = 'G: Manual source must hide folder-only controls without destroying them';
+    }
+    if (!str_contains($designConfiguratorJs, 'activateImagesWorkspaceTab')
+        || !str_contains($designConfiguratorJs, 'scheduleImagesWorkspaceActivation')
+    ) {
+        $failures[] = 'G: Manual source must activate the Mosaic Images workspace tab';
+    }
+    if (!str_contains($designConfiguratorJs, 'tx_anatolkinmosaicgallery_images')) {
+        $failures[] = 'G: Native manual TCA relation must remain wired in the Images workspace';
+    }
+    if (preg_match('/customFileBrowser|custom-file-browser|buildManualFileSelector/i', $designConfiguratorJs)) {
+        $failures[] = 'G: Manual source must not introduce a custom file browser';
+    }
+}
+
 if ($failures === []) {
     fwrite(STDOUT, "Manual image selection contract checks passed.\n");
     exit(0);
