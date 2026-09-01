@@ -120,6 +120,24 @@ if (!str_contains($emconf, "'version' => '0.5.1'")) {
     $failures[] = 'ext_emconf.php version must be 0.5.1 for the release';
 }
 
+$descriptionMatch = [];
+preg_match("/'description'\\s*=>\\s*'((?:\\\\'|[^'])*)'/", $emconf, $descriptionMatch);
+$emconfDescription = $descriptionMatch[1] ?? '';
+foreach ([
+    'composer require anatolkin/anatolkin-mosaic-gallery:^0.5' => 'TER description must document Composer fresh install',
+    'composer update anatolkin/anatolkin-mosaic-gallery -W' => 'TER description must document Composer update',
+    'php vendor/bin/typo3 extension:setup' => 'TER description must document extension:setup',
+    'Sets for this Site' => 'TER description must document Site Set integration',
+    'No database migration is required for 0.5.1' => 'TER description must state no database migration for 0.5.1',
+] as $needle => $message) {
+    if (!str_contains($emconfDescription, $needle)) {
+        $failures[] = $message;
+    }
+}
+if (!preg_match('/(?:TER|Extension Manager)/', $emconfDescription)) {
+    $failures[] = 'TER description must mention TER or Extension Manager classic installation';
+}
+
 if (str_contains($extLocalconf, 'addPageTSConfig')) {
     $failures[] = 'Do not restore addPageTSConfig() wizard registration';
 }
