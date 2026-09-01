@@ -164,6 +164,20 @@ if (!preg_match(
     $failures[] = 'H: Metadata fallback checkbox must remain compact inline in Images workspace';
 }
 
+// H2. Subfolders + Metadata fallback stay paired on one row at narrow widths
+if (!preg_match(
+    '/mosaic-layout-header__source-pair--recursive-fallback/s',
+    $css,
+) || !preg_match(
+    '/mosaic-layout-header__source-pair--recursive-fallback[\s\S]{0,400}grid-template-columns:\s*repeat\(2/s',
+    $css,
+) || !preg_match(
+    '/@container mosaic-layout-source[\s\S]{0,800}mosaic-layout-header__source-pair--recursive-fallback/s',
+    $css,
+)) {
+    $failures[] = 'H2: Subfolders and Metadata fallback must share a stable narrow-width pair row';
+}
+
 // I. no TYPO3-major responsive branching on layout workspace
 if (preg_match('/typo3[\s_-]*(?:v)?(?:13|14)/i', $css)
     && preg_match('/mosaic-layout-header[\s\S]{0,120}typo3[\s_-]*(?:v)?(?:13|14)/i', $css)
@@ -207,6 +221,7 @@ $requiredSourceFields = [
     'settings.source',
     'settings.folder',
     'settings.recursive',
+    'settings.useFalCaptions',
     'settings.sortBy',
     'settings.sortDir',
 ];
@@ -232,6 +247,8 @@ if (!str_contains($js, 'mosaic-layout-header__row--source')
     || !str_contains($js, 'mosaic-layout-header__row--settings')
     || !str_contains($js, 'mosaic-images-header')
     || !str_contains($js, 'consolidateWorkspaces')
+    || !str_contains($js, 'findManualImagesSection')
+    || !str_contains($js, 'mosaic-layout-header__source-pair--recursive-fallback')
 ) {
     $failures[] = 'L: consolidateWorkspaces structure markers must remain in design-configurator.js';
 }

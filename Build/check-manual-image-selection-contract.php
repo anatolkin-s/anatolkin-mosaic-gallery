@@ -218,10 +218,61 @@ if ($designConfiguratorJs !== '') {
     if (!str_contains($designConfiguratorJs, 'IMAGE_SOURCE_FIELD_IDS')) {
         $failures[] = 'G: Images workspace must own source configuration fields explicitly';
     }
-    foreach (['settings.source', 'settings.folder', 'settings.recursive', 'settings.sortBy', 'settings.sortDir', 'settings.useFalCaptions'] as $fieldId) {
-        if (!str_contains($designConfiguratorJs, $fieldId)) {
-            $failures[] = 'G: Images workspace must reference field ' . $fieldId;
+    $expectedSourceOrder = [
+        'settings.source',
+        'settings.folder',
+        'settings.recursive',
+        'settings.useFalCaptions',
+        'settings.sortBy',
+        'settings.sortDir',
+    ];
+    if (!preg_match('/const IMAGE_SOURCE_FIELD_IDS = \[(.*?)\];/s', $designConfiguratorJs, $sourceFieldMatch)) {
+        $failures[] = 'G: Images workspace must own source configuration fields explicitly';
+    } else {
+        $sourceFieldBlock = $sourceFieldMatch[1];
+        $sourceOrderPos = 0;
+        foreach ($expectedSourceOrder as $fieldId) {
+            $pos = strpos($sourceFieldBlock, "'" . $fieldId . "'");
+            if ($pos === false) {
+                $failures[] = 'G: Images workspace must reference field ' . $fieldId;
+                continue;
+            }
+            if ($pos < $sourceOrderPos) {
+                $failures[] = 'A: IMAGE_SOURCE_FIELD_IDS must be ordered source, folder, recursive, useFalCaptions, sortBy, sortDir';
+                break;
+            }
+            $sourceOrderPos = $pos + 1;
         }
+    }
+    if (!str_contains($designConfiguratorJs, 'findManualImagesSection')) {
+        $failures[] = 'C: design-configurator.js must expose a dedicated manual-section resolver';
+    }
+    if (!preg_match(
+        '/findManualImagesSection[\s\S]{0,800}data-formengine-input-name[\s\S]{0,800}\.form-section/s',
+        $designConfiguratorJs,
+    )) {
+        $failures[] = 'C: Manual-section resolver must locate native FormEngine wrapper via stable input-name markers';
+    }
+    if (!preg_match(
+        '/findManualImagesSection[\s\S]{0,1200}insertBefore\(manualImagesSection,\s*metadataSection\)/s',
+        $designConfiguratorJs,
+    ) && !preg_match(
+        '/manualImagesSection[\s\S]{0,400}insertBefore\(manualImagesSection,\s*metadataSection\)/s',
+        $designConfiguratorJs,
+    )) {
+        $failures[] = 'E: Manual relation must be placed before metadata section inside Images workspace';
+    }
+    if (!preg_match(
+        '/imagesHeader\.insertAdjacentElement\(\s*[\'"]afterend[\'"]\s*,\s*manualImagesSection\s*\)/s',
+        $designConfiguratorJs,
+    ) && !preg_match(
+        '/insertBefore\(manualImagesSection,\s*metadataSection\)/s',
+        $designConfiguratorJs,
+    )) {
+        $failures[] = 'D: Manual relation must be reparented into imagesSheet';
+    }
+    if (!str_contains($designConfiguratorJs, 'removeEmptyFormSectionShell')) {
+        $failures[] = 'L: Manual relation reparent must remove outer empty FormEngine footprint';
     }
     if (!str_contains($designConfiguratorJs, 'LAYOUT_SETTINGS_FIELD_IDS')
         || !str_contains($designConfiguratorJs, 'settings.layoutMode')
@@ -239,9 +290,12 @@ if ($designConfiguratorJs !== '') {
         $failures[] = 'G: Layout workspace must expose Continue to Images navigation';
     }
     if (!str_contains($designConfiguratorJs, 'applyManualFieldVisibility')
-        || !str_contains($designConfiguratorJs, 'manualSection.hidden = source !== SOURCE_MANUAL')
+        || !preg_match('/manualSection\.hidden = source !== SOURCE_MANUAL/s', $designConfiguratorJs)
     ) {
         $failures[] = 'G: JavaScript must own manual relation visibility';
+    }
+    if (!preg_match('/applyManualFieldVisibility[\s\S]{0,200}findManualImagesSection/s', $designConfiguratorJs)) {
+        $failures[] = 'F/G: Manual relation visibility must resolve via findManualImagesSection';
     }
     if (!str_contains($designConfiguratorJs, 'applyLegacyCaptionsVisibility')) {
         $failures[] = 'G: Manual mode must hide legacy Quick captions disclosure';
@@ -259,7 +313,22 @@ if ($designConfiguratorJs !== '') {
         $failures[] = 'G: Native manual TCA relation must remain wired in the Images workspace';
     }
     if (preg_match('/customFileBrowser|custom-file-browser|buildManualFileSelector/i', $designConfiguratorJs)) {
-        $failures[] = 'G: Manual source must not introduce a custom file browser';
+        $failures[] = 'H: Manual source must not introduce a custom file browser';
+    }
+    if (!preg_match('/addCompactHelp\(metadataFallback\)/s', $designConfiguratorJs)) {
+        $failures[] = 'I: Metadata fallback must use compact-help treatment';
+    }
+    if (!preg_match(
+        '/mountSourcePair[\s\S]{0,400}settings\.recursive[\s\S]{0,200}settings\.useFalCaptions/s',
+        $designConfiguratorJs,
+    )) {
+        $failures[] = 'K: Responsive contract must pair recursive and useFalCaptions source controls';
+    }
+    if (preg_match(
+        '/\.form-section\[data-id="tx_anatolkinmosaicgallery_images"\]/',
+        $designConfiguratorJs,
+    ) && !str_contains($designConfiguratorJs, 'findManualImagesSection')) {
+        $failures[] = 'L: Manual relation must not rely solely on FlexForm-only data-id lookup';
     }
 }
 

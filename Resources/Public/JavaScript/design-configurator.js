@@ -63,13 +63,15 @@ const MULTI_COLOR_FRAME_STYLES = new Set([
 ]);
 const SOURCE_FOLDER = 'folder';
 const SOURCE_MANUAL = 'manual';
+const MANUAL_IMAGES_FIELD = 'tx_anatolkinmosaicgallery_images';
+const MANUAL_IMAGES_FIELD_MARKER = `[${MANUAL_IMAGES_FIELD}]`;
 const IMAGE_SOURCE_FIELD_IDS = [
   'settings.source',
   'settings.folder',
   'settings.recursive',
+  'settings.useFalCaptions',
   'settings.sortBy',
   'settings.sortDir',
-  'settings.useFalCaptions',
 ];
 const FOLDER_ONLY_FIELD_IDS = [
   'settings.folder',
@@ -642,10 +644,70 @@ const applyFolderOnlyVisibility = (imagesSheet, source) => {
       section.hidden = isManual;
     }
   });
+  const sortPair = imagesSheet.querySelector('.mosaic-layout-header__source-pair--sort-direction');
+  if (sortPair) {
+    sortPair.hidden = isManual;
+  }
+};
+
+const findManualImagesSection = (formScope) => {
+  if (!formScope) {
+    return null;
+  }
+
+  const byDataId = formScope.querySelector(`.form-section[data-id="${MANUAL_IMAGES_FIELD}"]`);
+  if (byDataId) {
+    return byDataId;
+  }
+
+  const marker = formScope.querySelector([
+    `[data-formengine-input-name*="${MANUAL_IMAGES_FIELD_MARKER}"]`,
+    `input[name*="${MANUAL_IMAGES_FIELD_MARKER}"]`,
+    `[data-formengine-field-name="${MANUAL_IMAGES_FIELD}"]`,
+    `.t3js-formengine-field-item[data-formengine-field-name="${MANUAL_IMAGES_FIELD}"]`,
+  ].join(', '));
+  if (!marker) {
+    return null;
+  }
+
+  const section = marker.closest('.form-section');
+  if (section) {
+    section.dataset.id = MANUAL_IMAGES_FIELD;
+    return section;
+  }
+
+  const paletteField = marker.closest('.t3js-formengine-palette-field, .form-group');
+  const paletteSection = paletteField?.closest('.form-section');
+  if (paletteSection) {
+    paletteSection.dataset.id = MANUAL_IMAGES_FIELD;
+    return paletteSection;
+  }
+
+  return null;
+};
+
+const removeEmptyFormSectionShell = (node) => {
+  let current = node;
+  while (current && current !== document.body) {
+    if (!current.classList?.contains('form-section')) {
+      current = current.parentElement;
+      continue;
+    }
+    const hasFieldContent = current.querySelector(
+      '.form-label, .form-control, .form-check, .form-wizards-wrap, .t3js-formengine-field-item, input, select, textarea, button',
+    );
+    const parent = current.parentElement;
+    if (!hasFieldContent && parent) {
+      current.remove();
+      current = parent;
+      continue;
+    }
+    break;
+  }
 };
 
 const applyManualFieldVisibility = (imagesSheet, source) => {
-  const manualSection = imagesSheet.querySelector('.form-section[data-id="tx_anatolkinmosaicgallery_images"]');
+  const manualSection = findManualImagesSection(imagesSheet);
   if (manualSection) {
     manualSection.hidden = source !== SOURCE_MANUAL;
   }
@@ -714,9 +776,8 @@ const consolidateWorkspaces = (editor) => {
   const form = editor.closest('form');
   const metadataEditor = form?.querySelector('[data-mosaic-metadata-editor]');
   const metadataSection = metadataEditor?.closest('.form-section');
-  const manualImagesSection = form?.querySelector(
-    '.form-section[data-id="tx_anatolkinmosaicgallery_images"]',
-  );
+  const manualImagesSection = findManualImagesSection(form);
+  const manualImagesOriginParent = manualImagesSection?.parentElement ?? null;
 
   const imagesHeader = document.createElement('div');
   imagesHeader.className = 'mosaic-images-header';
@@ -735,12 +796,40 @@ const consolidateWorkspaces = (editor) => {
   };
   IMAGE_SOURCE_FIELD_IDS.forEach((fieldName) => moveFromLayout(fieldName, imagesSourceRow));
 
+  const mountSourcePair = (fieldIds, pairClass) => {
+    const sections = fieldIds
+      .map((fieldId) => imagesSourceRow.querySelector(`.form-section[data-id="${fieldId}"]`))
+      .filter(Boolean);
+    if (sections.length !== fieldIds.length) {
+      return null;
+    }
+    const pair = document.createElement('div');
+    pair.className = pairClass;
+    pair.dataset.mosaicSourcePair = fieldIds.join(',');
+    const anchor = sections[0];
+    imagesSourceRow.insertBefore(pair, anchor);
+    sections.forEach((section) => pair.append(section));
+    return pair;
+  };
+
+  mountSourcePair(
+    ['settings.recursive', 'settings.useFalCaptions'],
+    'mosaic-layout-header__source-pair mosaic-layout-header__source-pair--recursive-fallback',
+  );
+  mountSourcePair(
+    ['settings.sortBy', 'settings.sortDir'],
+    'mosaic-layout-header__source-pair mosaic-layout-header__source-pair--sort-direction',
+  );
+
   if (manualImagesSection) {
     manualImagesSection.classList.add('mosaic-manual-images');
     if (metadataSection && imagesSheet.contains(metadataSection)) {
       imagesSheet.insertBefore(manualImagesSection, metadataSection);
     } else {
       imagesHeader.insertAdjacentElement('afterend', manualImagesSection);
+    }
+    if (manualImagesOriginParent && manualImagesOriginParent !== imagesSheet) {
+      removeEmptyFormSectionShell(manualImagesOriginParent);
     }
   }
 
@@ -781,6 +870,7 @@ const consolidateWorkspaces = (editor) => {
   const maxItemsPerRow = settingsRow.querySelector('.form-section[data-id="settings.maxItemsPerRow"]');
   if (metadataFallback) {
     metadataFallback.dataset.mosaicInlineCheckbox = 'true';
+    addCompactHelp(metadataFallback);
   }
   addCompactHelp(maxWidth);
   addCompactHelp(maxItemsPerRow);
