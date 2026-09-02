@@ -290,6 +290,34 @@ final class MosaicGalleryFlexFormPermissionDefinition
         return $categories;
     }
 
+    /**
+     * Registers Mosaic Gallery custom permission options into TYPO3_CONF_VARS.
+     *
+     * Call from the Core-documented lifecycle file for the active major version:
+     * TYPO3 13.x → ext_tables.php; TYPO3 14.x → ext_localconf.php.
+     * Assignment is idempotent: re-registering the same categories does not
+     * duplicate options.
+     */
+    public static function registerCustomPermOptions(): void
+    {
+        if (!isset($GLOBALS['TYPO3_CONF_VARS']) || !is_array($GLOBALS['TYPO3_CONF_VARS'])) {
+            $GLOBALS['TYPO3_CONF_VARS'] = [];
+        }
+        if (!isset($GLOBALS['TYPO3_CONF_VARS']['BE']) || !is_array($GLOBALS['TYPO3_CONF_VARS']['BE'])) {
+            $GLOBALS['TYPO3_CONF_VARS']['BE'] = [];
+        }
+        if (
+            !isset($GLOBALS['TYPO3_CONF_VARS']['BE']['customPermOptions'])
+            || !is_array($GLOBALS['TYPO3_CONF_VARS']['BE']['customPermOptions'])
+        ) {
+            $GLOBALS['TYPO3_CONF_VARS']['BE']['customPermOptions'] = [];
+        }
+
+        foreach (self::customPermOptionCategories() as $categoryKey => $category) {
+            $GLOBALS['TYPO3_CONF_VARS']['BE']['customPermOptions'][$categoryKey] = $category;
+        }
+    }
+
     public static function permissionIdentifier(string $category, string $key): string
     {
         return $category . ':' . $key;

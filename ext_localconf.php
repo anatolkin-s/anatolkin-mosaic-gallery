@@ -74,10 +74,12 @@ if (!in_array(MosaicGalleryFlexFormPermissionProvider::class, $tcaFlexProcessDep
 }
 unset($tcaFlexProcessDepends);
 
-// Issue #11: opt-in deny restrictions via native backend user-group custom permissions.
-foreach (MosaicGalleryFlexFormPermissionDefinition::customPermOptionCategories() as $categoryKey => $category) {
-    $GLOBALS['TYPO3_CONF_VARS']['BE']['customPermOptions'][$categoryKey] = $category;
+// Issue #11: TYPO3 14.3 documents customPermOptions registration in ext_localconf.php.
+// TYPO3 13.4 registers the same shared definition from ext_tables.php instead.
+if ((new Typo3Version())->getMajorVersion() >= 14) {
+    MosaicGalleryFlexFormPermissionDefinition::registerCustomPermOptions();
 }
+
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['formDataGroup']['tcaDatabaseRecord'][MosaicGalleryFlexFormPermissionProvider::class] = [
     'depends' => [
         MosaicGalleryFlexFormDefaultsProvider::class,

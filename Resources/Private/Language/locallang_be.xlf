@@ -193,7 +193,7 @@
       <trans-unit id="metadata.conversion.multilingual"><source>Convert captions separately in each translated gallery.</source></trans-unit>
       <trans-unit id="metadata.conversion.fileMetadataEnabled"><source>Quick captions are not currently used because file metadata fallback is enabled. To convert Quick captions, disable file metadata fallback, save the gallery, then convert.</source></trans-unit>
       <trans-unit id="metadata.conversion.savedSettings"><source>Conversion uses the last saved gallery settings. Save changes to sorting, Quick captions, or file metadata fallback before converting.</source></trans-unit>
-      <trans-unit id="flexform.permissionsHelp"><source>Editor access to Mosaic Gallery settings: System → Backend Users → Backend User Groups → Record Permissions → Anatolkin Mosaic Gallery restrictions.</source></trans-unit>
+      <trans-unit id="flexform.permissionsHelp"><source>Editor restrictions: System → Backend Users → Backend User Groups → Record Permissions → Custom permissions → Anatolkin Mosaic Gallery.</source></trans-unit>
       <trans-unit id="permissions.category.general"><source>Anatolkin Mosaic Gallery — General restrictions</source></trans-unit>
       <trans-unit id="permissions.category.design"><source>Anatolkin Mosaic Gallery — Design restrictions</source></trans-unit>
       <trans-unit id="permissions.hide.settings.source"><source>Hide Source</source></trans-unit>
