@@ -169,14 +169,14 @@ vendor/bin/typo3 upgrade:list
 vendor/bin/typo3 upgrade:run mosaicGalleryCTypeMigration
 ```
 
-Updating from 0.5.x to 0.6.0 does **not** require the legacy CType migration wizard. That wizard remains only for genuinely old `CType=list` plugin records (see below). Run extension setup after updating:
+Updating from 0.5.x or 0.6.0 to 0.6.1 does **not** require the legacy CType migration wizard. That wizard remains only for genuinely old `CType=list` plugin records (see below). Run extension setup after updating:
 
 ```bash
 composer update anatolkin/anatolkin-mosaic-gallery -W
 php vendor/bin/typo3 extension:setup
 ```
 
-Version 0.6.0 requires no database migration.
+Version 0.6.1 requires no database migration and no permission setup.
 
 Updating from 0.5.0 to 0.5.1 does **not** require this wizard. Version 0.5.1 itself requires no database migration.
 
@@ -247,6 +247,37 @@ FlexForm data, record UIDs, localization relationships, and ordinary `tt_content
 - Multilingual metadata workflow integrated with TYPO3 content localization
 - Compact responsive backend configuration
 - English, German, French, Spanish, and Russian extension interface translations
+
+## What's new in 0.6.1
+
+### Optional editor restrictions
+
+TYPO3 administrators can optionally hide individual Mosaic Gallery settings for backend user groups.
+
+Open the backend user group and go to:
+
+**Module Permissions → Custom module options → Anatolkin Mosaic Gallery**
+
+Restrictions are grouped into:
+
+- General restrictions
+- Design restrictions
+
+All restrictions are opt-in.
+
+If no Mosaic Gallery restriction is selected, editors retain the same access as before.
+
+Administrators always retain full access.
+
+### Upgrade
+
+No database migration or Upgrade Wizard is required.
+
+No permission setup is required after upgrading.
+
+Existing gallery records and stored FlexForm values remain unchanged.
+
+Hidden controls are not intentionally cleared or rewritten.
 
 ## What's new in 0.6.0
 
@@ -445,7 +476,7 @@ Configured site languages are discovered from TYPO3 Site Configuration. The five
 
 ## Compatibility and release status
 
-Anatolkin Mosaic Gallery 0.6.0 targets TYPO3 13.4 and TYPO3 14.3.
+Anatolkin Mosaic Gallery 0.6.1 targets TYPO3 13.4 and TYPO3 14.3.
 
 Existing folder galleries, legacy Quick captions, and the `list_type` to `CType` migration path introduced in 0.3.0 remain supported. On TYPO3 13.4, unmigrated plugin records remain usable before that wizard is run. TYPO3 14 installations should complete the wizard first and then use dedicated `CType=mosaicgallery_pi1` records only.
 
