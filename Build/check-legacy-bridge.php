@@ -116,8 +116,8 @@ if (str_contains($setup, 'tt_content.list.20.')) {
     $failures[] = 'ext_typoscript_setup.typoscript must not contain list.20 aliases';
 }
 
-if (!str_contains($emconf, "'version' => '0.6.1'")) {
-    $failures[] = 'ext_emconf.php version must be 0.6.1 for the release';
+if (!str_contains($emconf, "'version' => '0.6.2'")) {
+    $failures[] = 'ext_emconf.php version must be 0.6.2 for the release';
 }
 
 $descriptionMatch = [];
@@ -129,7 +129,7 @@ foreach ([
     'php vendor/bin/typo3 extension:setup' => 'TER description must document extension:setup',
     'Sets for this Site' => 'TER description must document Site Set integration',
     'optional backend-group restrictions' => 'TER description must mention optional backend-group restrictions',
-    'No database migration is required for 0.6.1' => 'TER description must state no database migration for 0.6.1',
+    'No database migration is required for 0.6.2' => 'TER description must state no database migration for 0.6.2',
 ] as $needle => $message) {
     if (!str_contains($emconfDescription, $needle)) {
         $failures[] = $message;

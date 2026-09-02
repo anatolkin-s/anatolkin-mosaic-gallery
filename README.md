@@ -377,11 +377,17 @@ TYPO3 13 legacy **Record Permissions → Page Content: Plugin** entries are docu
 
 Administrators again always see all Mosaic FlexForm fields when Mosaic custom options exist. Optional field restrictions remain opt-in for non-admins only. `exclude=true` is not used on Mosaic FlexForm fields.
 
+### Backend workspace lifecycle corrective
+
+The Layout and Images workspaces now initialize reliably when TYPO3 FormEngine attaches or replaces the edit form asynchronously. This prevents an intermittent raw FlexForm layout where design controls, image-source controls, Manual Images, or image metadata could remain in their original FormEngine positions.
+
+The initialization is idempotent and verified on TYPO3 13.4 and 14.3 for administrators and non-admin editors.
+
 ### Upgrade
 
 No database migration or Upgrade Wizard is required for 0.6.2.
 
-No Mosaic **custom field-restriction** setup is required after upgrading. Non-admin groups still need ordinary TYPO3 **Record Permissions → Page Content: Type** access to create or edit current galleries.
+No Mosaic **custom field-restriction** setup is required after upgrading. Non-admin groups still need ordinary TYPO3 **Record Permissions → Page Content: Type** access to create or edit current galleries. Custom Hide rules remain optional.
 
 Existing gallery records and stored FlexForm values remain unchanged.
 
@@ -615,7 +621,7 @@ Configured site languages are discovered from TYPO3 Site Configuration. The bund
 
 ## Compatibility and release status
 
-Anatolkin Mosaic Gallery 0.6.1 targets TYPO3 13.4 and TYPO3 14.3.
+Anatolkin Mosaic Gallery 0.6.2 targets TYPO3 13.4 and TYPO3 14.3.
 
 Existing folder galleries, legacy Quick captions, and the `list_type` to `CType` migration path introduced in 0.3.0 remain supported. On TYPO3 13.4, unmigrated plugin records remain usable before that wizard is run. TYPO3 14 installations should complete the wizard first and then use dedicated `CType=mosaicgallery_pi1` records only.
 
