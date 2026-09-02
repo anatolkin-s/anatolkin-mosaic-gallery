@@ -176,7 +176,7 @@ composer update anatolkin/anatolkin-mosaic-gallery -W
 php vendor/bin/typo3 extension:setup
 ```
 
-Version 0.6.1 requires no database migration. No Mosaic **custom field-restriction** setup is required after upgrading (see [Backend permissions](#backend-permissions)); non-admin groups still need ordinary TYPO3 CType access to create or edit galleries.
+Version 0.6.1 requires no database migration. No Mosaic **custom field-restriction** setup is required after upgrading (see [Backend permissions](#backend-permissions)); non-admin groups still need **Record Permissions → Page Content: Type** access to create or edit galleries.
 
 Updating from 0.5.0 to 0.5.1 does **not** require this wizard. Version 0.5.1 itself requires no database migration.
 
@@ -189,7 +189,7 @@ The two legacy `list_type` signatures are **not** offered when creating new Plug
 1. Install Anatolkin Mosaic Gallery.
 2. Run TYPO3 extension setup and flush caches.
 3. For Site Set sites, add the **Anatolkin Mosaic Gallery** Site Set.
-4. For non-admin editors, allow **Page Content: Type → Anatolkin Mosaic Gallery** (see [Backend permissions](#backend-permissions)).
+4. For non-admin editors, allow **Record Permissions → Explicitly allow field values → Page Content: Type → Anatolkin Mosaic Gallery** on their Backend User Group (see [Backend permissions](#backend-permissions)).
 5. Create galleries from the **Gallery** group. New records use `CType=mosaicgallery_pi1`.
 6. The upgrade wizard is unnecessary when no legacy plugin records exist.
 
@@ -231,39 +231,94 @@ FlexForm data, record UIDs, localization relationships, and ordinary `tt_content
 
 ## Backend permissions
 
-Mosaic Gallery uses **two independent** TYPO3 permission layers. Granting CType access does not configure field restrictions, and field restrictions do not replace CType access.
+Mosaic Gallery uses **two independent** TYPO3 permission layers. Granting content-type access does not configure field restrictions, and field restrictions do not replace content-type access. Configure both primarily on the **Backend User Group**, then assign that group to each ordinary editor.
 
-### 1. Current Mosaic Gallery access (required for non-admins)
+### Recommended checklist
 
-Non-admin users who must create or edit current `CType=mosaicgallery_pi1` records need the content type allowed on their backend user group:
+```text
+Backend User
+  → Backend User Group
+    → Record Permissions
+      → Explicitly allow field values
+        → Page Content: Type
+          → Anatolkin Mosaic Gallery
+    → Module Permissions
+      → Custom module options
+        → Anatolkin Mosaic Gallery — General restrictions
+        → Anatolkin Mosaic Gallery — Design restrictions
+```
 
-**Backend Users → Backend User Groups → Explicitly allow field values → Page Content: Type → Anatolkin Mosaic Gallery**
+### Backend User Group
 
-Without this grant, editors cannot create or open current Mosaic Gallery content elements, even when no Mosaic field restrictions are configured.
+Open:
 
-### 2. Mosaic field restrictions (optional)
+**Administration → Users → Backend user groups → [group]**
 
-Administrators may optionally hide individual Mosaic FlexForm settings per group:
+Relevant group tabs in TYPO3 13/14:
 
-**Module Permissions → Custom module options → Anatolkin Mosaic Gallery**
+- General
+- Record Permissions
+- Module Permissions
+- Mounts
+- Options
+- Access
+- Notes
 
-Restrictions are grouped into General and Design. They are opt-in deny rules only:
+#### 1. Grant current Mosaic Gallery content-type access
 
-- No checked **Hide** options → all Mosaic settings stay visible.
-- A checked **Hide** option → only that mapped field is hidden for non-admins.
+Open the **Record Permissions** tab.
+
+Then:
+
+**Explicitly allow field values → Page Content: Type → Anatolkin Mosaic Gallery**
+
+This grant is required for non-admin editors who create or edit current `CType=mosaicgallery_pi1` records. Without it, Mosaic records may still appear in the Page module, but the editor cannot properly create or edit them—even when no Mosaic field restrictions are configured.
+
+#### 2. Configure optional Mosaic field restrictions
+
+Open the **Module Permissions** tab.
+
+Then:
+
+**Custom module options → Anatolkin Mosaic Gallery — General restrictions**  
+or  
+**Custom module options → Anatolkin Mosaic Gallery — Design restrictions**
+
+These options are opt-in deny rules only:
+
+- Unchecked **Hide …** option → the mapped field stays visible.
+- Checked **Hide …** option → only that mapped field is hidden for non-admins.
 - Stored FlexForm values for hidden fields remain preserved.
 
-No Mosaic custom-option setup is required for the default editor experience. That statement refers **only** to these optional field restrictions, not to TYPO3 CType access above.
+Example:
 
-### 3. TYPO3 13 legacy compatibility (historic records only)
+**Module Permissions → Custom module options → Anatolkin Mosaic Gallery — Design restrictions → Hide Design preset**
 
-On TYPO3 13, historic unmigrated plugin records may still use `CType=list` with `list_type=mosaicgallery_pi1` or `anatolkinmosaicgallery_pi1`. Those appear under:
+No Mosaic custom-option setup is required for the default editor experience. That statement refers **only** to these optional field restrictions, not to the **Record Permissions** content-type grant above.
 
-**Page Content: Plugin → Anatolkin Mosaic Gallery — Legacy compatibility**
+#### 3. TYPO3 13 legacy compatibility (historic records only)
 
-Those Plugin entries apply **only** to leftover legacy records. They are **not** required for current Mosaic Gallery content elements (`CType=mosaicgallery_pi1`). Do not use them for new content; migrate with `mosaicGalleryCTypeMigration` when ready. TYPO3 14 does not use this legacy Plugin selector path.
+Under:
 
-### 4. Administrators
+**Record Permissions → Explicitly allow field values → Page Content: Plugin**
+
+the **Anatolkin Mosaic Gallery — Legacy compatibility** entries apply only to historic `CType=list` / `list_type` records (`mosaicgallery_pi1` or `anatolkinmosaicgallery_pi1`).
+
+They are **not** required for current `CType=mosaicgallery_pi1` content elements. Do not use them for new content; migrate with `mosaicGalleryCTypeMigration` when ready. TYPO3 14 does not use this legacy Plugin selector path.
+
+### Backend User
+
+Open:
+
+**Administration → Users → Backend users → [user]**
+
+For ordinary editors:
+
+- Keep **Admin** disabled.
+- Assign the prepared Backend User Group in the user's **Group** / **Backend user groups** field.
+- Keep Mosaic permissions primarily on the group rather than duplicating permission configuration per user.
+
+### Administrators
 
 Administrators always see all Mosaic FlexForm fields and need no Mosaic custom permission setup. They still follow normal TYPO3 admin access rules for pages and records.
 
@@ -274,7 +329,7 @@ Administrators always see all Mosaic FlexForm fields and need no Mosaic custom p
 | Administrator | Yes | All visible | No Mosaic custom-option setup |
 | Non-admin + Type allowed + no Hide options | Yes | All visible | Default editor experience |
 | Non-admin + Type allowed + some Hide options checked | Yes | Only mapped fields hidden | Opt-in deny per field |
-| Non-admin + Type **not** allowed | No | N/A | Grant Page Content: Type first |
+| Non-admin + Type **not** allowed | No | N/A | Grant Record Permissions → Page Content: Type first |
 | Non-admin + Plugin legacy only (TYPO3 13) | Current CType: No | Legacy `list` records only | Not for new galleries |
 
 ## Current features
@@ -311,12 +366,12 @@ Interface translations expand to **35** languages, including major European and 
 
 ### Backend permission documentation
 
-README now documents the two independent TYPO3 permission layers clearly:
+README documents the actual TYPO3 13/14 Backend User Group tabs:
 
-1. **Page Content: Type → Anatolkin Mosaic Gallery** — required CType access for non-admins.
-2. **Module Permissions → Custom module options** — optional per-field Hide restrictions only.
+1. **Record Permissions → Explicitly allow field values → Page Content: Type → Anatolkin Mosaic Gallery** — required content-type access for non-admins.
+2. **Module Permissions → Custom module options → Anatolkin Mosaic Gallery — General/Design restrictions** — optional per-field Hide rules only.
 
-TYPO3 13 legacy **Page Content: Plugin** entries are documented as historic-record compatibility only. See [Backend permissions](#backend-permissions).
+TYPO3 13 legacy **Record Permissions → Page Content: Plugin** entries are documented as historic-record compatibility only. See [Backend permissions](#backend-permissions).
 
 ### FlexForm visibility corrective
 
@@ -326,7 +381,7 @@ Administrators again always see all Mosaic FlexForm fields when Mosaic custom op
 
 No database migration or Upgrade Wizard is required for 0.6.2.
 
-No Mosaic **custom field-restriction** setup is required after upgrading. Non-admin groups still need ordinary TYPO3 **Page Content: Type** access to create or edit current galleries.
+No Mosaic **custom field-restriction** setup is required after upgrading. Non-admin groups still need ordinary TYPO3 **Record Permissions → Page Content: Type** access to create or edit current galleries.
 
 Existing gallery records and stored FlexForm values remain unchanged.
 
@@ -336,9 +391,11 @@ Existing gallery records and stored FlexForm values remain unchanged.
 
 TYPO3 administrators can optionally hide individual Mosaic Gallery settings for backend user groups.
 
-Open the backend user group and go to:
+Open the backend user group, then open the **Module Permissions** tab:
 
-**Module Permissions → Custom module options → Anatolkin Mosaic Gallery**
+**Custom module options → Anatolkin Mosaic Gallery — General restrictions**  
+or  
+**Custom module options → Anatolkin Mosaic Gallery — Design restrictions**
 
 Restrictions are grouped into:
 
@@ -347,7 +404,7 @@ Restrictions are grouped into:
 
 All restrictions are opt-in.
 
-If no Mosaic Gallery restriction is selected, editors retain the same FlexForm field visibility as before. Non-admin users still need [TYPO3 CType access](#backend-permissions) to create or edit galleries.
+If no Mosaic Gallery restriction is selected, editors retain the same FlexForm field visibility as before. Non-admin users still need [Record Permissions content-type access](#backend-permissions) to create or edit galleries.
 
 Administrators always retain full FlexForm field access and need no Mosaic custom-option setup.
 
@@ -355,7 +412,7 @@ Administrators always retain full FlexForm field access and need no Mosaic custo
 
 No database migration or Upgrade Wizard is required.
 
-No Mosaic **custom field-restriction** setup is required after upgrading. That does not replace ordinary TYPO3 CType allow-list grants for non-admin groups.
+No Mosaic **custom field-restriction** setup is required after upgrading. That does not replace ordinary TYPO3 **Record Permissions → Page Content: Type** grants for non-admin groups.
 
 Existing gallery records and stored FlexForm values remain unchanged.
 
