@@ -765,12 +765,80 @@ const mountContinueToImages = (editor, workspaces) => {
   layoutSheet.append(nav);
 };
 
-const consolidateWorkspaces = (editor) => {
+const formBootstrapState = new WeakMap();
+
+const resolveFormBootstrapRoot = () => (
+  document.querySelector('form[name="editform"]')
+  ?? document.querySelector('form#EditDocumentController')
+  ?? document.querySelector('.t3js-module-body form')
+  ?? document.querySelector('form')
+);
+
+const editorsInRoot = (root) => {
+  if (!(root instanceof Element)) {
+    return [];
+  }
+  if (root.matches('[data-mosaic-design-configurator]')) {
+    return [root];
+  }
+  return [...root.querySelectorAll('[data-mosaic-design-configurator]')];
+};
+
+const resolveSiblingSheetWithField = (tabContent, imagesSheet, fieldId) => {
+  const panes = [...(tabContent?.querySelectorAll(':scope > .tab-pane') ?? [])];
+  return panes.find((pane) => {
+    if (pane === imagesSheet) {
+      return false;
+    }
+    return Boolean(
+      pane.querySelector(`:scope > .form-section[data-id="${fieldId}"]`)
+      || pane.querySelector(`.form-section[data-id="${fieldId}"]`),
+    );
+  }) ?? null;
+};
+
+const resolveConsolidatedWorkspacesFromDom = (editor) => {
+  const imagesSheet = editor.closest('.tab-pane.mosaic-images-sheet') ?? editor.closest('.tab-pane');
+  const tabContent = imagesSheet?.parentElement;
+  const layoutSheet = tabContent?.querySelector(':scope > .tab-pane.mosaic-layout-sheet')
+    ?? tabContent?.querySelector('.tab-pane.mosaic-layout-sheet');
+  const imagesSourceRow = imagesSheet?.querySelector('.mosaic-images-header__row--source')
+    ?? imagesSheet?.querySelector('[data-layout-header-row="source"]');
+  if (!imagesSheet || !layoutSheet) {
+    return { layoutSheet: layoutSheet ?? null, imagesSheet: imagesSheet ?? null, imagesSourceRow: null };
+  }
+  return { layoutSheet, imagesSheet, imagesSourceRow };
+};
+
+const canConsolidateWorkspaces = (editor) => {
+  if (!(editor instanceof Element)) {
+    return false;
+  }
+  if (editor.dataset.mosaicWorkspacesConsolidated === 'true') {
+    return true;
+  }
   const imagesSheet = editor.closest('.tab-pane');
   const tabContent = imagesSheet?.parentElement;
-  const layoutSheet = [...(tabContent?.querySelectorAll(':scope > .tab-pane') ?? [])].find(
-    (pane) => pane.querySelector(':scope > .form-section[data-id="settings.source"]'),
-  );
+  if (!imagesSheet || !tabContent) {
+    return false;
+  }
+  return Boolean(resolveSiblingSheetWithField(tabContent, imagesSheet, 'settings.source'));
+};
+
+const consolidateWorkspaces = (editor) => {
+  if (editor.dataset.mosaicWorkspacesConsolidated === 'true') {
+    const registered = workspaceRegistry.get(editor);
+    if (registered?.layoutSheet && registered?.imagesSheet) {
+      return registered;
+    }
+    const recovered = resolveConsolidatedWorkspacesFromDom(editor);
+    workspaceRegistry.set(editor, recovered);
+    return recovered;
+  }
+
+  const imagesSheet = editor.closest('.tab-pane');
+  const tabContent = imagesSheet?.parentElement;
+  const layoutSheet = resolveSiblingSheetWithField(tabContent, imagesSheet, 'settings.source');
   if (!imagesSheet || !layoutSheet || imagesSheet === layoutSheet) {
     return { layoutSheet: imagesSheet ?? null, imagesSheet: imagesSheet ?? null };
   }
@@ -778,7 +846,12 @@ const consolidateWorkspaces = (editor) => {
   layoutSheet.classList.add('mosaic-layout-sheet');
   imagesSheet.classList.add('mosaic-images-sheet');
 
-  const designSections = [...imagesSheet.querySelectorAll(':scope > .form-section')];
+  let designSections = [...imagesSheet.querySelectorAll(':scope > .form-section')];
+  if (designSections.length === 0) {
+    designSections = [...imagesSheet.children].filter(
+      (node) => node instanceof Element && node.matches('.form-section[data-id]'),
+    );
+  }
   designSections.forEach((section) => layoutSheet.append(section));
 
   const form = editor.closest('form');
@@ -796,7 +869,8 @@ const consolidateWorkspaces = (editor) => {
   imagesSheet.prepend(imagesHeader);
 
   const moveFromLayout = (fieldName, target) => {
-    const section = layoutSheet.querySelector(`:scope > .form-section[data-id="${fieldName}"]`);
+    const section = layoutSheet.querySelector(`:scope > .form-section[data-id="${fieldName}"]`)
+      ?? layoutSheet.querySelector(`.form-section[data-id="${fieldName}"]`);
     if (section) {
       target.append(section);
     }
@@ -841,7 +915,8 @@ const consolidateWorkspaces = (editor) => {
     }
   }
 
-  const captionsSection = layoutSheet.querySelector(':scope > .form-section[data-id="settings.captions"]');
+  const captionsSection = layoutSheet.querySelector(':scope > .form-section[data-id="settings.captions"]')
+    ?? layoutSheet.querySelector('.form-section[data-id="settings.captions"]');
   if (metadataSection) {
     imagesSheet.append(metadataSection);
   }
@@ -865,7 +940,8 @@ const consolidateWorkspaces = (editor) => {
   editor.prepend(settingsRow);
 
   const moveSection = (fieldName, target) => {
-    const section = layoutSheet.querySelector(`:scope > .form-section[data-id="${fieldName}"]`);
+    const section = layoutSheet.querySelector(`:scope > .form-section[data-id="${fieldName}"]`)
+      ?? layoutSheet.querySelector(`.form-section[data-id="${fieldName}"]`);
     if (section) {
       target.append(section);
     }
@@ -884,6 +960,7 @@ const consolidateWorkspaces = (editor) => {
   addCompactHelp(maxItemsPerRow);
 
   const workspaces = { layoutSheet, imagesSheet, imagesSourceRow };
+  editor.dataset.mosaicWorkspacesConsolidated = 'true';
   workspaceRegistry.set(editor, workspaces);
   imagesSheet.closest('form')?.dispatchEvent(new CustomEvent('mosaic:workspaceconsolidated', {
     bubbles: true,
@@ -913,20 +990,35 @@ const isProxyCanonicalSection = (node) => {
 };
 
 const initializeEditor = (editor) => {
-  if (editor.dataset.mosaicDesignInitialized === 'true') {
-    return;
+  if (!(editor instanceof Element)) {
+    return false;
   }
-  editor.dataset.mosaicDesignInitialized = 'true';
+  if (editor.dataset.mosaicDesignInitialized === 'true') {
+    return true;
+  }
+  if (!canConsolidateWorkspaces(editor)) {
+    return false;
+  }
 
   const storage = editor.querySelector('[data-design-storage]');
   const workspaces = consolidateWorkspaces(editor);
   const sheet = workspaces.layoutSheet;
-  const presetSection = sheet?.querySelector(':scope > .form-section[data-id="settings.designPreset"]');
+  const imagesSheet = workspaces.imagesSheet;
+  if (!storage || !sheet || !imagesSheet || sheet === imagesSheet
+    || !sheet.classList.contains('mosaic-layout-sheet')
+  ) {
+    return false;
+  }
+  const presetSection = sheet.querySelector(':scope > .form-section[data-id="settings.designPreset"]')
+    ?? sheet.querySelector('.form-section[data-id="settings.designPreset"]');
   const configuratorSection = editor.closest('.form-section[data-id="settings.designOverrides"]');
   const presetSelector = presetSection?.querySelector('select');
-  if (!storage || !sheet || !presetSelector || !configuratorSection) {
-    return;
+  if (!presetSelector || !configuratorSection) {
+    return false;
   }
+
+  // Mark initialized only after consolidation and required anchors are ready.
+  editor.dataset.mosaicDesignInitialized = 'true';
   bindSourceAwareWorkspace(workspaces);
   mountContinueToImages(editor, workspaces);
 
@@ -1501,6 +1593,66 @@ const initializeEditor = (editor) => {
     editor.querySelectorAll('[data-design-eyedropper]').forEach((button) => { button.hidden = false; });
   }
   updateMode();
+  return true;
 };
 
-document.querySelectorAll('[data-mosaic-design-configurator]').forEach(initializeEditor);
+const bootstrapDesignEditors = (root = document) => {
+  editorsInRoot(root).forEach((editor) => {
+    initializeEditor(editor);
+  });
+};
+
+const setupFormBootstrapObserver = () => {
+  const form = resolveFormBootstrapRoot();
+  if (!form || formBootstrapState.has(form)) {
+    return;
+  }
+
+  const observer = new MutationObserver((mutations) => {
+    const touched = mutations.some((mutation) => {
+      if (mutation.type !== 'childList') {
+        return false;
+      }
+      return [...mutation.addedNodes].some((node) => {
+        if (!(node instanceof Element)) {
+          return false;
+        }
+        return node.matches('[data-mosaic-design-configurator]')
+          || node.querySelector('[data-mosaic-design-configurator]')
+          || node.matches('.tab-pane')
+          || node.querySelector('.form-section[data-id="settings.source"]')
+          || node.matches('.form-section[data-id="settings.source"]');
+      });
+    });
+    if (touched) {
+      bootstrapDesignEditors(form);
+    }
+  });
+
+  observer.observe(form, { childList: true, subtree: true });
+  formBootstrapState.set(form, observer);
+};
+
+const initializeDesignConfigurator = () => {
+  bootstrapDesignEditors(document);
+  setupFormBootstrapObserver();
+  // FormEngine may attach tab/field markup just after the ES module evaluates.
+  if (typeof queueMicrotask === 'function') {
+    queueMicrotask(() => bootstrapDesignEditors(document));
+  }
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(() => bootstrapDesignEditors(document));
+  }
+};
+
+export {
+  bootstrapDesignEditors,
+  canConsolidateWorkspaces,
+  consolidateWorkspaces,
+  initializeDesignConfigurator,
+  initializeEditor,
+};
+
+if (typeof document !== 'undefined' && !globalThis.__MOSAIC_DESIGN_CONFIGURATOR_NO_AUTO_INIT__) {
+  initializeDesignConfigurator();
+}

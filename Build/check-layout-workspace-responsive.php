@@ -263,6 +263,28 @@ if (!str_contains($js, 'mosaic-layout-header__row--source')
 ) {
     $failures[] = 'L: consolidateWorkspaces structure markers must remain in design-configurator.js';
 }
+if (!str_contains($js, 'MutationObserver')
+    || !str_contains($js, 'setupFormBootstrapObserver')
+    || !str_contains($js, 'canConsolidateWorkspaces')
+    || !str_contains($js, 'mosaicWorkspacesConsolidated')
+) {
+    $failures[] = 'L: design-configurator must defer/idempotently bootstrap workspace consolidation for FormEngine';
+}
+if (str_contains($js, "document.querySelectorAll('[data-mosaic-design-configurator]').forEach(initializeEditor)")) {
+    $failures[] = 'L: one-shot initializeEditor scan must not be the sole FormEngine bootstrap path';
+}
+
+$bootstrapTest = $root . '/Build/test-design-workspace-bootstrap.js';
+if (!is_file($bootstrapTest)) {
+    $failures[] = 'L: Missing executable bootstrap fixture test: Build/test-design-workspace-bootstrap.js';
+} else {
+    $nodeOutput = [];
+    $nodeCode = 0;
+    exec('node ' . escapeshellarg($bootstrapTest) . ' 2>&1', $nodeOutput, $nodeCode);
+    if ($nodeCode !== 0) {
+        $failures[] = 'L: design workspace bootstrap fixture test failed: ' . implode("\n", $nodeOutput);
+    }
+}
 
 // M. explicit manual source-mode selector and compact manual composition
 if (!preg_match('/data-mosaic-source-mode="manual"/', $css) || !preg_match('/imagesSourceRow.*data-mosaic-source-mode/s', $js)) {
