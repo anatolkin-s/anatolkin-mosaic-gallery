@@ -246,7 +246,13 @@ FlexForm data, record UIDs, localization relationships, and ordinary `tt_content
 - Live metadata synchronization for Manual Images during add/remove/reorder before Save
 - Multilingual metadata workflow integrated with TYPO3 content localization
 - Compact responsive backend configuration
-- English, German, French, Spanish, and Russian extension interface translations
+- Interface translations for **35 languages**, including major European and Asian languages plus right-to-left Arabic, Hebrew, and Persian
+
+Supported interface locales:
+
+`en`, `de`, `fr`, `es`, `ru`, `ar`, `he`, `fa`, `it`, `nl`, `pl`, `pt`, `pt_BR`, `uk`, `cs`, `sk`, `da`, `sv`, `no`, `fi`, `tr`, `ro`, `hu`, `el`, `bg`, `hr`, `sr`, `ja`, `ko`, `zh`, `zh_CN`, `hi`, `vi`, `th`, `ka`
+
+This release intentionally does **not** claim every TYPO3 regional/legacy locale.
 
 ## What's new in 0.6.1
 
@@ -472,7 +478,7 @@ Gallery-specific metadata follows TYPO3's native content localization model:
 - Frontend metadata resolution uses TYPO3's current `LanguageAspect` and `PageRepository` overlay behavior, including configured fallbacks.
 - A gallery assigned to **All languages** shares its gallery-specific metadata across site languages.
 
-Configured site languages are discovered from TYPO3 Site Configuration. The five bundled XLIFF languages translate the extension interface and do not limit the site's available content languages.
+Configured site languages are discovered from TYPO3 Site Configuration. The bundled XLIFF interface languages translate the extension UI and do not limit the site's available content languages.
 
 ## Compatibility and release status
 
