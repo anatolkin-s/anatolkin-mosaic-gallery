@@ -70,6 +70,9 @@ use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
 
     $pluginSignature = ExtensionUtility::registerPlugin(...$pluginArguments);
 
+    $permissionsHelp = 'LLL:EXT:anatolkin_mosaic_gallery/Resources/Private/Language/locallang_be.xlf:flexform.permissionsHelp';
+    $GLOBALS['TCA']['tt_content']['types'][$pluginSignature]['columnsOverrides']['pi_flexform']['description'] = $permissionsHelp;
+
     if ($typo3Version->getMajorVersion() >= 14) {
         ExtensionManagementUtility::addToAllTCAtypes(
             'tt_content',

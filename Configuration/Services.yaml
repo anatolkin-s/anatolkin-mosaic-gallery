@@ -30,7 +30,11 @@ services:
 
   Anatolkin\MosaicGallery\Backend\Form\FormDataProvider\MosaicGalleryFlexFormDefaultsProvider: ~
 
+  Anatolkin\MosaicGallery\Backend\Form\FormDataProvider\MosaicGalleryFlexFormPermissionProvider: ~
+
   Anatolkin\MosaicGallery\Backend\Form\FormDataProvider\MosaicGalleryLegacyListTypeVisibilityProvider: ~
+
+  Anatolkin\MosaicGallery\Backend\Permission\MosaicGalleryFlexFormPermissionResolver: ~
 
   Anatolkin\MosaicGallery\Backend\Form\Element\MetadataOverridesElement: ~
 

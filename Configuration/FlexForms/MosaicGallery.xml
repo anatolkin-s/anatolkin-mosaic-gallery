@@ -25,7 +25,6 @@
               <default>folder</default>
               <onChange>reload</onChange>
             </config>
-            <exclude>true</exclude>
           </settings.source>
 
           <settings.folder>
@@ -39,7 +38,6 @@
               <maxitems>1</maxitems>
               <default>fileadmin/gallery/</default>
             </config>
-            <exclude>true</exclude>
           </settings.folder>
 
           <settings.recursive>
@@ -49,7 +47,6 @@
               <type>check</type>
               <default>1</default>
             </config>
-            <exclude>true</exclude>
           </settings.recursive>
 
           <settings.sortBy>
@@ -74,7 +71,6 @@
               </items>
               <default>random</default>
             </config>
-            <exclude>true</exclude>
           </settings.sortBy>
 
           <settings.sortDir>
@@ -95,7 +91,6 @@
               </items>
               <default>asc</default>
             </config>
-            <exclude>true</exclude>
           </settings.sortDir>
 
           <settings.gap>
@@ -105,7 +100,6 @@
               <eval>int</eval>
               <default>12</default>
             </config>
-            <exclude>true</exclude>
           </settings.gap>
 
           <settings.layoutMode>
@@ -137,7 +131,6 @@
               </items>
               <default>masonry</default>
             </config>
-            <exclude>true</exclude>
           </settings.layoutMode>
 
           <settings.maxItemsPerRow>
@@ -155,7 +148,6 @@
               </items>
               <default>6</default>
             </config>
-            <exclude>true</exclude>
           </settings.maxItemsPerRow>
 
           <settings.maxWidth>
@@ -166,7 +158,6 @@
               <eval>int</eval>
               <default>1800</default>
             </config>
-            <exclude>true</exclude>
           </settings.maxWidth>
 
           <settings.enableLightbox>
@@ -175,7 +166,6 @@
               <type>check</type>
               <default>1</default>
             </config>
-            <exclude>true</exclude>
           </settings.enableLightbox>
 
           <settings.showCaptions>
@@ -184,7 +174,6 @@
               <type>check</type>
               <default>1</default>
             </config>
-            <exclude>true</exclude>
           </settings.showCaptions>
 
           <settings.captionAlign>
@@ -208,7 +197,6 @@
               </items>
               <default>left</default>
             </config>
-            <exclude>true</exclude>
           </settings.captionAlign>
 
           <settings.useFalCaptions>
@@ -218,7 +206,6 @@
               <type>check</type>
               <default>1</default>
             </config>
-            <exclude>true</exclude>
           </settings.useFalCaptions>
 
           <settings.enableLoadMore>
@@ -227,7 +214,6 @@
               <type>check</type>
               <default>1</default>
             </config>
-            <exclude>true</exclude>
           </settings.enableLoadMore>
 
           <settings.loadMoreUseFrameStyle>
@@ -236,7 +222,6 @@
               <type>check</type>
               <default>1</default>
             </config>
-            <exclude>true</exclude>
           </settings.loadMoreUseFrameStyle>
 
           <settings.itemsPerPage>
@@ -246,7 +231,6 @@
               <eval>int</eval>
               <default>18</default>
             </config>
-            <exclude>true</exclude>
           </settings.itemsPerPage>
 
           <settings.loadStep>
@@ -256,7 +240,6 @@
               <eval>int</eval>
               <default>12</default>
             </config>
-            <exclude>true</exclude>
           </settings.loadStep>
 
           <settings.captions>
@@ -268,7 +251,6 @@
               <cols>40</cols>
               <rows>6</rows>
             </config>
-            <exclude>true</exclude>
           </settings.captions>
 
         </el>
@@ -313,7 +295,6 @@
                 </numIndex>
               </items>
             </config>
-            <exclude>true</exclude>
           </settings.designPreset>
 
           <settings.frameColor>
@@ -323,7 +304,6 @@
               <size>10</size>
               <default>#b40000</default>
             </config>
-            <exclude>true</exclude>
           </settings.frameColor>
 
           <settings.frameAccentColor>
@@ -333,7 +313,6 @@
               <size>10</size>
               <default></default>
             </config>
-            <exclude>true</exclude>
           </settings.frameAccentColor>
 
           <settings.frameWidth>
@@ -348,7 +327,6 @@
                 <upper>12</upper>
               </range>
             </config>
-            <exclude>true</exclude>
           </settings.frameWidth>
 
           <settings.frameStyle>
@@ -383,7 +361,6 @@
               </items>
               <default>solid</default>
             </config>
-            <exclude>true</exclude>
           </settings.frameStyle>
 
           <settings.borderRadius>
@@ -393,7 +370,6 @@
               <eval>int</eval>
               <default>6</default>
             </config>
-            <exclude>true</exclude>
           </settings.borderRadius>
 
           <settings.shadow>
@@ -402,7 +378,6 @@
               <type>check</type>
               <default>1</default>
             </config>
-            <exclude>true</exclude>
           </settings.shadow>
 
           <settings.backgroundColor>
@@ -412,7 +387,6 @@
               <size>10</size>
               <default>#e5e5e5</default>
             </config>
-            <exclude>true</exclude>
           </settings.backgroundColor>
 
           <settings.captionColor>
@@ -422,7 +396,6 @@
               <size>10</size>
               <default></default>
             </config>
-            <exclude>true</exclude>
           </settings.captionColor>
 
           <settings.applyTo>
@@ -446,7 +419,6 @@
               </items>
               <default>both</default>
             </config>
-            <exclude>true</exclude>
           </settings.applyTo>
 
           <settings.lbOverlay>
@@ -456,7 +428,6 @@
               <size>10</size>
               <default>#2c5222</default>
             </config>
-            <exclude>true</exclude>
           </settings.lbOverlay>
 
           <settings.lbOverlayAlpha>
@@ -467,7 +438,6 @@
               <eval>trim</eval>
               <default>0.92</default>
             </config>
-            <exclude>true</exclude>
           </settings.lbOverlayAlpha>
 
           <settings.lbNavColor>
@@ -477,7 +447,6 @@
               <size>10</size>
               <default>#FFFFFF</default>
             </config>
-            <exclude>true</exclude>
           </settings.lbNavColor>
 
           <settings.lbCloseColor>
@@ -487,7 +456,6 @@
               <size>10</size>
               <default>#FFFFFF</default>
             </config>
-            <exclude>true</exclude>
           </settings.lbCloseColor>
 
           <settings.lbCaptionColor>
@@ -497,7 +465,6 @@
               <size>10</size>
               <default>#FFFFFF</default>
             </config>
-            <exclude>true</exclude>
           </settings.lbCaptionColor>
 
           <settings.lbCaptionBg>
@@ -507,7 +474,6 @@
               <size>16</size>
               <default>#b40000</default>
             </config>
-            <exclude>true</exclude>
           </settings.lbCaptionBg>
 
           <settings.lbCaptionBgAlpha>
@@ -522,7 +488,6 @@
                 <upper>1</upper>
               </range>
             </config>
-            <exclude>true</exclude>
           </settings.lbCaptionBgAlpha>
 
           <settings.lbCaptionAlign>
@@ -537,7 +502,6 @@
               </items>
               <default>left</default>
             </config>
-            <exclude>true</exclude>
           </settings.lbCaptionAlign>
 
           <settings.lbCaptionSize>
@@ -552,7 +516,6 @@
               </items>
               <default>normal</default>
             </config>
-            <exclude>true</exclude>
           </settings.lbCaptionSize>
 
           <settings.lbCaptionStyle>
@@ -567,7 +530,6 @@
               </items>
               <default>regular</default>
             </config>
-            <exclude>true</exclude>
           </settings.lbCaptionStyle>
 
           <settings.designOverrides>
@@ -576,7 +538,6 @@
               <type>user</type>
               <renderType>mosaicGalleryDesignConfigurator</renderType>
             </config>
-            <exclude>true</exclude>
           </settings.designOverrides>
 
         </el>

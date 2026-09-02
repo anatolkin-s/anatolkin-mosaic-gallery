@@ -9,7 +9,9 @@ use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
 use Anatolkin\MosaicGallery\Backend\Form\Element\DesignConfiguratorElement;
 use Anatolkin\MosaicGallery\Backend\Form\Element\MetadataOverridesElement;
 use Anatolkin\MosaicGallery\Backend\Form\FormDataProvider\MosaicGalleryFlexFormDefaultsProvider;
+use Anatolkin\MosaicGallery\Backend\Form\FormDataProvider\MosaicGalleryFlexFormPermissionProvider;
 use Anatolkin\MosaicGallery\Backend\Form\FormDataProvider\MosaicGalleryLegacyListTypeVisibilityProvider;
+use Anatolkin\MosaicGallery\Backend\Permission\MosaicGalleryFlexFormPermissionDefinition;
 use Anatolkin\MosaicGallery\Controller\GalleryController;
 use TYPO3\CMS\Backend\Form\FormDataProvider\TcaFlexPrepare;
 use TYPO3\CMS\Backend\Form\FormDataProvider\TcaFlexProcess;
@@ -67,7 +69,20 @@ if (!is_array($tcaFlexProcessDepends)) {
 if (!in_array(MosaicGalleryFlexFormDefaultsProvider::class, $tcaFlexProcessDepends, true)) {
     $tcaFlexProcessDepends[] = MosaicGalleryFlexFormDefaultsProvider::class;
 }
+if (!in_array(MosaicGalleryFlexFormPermissionProvider::class, $tcaFlexProcessDepends, true)) {
+    $tcaFlexProcessDepends[] = MosaicGalleryFlexFormPermissionProvider::class;
+}
 unset($tcaFlexProcessDepends);
+
+// Issue #11: opt-in deny restrictions via native backend user-group custom permissions.
+foreach (MosaicGalleryFlexFormPermissionDefinition::customPermOptionCategories() as $categoryKey => $category) {
+    $GLOBALS['TYPO3_CONF_VARS']['BE']['customPermOptions'][$categoryKey] = $category;
+}
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['formDataGroup']['tcaDatabaseRecord'][MosaicGalleryFlexFormPermissionProvider::class] = [
+    'depends' => [
+        MosaicGalleryFlexFormDefaultsProvider::class,
+    ],
+];
 
 // TYPO3 13 only: hide legacy Mosaic Gallery list_type choices from FormEngine UI
 // while keeping static TCA items valid for DataHandler on existing records.
