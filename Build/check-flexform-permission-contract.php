@@ -172,8 +172,11 @@ if (!str_contains($ttContent, 'flexform.permissionsHelp')) {
 if (!str_contains($language, 'permissions.category.general')) {
     $failures[] = 'locallang_be.xlf must define permission category labels';
 }
-if (!str_contains($language, 'Custom permissions')) {
-    $failures[] = 'permissionsHelp must reference Custom permissions UI terminology';
+if (!str_contains($language, 'Custom module options')) {
+    $failures[] = 'permissionsHelp must reference Custom module options UI terminology';
+}
+if (!str_contains($language, 'Module Permissions')) {
+    $failures[] = 'permissionsHelp must reference Module Permissions UI terminology';
 }
 
 $categories = MosaicGalleryFlexFormPermissionDefinition::customPermOptionCategories();
