@@ -30,6 +30,9 @@ final class MosaicGalleryFlexFormPermissionResolver
         ?BackendUserAuthentication $backendUser = null,
         ?callable $permissionChecker = null,
     ): array {
+        $backendUser ??= $this->resolveBackendUser();
+        // Admins must bypass before any custom_options check(): Core returns true for
+        // every identifier when isAdmin() is true, which would otherwise hide all fields.
         if ($backendUser !== null && $backendUser->isAdmin()) {
             return [];
         }
@@ -79,14 +82,19 @@ final class MosaicGalleryFlexFormPermissionResolver
 
     private function createDefaultChecker(?BackendUserAuthentication $backendUser): ?callable
     {
+        $backendUser ??= $this->resolveBackendUser();
         if ($backendUser === null) {
-            $backendUser = $GLOBALS['BE_USER'] ?? null;
-        }
-        if (!$backendUser instanceof BackendUserAuthentication) {
             return null;
         }
 
         return static fn(string $identifier): bool => (bool)$backendUser->check('custom_options', $identifier);
+    }
+
+    private function resolveBackendUser(): ?BackendUserAuthentication
+    {
+        $backendUser = $GLOBALS['BE_USER'] ?? null;
+
+        return $backendUser instanceof BackendUserAuthentication ? $backendUser : null;
     }
 
     private function scalarField(mixed $value): string

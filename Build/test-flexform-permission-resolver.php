@@ -77,6 +77,13 @@ if ($hidden !== []) {
     $failures[] = 'Administrators must never receive hidden FlexForm fields';
 }
 
+// Admin bypass via $GLOBALS['BE_USER'] (FormDataProvider path — no explicit user arg)
+$GLOBALS['BE_USER'] = $adminUser;
+$hidden = $resolver->resolveHiddenFields();
+if ($hidden !== []) {
+    $failures[] = 'Administrators resolved from $GLOBALS[BE_USER] must never receive hidden FlexForm fields';
+}
+
 // Mosaic record detection
 $mosaicCType = $resolver->isMosaicGalleryRecord([
     'databaseRow' => ['CType' => 'mosaicgallery_pi1'],

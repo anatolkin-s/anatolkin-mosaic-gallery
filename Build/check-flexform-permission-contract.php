@@ -48,6 +48,10 @@ if (!is_file($flexFormPath)) {
         $excludeNodes = $xpath->query('//exclude');
         $excludeCount = $excludeNodes instanceof DOMNodeList ? $excludeNodes->length : 0;
         if ($excludeCount > 0) {
+            // a50222d introduced <exclude>true</exclude> on every mapped field. That
+            // enables TYPO3's independent Allowed Excludefields allow-list gate and
+            // hides all FlexForm settings for non-admins without manual grants.
+            // Mosaic customPermOptions remain the only permission authority.
             $failures[] = 'FlexForm must not contain Issue #11 exclude=true entries';
         }
 
