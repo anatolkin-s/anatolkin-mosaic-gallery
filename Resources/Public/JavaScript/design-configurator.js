@@ -765,16 +765,33 @@ const mountContinueToImages = (editor, workspaces) => {
   layoutSheet.append(nav);
 };
 
-const formBootstrapState = new WeakMap();
+const documentBootstrapState = {
+  observer: null,
+  observedRoot: null,
+};
 
-const resolveFormBootstrapRoot = () => (
+/**
+ * Prefer the real FormEngine edit form. Never fall back to an arbitrary <form>,
+ * which can trap bootstrap on an unrelated backend form.
+ */
+const resolveEditFormRoot = () => (
   document.querySelector('form[name="editform"]')
   ?? document.querySelector('form#EditDocumentController')
   ?? document.querySelector('.t3js-module-body form')
-  ?? document.querySelector('form')
+  ?? null
+);
+
+const resolveStableBootstrapRoot = () => (
+  document.querySelector('.t3js-module-body')
+  ?? document.body
+  ?? document.documentElement
+  ?? null
 );
 
 const editorsInRoot = (root) => {
+  if (root === document || root === document.documentElement) {
+    return [...document.querySelectorAll('[data-mosaic-design-configurator]')];
+  }
   if (!(root instanceof Element)) {
     return [];
   }
@@ -782,6 +799,20 @@ const editorsInRoot = (root) => {
     return [root];
   }
   return [...root.querySelectorAll('[data-mosaic-design-configurator]')];
+};
+
+const mutationContainsWorkspaceSignal = (node) => {
+  if (!(node instanceof Element)) {
+    return false;
+  }
+  return node.matches('[data-mosaic-design-configurator]')
+    || Boolean(node.querySelector?.('[data-mosaic-design-configurator]'))
+    || node.matches('form[name="editform"], form#EditDocumentController, .t3js-module-body')
+    || Boolean(node.querySelector?.('form[name="editform"], form#EditDocumentController'))
+    || node.matches('.tab-pane')
+    || Boolean(node.querySelector?.('.tab-pane'))
+    || node.matches('.form-section[data-id="settings.source"]')
+    || Boolean(node.querySelector?.('.form-section[data-id="settings.source"]'));
 };
 
 const resolveSiblingSheetWithField = (tabContent, imagesSheet, fieldId) => {
@@ -1035,7 +1066,7 @@ const initializeEditor = (editor) => {
   const previewHeading = editor.querySelector('.mosaic-design-preview__heading');
   const status = editor.querySelector('[data-design-status]');
   const resetAll = editor.querySelector('[data-design-reset-all]');
-  if (previewHeading && status && resetAll) {
+  if (previewHeading && status && resetAll && !previewHeading.querySelector('.mosaic-design-preview__state')) {
     const previewState = document.createElement('div');
     previewState.className = 'mosaic-design-preview__state';
     previewState.append(status, resetAll);
@@ -1597,15 +1628,24 @@ const initializeEditor = (editor) => {
 };
 
 const bootstrapDesignEditors = (root = document) => {
-  editorsInRoot(root).forEach((editor) => {
+  const scope = root instanceof Element ? root : document;
+  editorsInRoot(scope).forEach((editor) => {
     initializeEditor(editor);
   });
 };
 
-const setupFormBootstrapObserver = () => {
-  const form = resolveFormBootstrapRoot();
-  if (!form || formBootstrapState.has(form)) {
-    return;
+const setupDocumentBootstrapObserver = () => {
+  const root = resolveStableBootstrapRoot();
+  if (!root || typeof MutationObserver !== 'function') {
+    return false;
+  }
+  if (documentBootstrapState.observer && documentBootstrapState.observedRoot === root) {
+    return true;
+  }
+  if (documentBootstrapState.observer) {
+    documentBootstrapState.observer.disconnect();
+    documentBootstrapState.observer = null;
+    documentBootstrapState.observedRoot = null;
   }
 
   const observer = new MutationObserver((mutations) => {
@@ -1613,35 +1653,35 @@ const setupFormBootstrapObserver = () => {
       if (mutation.type !== 'childList') {
         return false;
       }
-      return [...mutation.addedNodes].some((node) => {
-        if (!(node instanceof Element)) {
-          return false;
-        }
-        return node.matches('[data-mosaic-design-configurator]')
-          || node.querySelector('[data-mosaic-design-configurator]')
-          || node.matches('.tab-pane')
-          || node.querySelector('.form-section[data-id="settings.source"]')
-          || node.matches('.form-section[data-id="settings.source"]');
-      });
+      return [...mutation.addedNodes].some((node) => mutationContainsWorkspaceSignal(node));
     });
     if (touched) {
-      bootstrapDesignEditors(form);
+      bootstrapDesignEditors(document);
     }
   });
 
-  observer.observe(form, { childList: true, subtree: true });
-  formBootstrapState.set(form, observer);
+  observer.observe(root, { childList: true, subtree: true });
+  documentBootstrapState.observer = observer;
+  documentBootstrapState.observedRoot = root;
+  return true;
 };
 
 const initializeDesignConfigurator = () => {
+  // Always watch a stable ancestor that exists before FormEngine inserts editform.
+  setupDocumentBootstrapObserver();
   bootstrapDesignEditors(document);
-  setupFormBootstrapObserver();
-  // FormEngine may attach tab/field markup just after the ES module evaluates.
+  // Short retries remain helpful, but correctness must not depend on them alone.
   if (typeof queueMicrotask === 'function') {
-    queueMicrotask(() => bootstrapDesignEditors(document));
+    queueMicrotask(() => {
+      setupDocumentBootstrapObserver();
+      bootstrapDesignEditors(document);
+    });
   }
   if (typeof requestAnimationFrame === 'function') {
-    requestAnimationFrame(() => bootstrapDesignEditors(document));
+    requestAnimationFrame(() => {
+      setupDocumentBootstrapObserver();
+      bootstrapDesignEditors(document);
+    });
   }
 };
 
@@ -1651,6 +1691,9 @@ export {
   consolidateWorkspaces,
   initializeDesignConfigurator,
   initializeEditor,
+  resolveEditFormRoot,
+  resolveStableBootstrapRoot,
+  setupDocumentBootstrapObserver,
 };
 
 if (typeof document !== 'undefined' && !globalThis.__MOSAIC_DESIGN_CONFIGURATOR_NO_AUTO_INIT__) {

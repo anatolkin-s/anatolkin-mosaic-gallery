@@ -264,14 +264,26 @@ if (!str_contains($js, 'mosaic-layout-header__row--source')
     $failures[] = 'L: consolidateWorkspaces structure markers must remain in design-configurator.js';
 }
 if (!str_contains($js, 'MutationObserver')
-    || !str_contains($js, 'setupFormBootstrapObserver')
+    || !str_contains($js, 'setupDocumentBootstrapObserver')
+    || !str_contains($js, 'resolveStableBootstrapRoot')
     || !str_contains($js, 'canConsolidateWorkspaces')
     || !str_contains($js, 'mosaicWorkspacesConsolidated')
 ) {
-    $failures[] = 'L: design-configurator must defer/idempotently bootstrap workspace consolidation for FormEngine';
+    $failures[] = 'L: design-configurator must observe a stable document ancestor for FormEngine bootstrap';
+}
+if (str_contains($js, "document.querySelector('form')")
+    && preg_match(
+        "/resolveEditFormRoot\\s*=\\s*\\(\\)\\s*=>\\s*\\([\\s\\S]*?document\\.querySelector\\('form'\\)/",
+        $js,
+    )
+) {
+    $failures[] = 'L: edit-form resolver must not fall back to an arbitrary document.querySelector(\'form\')';
 }
 if (str_contains($js, "document.querySelectorAll('[data-mosaic-design-configurator]').forEach(initializeEditor)")) {
     $failures[] = 'L: one-shot initializeEditor scan must not be the sole FormEngine bootstrap path';
+}
+if (str_contains($js, 'setupFormBootstrapObserver')) {
+    $failures[] = 'L: form-scoped bootstrap observer must be replaced by document-level bootstrap';
 }
 
 $bootstrapTest = $root . '/Build/test-design-workspace-bootstrap.js';

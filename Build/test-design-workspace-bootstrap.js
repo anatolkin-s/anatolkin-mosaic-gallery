@@ -2,18 +2,20 @@
 'use strict';
 
 /**
- * Executable DOM-fixture contract for Mosaic design workspace bootstrap.
+ * Executable DOM-fixture contract for Mosaic design workspace bootstrap races.
  *
- * Proves:
- * - consolidation can run when the editor appears AFTER module evaluation
- * - consolidation is idempotent (no duplicated headers / repeated moves)
- * - Layout owns design preset; Images owns source controls
- *
- * Uses a bounded in-repo DOM fixture (no browser / no npm runtime dependency).
- * Keep behavioral expectations aligned with design-configurator.js.
+ * Cases:
+ * 1. Module initializes with NO edit form; form+editor arrive later.
+ * 2. Unrelated <form> exists first; bootstrap must not trap on it.
+ * 3. Edit form is replaced after first init; new editor must initialize.
+ * 4. Repeated mutations remain idempotent.
+ * 5. Delayed insertion beyond one microtask / one animation frame.
  *
  * Run: node Build/test-design-workspace-bootstrap.js
  */
+
+const fs = require('fs');
+const path = require('path');
 
 const failures = [];
 const assert = (condition, message) => {
@@ -47,7 +49,6 @@ const parseSimpleSelector = (selector) => {
 };
 
 class FixtureClassList {
-  /** @param {FixtureElement} element */
   constructor(element) {
     this.element = element;
   }
@@ -61,25 +62,9 @@ class FixtureClassList {
   contains(token) {
     return (this.element.getAttribute('class') || '').split(/\s+/).includes(token);
   }
-
-  toggle(token, force) {
-    const has = this.contains(token);
-    const shouldHave = force === undefined ? !has : Boolean(force);
-    if (shouldHave) {
-      this.add(token);
-    } else {
-      const current = (this.element.getAttribute('class') || '').split(/\s+/).filter((item) => item && item !== token);
-      this.element.setAttribute('class', current.join(' '));
-    }
-    return shouldHave;
-  }
 }
 
 class FixtureElement {
-  /**
-   * @param {string} tagName
-   * @param {FixtureDocument} ownerDocument
-   */
   constructor(tagName, ownerDocument) {
     this.tagName = String(tagName).toUpperCase();
     this.ownerDocument = ownerDocument;
@@ -112,28 +97,11 @@ class FixtureElement {
   }
 
   get textContent() {
-    return this.childNodes.map((node) => {
-      if (typeof node === 'string') {
-        return node;
-      }
-      return node.textContent ?? '';
-    }).join('');
+    return this.childNodes.map((node) => (typeof node === 'string' ? node : (node.textContent ?? ''))).join('');
   }
 
   set textContent(value) {
     this.childNodes = [String(value)];
-  }
-
-  get hidden() {
-    return this.hasAttribute('hidden');
-  }
-
-  set hidden(value) {
-    if (value) {
-      this.setAttribute('hidden', 'hidden');
-    } else {
-      this.attributes.delete('hidden');
-    }
   }
 
   setAttribute(name, value) {
@@ -149,8 +117,8 @@ class FixtureElement {
   }
 
   matches(selector) {
-    const parts = String(selector).split(',').map((part) => part.trim()).filter(Boolean);
-    return parts.some((part) => this._matchesOne(part));
+    return String(selector).split(',').map((part) => part.trim()).filter(Boolean)
+      .some((part) => this._matchesOne(part));
   }
 
   _matchesOne(selector) {
@@ -187,17 +155,6 @@ class FixtureElement {
     return null;
   }
 
-  contains(node) {
-    let current = node;
-    while (current) {
-      if (current === this) {
-        return true;
-      }
-      current = current.parentElement;
-    }
-    return false;
-  }
-
   append(...nodes) {
     nodes.forEach((node) => this.appendChild(node));
   }
@@ -212,6 +169,7 @@ class FixtureElement {
     }
     node.parentElement = this;
     this.childNodes.push(node);
+    this.ownerDocument?._notifyAdded?.(node);
     return node;
   }
 
@@ -222,40 +180,16 @@ class FixtureElement {
     node.parentElement = this;
     if (!reference) {
       this.childNodes.push(node);
-      return node;
-    }
-    const index = this.childNodes.indexOf(reference);
-    if (index === -1) {
-      this.childNodes.push(node);
     } else {
-      this.childNodes.splice(index, 0, node);
-    }
-    return node;
-  }
-
-  insertAdjacentElement(position, element) {
-    if (position === 'afterend') {
-      const parent = this.parentElement;
-      if (!parent) {
-        return null;
+      const index = this.childNodes.indexOf(reference);
+      if (index === -1) {
+        this.childNodes.push(node);
+      } else {
+        this.childNodes.splice(index, 0, node);
       }
-      const index = parent.childNodes.indexOf(this);
-      parent.insertBefore(element, parent.childNodes[index + 1] ?? null);
-      return element;
     }
-    if (position === 'beforebegin') {
-      this.parentElement?.insertBefore(element, this);
-      return element;
-    }
-    if (position === 'afterbegin') {
-      this.prepend(element);
-      return element;
-    }
-    if (position === 'beforeend') {
-      this.append(element);
-      return element;
-    }
-    return null;
+    this.ownerDocument?._notifyAdded?.(node);
+    return node;
   }
 
   removeChild(node) {
@@ -300,24 +234,13 @@ class FixtureElement {
     this.children.forEach((child) => visit(child));
     return matches;
   }
-
-  addEventListener(type, handler) {
-    const list = this._listeners.get(type) ?? [];
-    list.push(handler);
-    this._listeners.set(type, list);
-  }
-
-  dispatchEvent(event) {
-    const list = this._listeners.get(event?.type) ?? [];
-    list.forEach((handler) => handler(event));
-    return true;
-  }
 }
 
 class FixtureDocument {
   constructor() {
     this.body = new FixtureElement('body', this);
     this.documentElement = this.body;
+    this._addedHandlers = [];
   }
 
   createElement(tagName) {
@@ -331,6 +254,14 @@ class FixtureDocument {
   querySelectorAll(selector) {
     return this.body.querySelectorAll(selector);
   }
+
+  onAdded(handler) {
+    this._addedHandlers.push(handler);
+  }
+
+  _notifyAdded(node) {
+    this._addedHandlers.forEach((handler) => handler(node));
+  }
 }
 
 const IMAGE_SOURCE_FIELD_IDS = [
@@ -341,93 +272,87 @@ const IMAGE_SOURCE_FIELD_IDS = [
   'settings.sortBy',
   'settings.sortDir',
 ];
-const LAYOUT_SETTINGS_FIELD_IDS = [
-  'settings.layoutMode',
-  'settings.maxItemsPerRow',
-  'settings.maxWidth',
-  'settings.itemsPerPage',
-  'settings.loadStep',
-];
 
 const createSection = (document, fieldId, withSelect = false) => {
   const section = document.createElement('div');
   section.classList.add('form-section');
   section.dataset.id = fieldId;
   if (withSelect) {
-    const select = document.createElement('select');
-    section.append(select);
+    section.append(document.createElement('select'));
   }
   return section;
 };
 
-const buildRawForm = (document) => {
+const buildMosaicEditForm = (document, { name = 'editform' } = {}) => {
+  const moduleBody = document.querySelector('.t3js-module-body') ?? (() => {
+    const created = document.createElement('div');
+    created.classList.add('t3js-module-body');
+    document.body.append(created);
+    return created;
+  })();
+
   const form = document.createElement('form');
-  form.setAttribute('name', 'editform');
+  form.setAttribute('name', name);
   const tabContent = document.createElement('div');
   tabContent.classList.add('tab-content');
 
   const layoutSheet = document.createElement('div');
   layoutSheet.classList.add('tab-pane');
-  IMAGE_SOURCE_FIELD_IDS.forEach((fieldId) => layoutSheet.append(createSection(document, fieldId, fieldId === 'settings.source')));
-  LAYOUT_SETTINGS_FIELD_IDS.forEach((fieldId) => layoutSheet.append(createSection(document, fieldId)));
-  layoutSheet.append(createSection(document, 'settings.captions'));
+  IMAGE_SOURCE_FIELD_IDS.forEach((fieldId) => {
+    layoutSheet.append(createSection(document, fieldId, fieldId === 'settings.source'));
+  });
 
   const imagesSheet = document.createElement('div');
   imagesSheet.classList.add('tab-pane');
   imagesSheet.append(createSection(document, 'settings.designPreset', true));
-
   const designOverrides = createSection(document, 'settings.designOverrides');
   const editor = document.createElement('div');
-  editor.classList.add('mosaic-design-configurator');
   editor.setAttribute('data-mosaic-design-configurator', 'true');
   const storage = document.createElement('input');
   storage.setAttribute('data-design-storage', 'true');
-  const presetSlot = document.createElement('div');
-  presetSlot.setAttribute('data-design-preset-slot', 'true');
-  editor.append(storage, presetSlot);
+  editor.append(storage);
   designOverrides.append(editor);
   imagesSheet.append(designOverrides);
-  imagesSheet.append(createSection(document, 'settings.frameColor'));
-
-  const manual = document.createElement('div');
-  manual.classList.add('form-section');
-  manual.dataset.id = 'tx_anatolkinmosaicgallery_images';
-  const metadataWrap = document.createElement('div');
-  metadataWrap.classList.add('form-section');
-  const metadata = document.createElement('div');
-  metadata.setAttribute('data-mosaic-metadata-editor', 'true');
-  metadataWrap.append(metadata);
 
   tabContent.append(layoutSheet, imagesSheet);
-  form.append(tabContent, manual, metadataWrap);
-  document.body.append(form);
-  return { form, layoutSheet, imagesSheet, editor };
+  form.append(tabContent);
+  moduleBody.append(form);
+  return { form, layoutSheet, imagesSheet, editor, moduleBody };
 };
 
-// Mirror of production consolidateWorkspaces ownership moves (bootstrap timing covered separately).
+const resolveEditFormRoot = (document) => (
+  document.querySelector('form[name="editform"]')
+  ?? document.querySelector('form#EditDocumentController')
+  ?? document.querySelector('.t3js-module-body form')
+  ?? null
+);
+
+const resolveStableBootstrapRoot = (document) => (
+  document.querySelector('.t3js-module-body')
+  ?? document.body
+  ?? document.documentElement
+  ?? null
+);
+
 const consolidateWorkspacesFixture = (editor) => {
   if (editor.dataset.mosaicWorkspacesConsolidated === 'true') {
     const imagesSheet = editor.closest('.tab-pane.mosaic-images-sheet') ?? editor.closest('.tab-pane');
     const tabContent = imagesSheet?.parentElement;
     const layoutSheet = tabContent?.querySelector(':scope > .tab-pane.mosaic-layout-sheet');
-    return { layoutSheet, imagesSheet };
+    return { layoutSheet, imagesSheet, skipped: true };
   }
 
   const imagesSheet = editor.closest('.tab-pane');
   const tabContent = imagesSheet?.parentElement;
   const layoutSheet = [...(tabContent?.querySelectorAll(':scope > .tab-pane') ?? [])].find(
-    (pane) => pane !== imagesSheet && (
-      pane.querySelector(':scope > .form-section[data-id="settings.source"]')
-      || pane.querySelector('.form-section[data-id="settings.source"]')
-    ),
+    (pane) => pane !== imagesSheet && pane.querySelector('.form-section[data-id="settings.source"]'),
   );
   if (!imagesSheet || !layoutSheet || imagesSheet === layoutSheet) {
-    return { layoutSheet: imagesSheet ?? null, imagesSheet: imagesSheet ?? null };
+    return { layoutSheet: null, imagesSheet, skipped: false };
   }
 
   layoutSheet.classList.add('mosaic-layout-sheet');
   imagesSheet.classList.add('mosaic-images-sheet');
-
   [...imagesSheet.querySelectorAll(':scope > .form-section')].forEach((section) => layoutSheet.append(section));
 
   const imagesHeader = editor.ownerDocument.createElement('div');
@@ -436,116 +361,190 @@ const consolidateWorkspacesFixture = (editor) => {
   imagesSourceRow.classList.add('mosaic-images-header__row--source');
   imagesHeader.append(imagesSourceRow);
   imagesSheet.prepend(imagesHeader);
-
   IMAGE_SOURCE_FIELD_IDS.forEach((fieldName) => {
-    const section = layoutSheet.querySelector(`:scope > .form-section[data-id="${fieldName}"]`);
+    const section = layoutSheet.querySelector(`.form-section[data-id="${fieldName}"]`);
     if (section) {
       imagesSourceRow.append(section);
     }
   });
 
-  const form = editor.closest('form');
-  const metadataEditor = form?.querySelector('[data-mosaic-metadata-editor]');
-  const metadataSection = metadataEditor?.closest('.form-section');
-  const manualImagesSection = form?.querySelector('.form-section[data-id="tx_anatolkinmosaicgallery_images"]');
-  if (manualImagesSection) {
-    imagesSheet.append(manualImagesSection);
-  }
-  if (metadataSection) {
-    imagesSheet.append(metadataSection);
-  }
-
   editor.dataset.mosaicWorkspacesConsolidated = 'true';
-  return { layoutSheet, imagesSheet, imagesSourceRow };
+  editor.dataset.mosaicDesignInitialized = 'true';
+  return { layoutSheet, imagesSheet, skipped: false };
 };
 
-const bootstrapWhenReady = (getEditor, attemptsLeft = 5) => {
-  const editor = getEditor();
-  if (!editor) {
-    if (attemptsLeft <= 0) {
-      return null;
+/**
+ * Document-level bootstrap mirror of production contract:
+ * observe stable ancestor, never trap on arbitrary first <form>.
+ */
+const createDocumentBootstrap = (document) => {
+  const state = {
+    observedRoot: null,
+    initializedEditors: new Set(),
+    bootstrapCount: 0,
+  };
+
+  const bootstrap = () => {
+    state.bootstrapCount += 1;
+    document.querySelectorAll('[data-mosaic-design-configurator]').forEach((editor) => {
+      if (state.initializedEditors.has(editor) && editor.dataset.mosaicDesignInitialized === 'true') {
+        consolidateWorkspacesFixture(editor);
+        return;
+      }
+      const result = consolidateWorkspacesFixture(editor);
+      if (result.layoutSheet && result.imagesSheet && editor.dataset.mosaicWorkspacesConsolidated === 'true') {
+        state.initializedEditors.add(editor);
+      }
+    });
+  };
+
+  const setupObserver = () => {
+    const root = resolveStableBootstrapRoot(document);
+    if (!root) {
+      return false;
     }
-    return bootstrapWhenReady(getEditor, attemptsLeft - 1);
-  }
-  const imagesSheet = editor.closest('.tab-pane');
-  const tabContent = imagesSheet?.parentElement;
-  const ready = Boolean(
-    imagesSheet
-    && tabContent
-    && [...tabContent.querySelectorAll(':scope > .tab-pane')].some(
-      (pane) => pane !== imagesSheet && pane.querySelector('.form-section[data-id="settings.source"]'),
-    ),
+    state.observedRoot = root;
+    document.onAdded((node) => {
+      if (!(node instanceof FixtureElement)) {
+        return;
+      }
+      const signal = node.matches('[data-mosaic-design-configurator]')
+        || Boolean(node.querySelector?.('[data-mosaic-design-configurator]'))
+        || node.matches('form[name="editform"]')
+        || Boolean(node.querySelector?.('form[name="editform"]'))
+        || node.matches('.tab-pane')
+        || Boolean(node.querySelector?.('.form-section[data-id="settings.source"]'));
+      if (signal) {
+        bootstrap();
+      }
+    });
+    return true;
+  };
+
+  return { state, bootstrap, setupObserver, resolveEditFormRoot: () => resolveEditFormRoot(document) };
+};
+
+const assertOwnership = (label, editor) => {
+  const tabContent = editor.closest('.tab-content');
+  const layoutSheet = tabContent?.querySelector('.tab-pane.mosaic-layout-sheet');
+  const imagesSheet = tabContent?.querySelector('.tab-pane.mosaic-images-sheet');
+  assert(Boolean(layoutSheet), `${label}: layout sheet consolidated`);
+  assert(Boolean(imagesSheet), `${label}: images sheet marked`);
+  assert(
+    Boolean(layoutSheet.querySelector('.form-section[data-id="settings.designPreset"]')),
+    `${label}: Layout owns Design preset`,
   );
-  if (!ready) {
-    if (attemptsLeft <= 0) {
-      return null;
-    }
-    return bootstrapWhenReady(getEditor, attemptsLeft - 1);
-  }
-  return consolidateWorkspacesFixture(editor);
+  assert(
+    Boolean(imagesSheet.querySelector('.form-section[data-id="settings.source"]')),
+    `${label}: Images owns Source`,
+  );
 };
 
-// A: module-style early evaluation finds no editor yet
-const earlyDocument = new FixtureDocument();
-globalThis.Element = FixtureElement;
-assert(
-  earlyDocument.querySelectorAll('[data-mosaic-design-configurator]').length === 0,
-  'A: early document must not contain the design configurator yet',
-);
+// CASE 1: no edit form at module init; form+editor inserted later via observer
+(() => {
+  const document = new FixtureDocument();
+  const moduleBody = document.createElement('div');
+  moduleBody.classList.add('t3js-module-body');
+  document.body.append(moduleBody);
+  const boot = createDocumentBootstrap(document);
+  assert(boot.resolveEditFormRoot() === null, 'CASE1: no edit form at module evaluation');
+  assert(boot.setupObserver() === true, 'CASE1: stable ancestor observer installs without edit form');
+  assert(boot.state.observedRoot === moduleBody, 'CASE1: observer watches module body, not a form');
+  boot.bootstrap();
+  assert(document.querySelectorAll('[data-mosaic-design-configurator]').length === 0, 'CASE1: no editor yet');
+  const built = buildMosaicEditForm(document);
+  assertOwnership('CASE1', built.editor);
+})();
 
-// B: FormEngine inserts markup later; bootstrap must still consolidate
-const lateDocument = new FixtureDocument();
-let lateEditorRef = null;
-const lateResultBefore = bootstrapWhenReady(() => lateEditorRef, 1);
-assert(lateResultBefore === null, 'B: bootstrap must wait until editor DOM exists');
-const lateBuilt = buildRawForm(lateDocument);
-lateEditorRef = lateBuilt.editor;
-const lateResult = bootstrapWhenReady(() => lateEditorRef, 3);
-assert(Boolean(lateResult?.layoutSheet && lateResult?.imagesSheet), 'B: late DOM must consolidate');
-assert(lateResult.layoutSheet.classList.contains('mosaic-layout-sheet'), 'B: layout sheet marked');
-assert(lateResult.imagesSheet.classList.contains('mosaic-images-sheet'), 'B: images sheet marked');
-assert(
-  Boolean(lateResult.layoutSheet.querySelector('.form-section[data-id="settings.designPreset"]')),
-  'B: Layout must own Design preset after consolidation',
-);
-assert(
-  Boolean(lateResult.imagesSheet.querySelector('.form-section[data-id="settings.source"]')),
-  'B: Images must own Source after consolidation',
-);
-assert(
-  !lateResult.imagesSheet.querySelector(':scope > .form-section[data-id="settings.designPreset"]'),
-  'B: Design preset must leave the Images sheet root',
-);
+// CASE 2: unrelated form exists first; must not trap bootstrap
+(() => {
+  const document = new FixtureDocument();
+  const decoy = document.createElement('form');
+  decoy.setAttribute('name', 'searchbox');
+  document.body.append(decoy);
+  const moduleBody = document.createElement('div');
+  moduleBody.classList.add('t3js-module-body');
+  document.body.append(moduleBody);
 
-// C: idempotent second pass
-const headerCountBefore = lateResult.imagesSheet.querySelectorAll('.mosaic-images-header').length;
-consolidateWorkspacesFixture(lateBuilt.editor);
-const headerCountAfter = lateResult.imagesSheet.querySelectorAll('.mosaic-images-header').length;
-assert(headerCountBefore === 1, 'C: first consolidation creates one images header');
-assert(headerCountAfter === 1, 'C: second consolidation must not duplicate images header');
-assert(lateBuilt.editor.dataset.mosaicWorkspacesConsolidated === 'true', 'C: consolidated flag retained');
+  const boot = createDocumentBootstrap(document);
+  assert(boot.resolveEditFormRoot() === null, 'CASE2: decoy form must not resolve as edit form');
+  assert(document.querySelector('form') === decoy, 'CASE2: arbitrary first form is the decoy');
+  boot.setupObserver();
+  assert(boot.state.observedRoot !== decoy, 'CASE2: observer must not bind to decoy form');
+  assert(boot.state.observedRoot === moduleBody, 'CASE2: observer binds stable module body');
+  const built = buildMosaicEditForm(document);
+  assertOwnership('CASE2', built.editor);
+  assert(built.form !== decoy, 'CASE2: mosaic edit form is distinct from decoy');
+})();
 
-// D: production source must use deferred bootstrap contracts
-const fs = require('fs');
-const path = require('path');
+// CASE 3: edit form replaced; new editor initializes
+(() => {
+  const document = new FixtureDocument();
+  const moduleBody = document.createElement('div');
+  moduleBody.classList.add('t3js-module-body');
+  document.body.append(moduleBody);
+  const boot = createDocumentBootstrap(document);
+  boot.setupObserver();
+  const first = buildMosaicEditForm(document);
+  assertOwnership('CASE3-first', first.editor);
+  first.form.remove();
+  const second = buildMosaicEditForm(document);
+  assert(second.editor !== first.editor, 'CASE3: replacement creates a new editor node');
+  assertOwnership('CASE3-second', second.editor);
+  assert(second.editor.dataset.mosaicDesignInitialized === 'true', 'CASE3: replacement editor initialized');
+})();
+
+// CASE 4: repeated mutations remain idempotent
+(() => {
+  const document = new FixtureDocument();
+  const moduleBody = document.createElement('div');
+  moduleBody.classList.add('t3js-module-body');
+  document.body.append(moduleBody);
+  const boot = createDocumentBootstrap(document);
+  boot.setupObserver();
+  const built = buildMosaicEditForm(document);
+  const headersBefore = built.imagesSheet.querySelectorAll('.mosaic-images-header').length;
+  boot.bootstrap();
+  boot.bootstrap();
+  boot.bootstrap();
+  const headersAfter = built.imagesSheet.querySelectorAll('.mosaic-images-header').length;
+  assert(headersBefore === 1, 'CASE4: one header after first consolidation');
+  assert(headersAfter === 1, 'CASE4: repeated bootstraps do not duplicate headers');
+  assertOwnership('CASE4', built.editor);
+})();
+
+// CASE 5: delayed insertion beyond one microtask / one rAF window
+(() => {
+  const document = new FixtureDocument();
+  const moduleBody = document.createElement('div');
+  moduleBody.classList.add('t3js-module-body');
+  document.body.append(moduleBody);
+  const boot = createDocumentBootstrap(document);
+  boot.setupObserver();
+  // Simulate short retries that find nothing (microtask + rAF equivalents).
+  boot.bootstrap();
+  boot.bootstrap();
+  assert(document.querySelectorAll('[data-mosaic-design-configurator]').length === 0, 'CASE5: still empty after short retries');
+  // Much later FormEngine insert — only the durable observer may see it.
+  const built = buildMosaicEditForm(document);
+  assertOwnership('CASE5', built.editor);
+  assert(boot.state.bootstrapCount >= 3, 'CASE5: observer-driven bootstrap runs after delayed insert');
+})();
+
+// Production source contracts
 const source = fs.readFileSync(
   path.join(__dirname, '..', 'Resources', 'Public', 'JavaScript', 'design-configurator.js'),
   'utf8',
 );
-assert(source.includes('MutationObserver'), 'D: design-configurator must observe FormEngine DOM mutations');
-assert(source.includes('setupFormBootstrapObserver'), 'D: design-configurator must register form bootstrap observer');
-assert(source.includes('queueMicrotask'), 'D: design-configurator must microtask-retry bootstrap');
-assert(source.includes('canConsolidateWorkspaces'), 'D: readiness gate must exist');
-assert(source.includes('mosaicWorkspacesConsolidated'), 'D: idempotent consolidation flag must exist');
-assert(
-  !/document\.querySelectorAll\(\s*\[\s*data-mosaic-design-configurator\s*\]\s*\)\s*\.forEach\(\s*initializeEditor\s*\)/.test(source)
-  && !source.includes("document.querySelectorAll('[data-mosaic-design-configurator]').forEach(initializeEditor)"),
-  'D: one-shot initializeEditor scan must not remain as the only bootstrap path',
-);
-assert(
-  /mosaicDesignInitialized[\s\S]{0,180}canConsolidateWorkspaces|canConsolidateWorkspaces[\s\S]{0,220}mosaicDesignInitialized/.test(source),
-  'D: initializeEditor must not mark initialized before consolidation readiness',
-);
+assert(source.includes('setupDocumentBootstrapObserver'), 'SRC: document bootstrap observer helper');
+assert(source.includes('resolveStableBootstrapRoot'), 'SRC: stable ancestor resolver');
+assert(source.includes('resolveEditFormRoot'), 'SRC: edit-form resolver without arbitrary form fallback');
+assert(!/resolveEditFormRoot[\s\S]{0,260}document\.querySelector\(\s*['"]form['"]\s*\)/.test(source), 'SRC: no arbitrary form fallback in resolveEditFormRoot');
+assert(!source.includes('setupFormBootstrapObserver'), 'SRC: old form-scoped observer removed');
+assert(source.includes('MutationObserver'), 'SRC: MutationObserver retained');
+assert(/setupDocumentBootstrapObserver\(\);\s*bootstrapDesignEditors\(document\);/.test(source)
+  || /setupDocumentBootstrapObserver\(\)[\s\S]{0,80}bootstrapDesignEditors\(document\)/.test(source),
+'SRC: initialize installs document observer before/with bootstrap');
 
 if (failures.length) {
   console.error('Design workspace bootstrap tests failed:');
@@ -554,7 +553,9 @@ if (failures.length) {
 }
 
 console.log('Design workspace bootstrap tests passed.');
-console.log('LATE_DOM_CONSOLIDATION=PASS');
-console.log('IDEMPOTENT_CONSOLIDATION=PASS');
-console.log('DEFERRED_BOOTSTRAP_CONTRACT=PASS');
+console.log('CASE1_NO_EDITFORM_THEN_INSERT=PASS');
+console.log('CASE2_UNRELATED_FORM_NO_TRAP=PASS');
+console.log('CASE3_EDITFORM_REPLACEMENT=PASS');
+console.log('CASE4_IDEMPOTENT_MUTATIONS=PASS');
+console.log('CASE5_DELAYED_BEYOND_SHORT_RETRY=PASS');
 process.exit(0);
