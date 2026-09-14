@@ -1043,8 +1043,11 @@ const initializeEditor = (editor) => {
   const presetSection = sheet.querySelector(':scope > .form-section[data-id="settings.designPreset"]')
     ?? sheet.querySelector('.form-section[data-id="settings.designPreset"]');
   const configuratorSection = editor.closest('.form-section[data-id="settings.designOverrides"]');
-  const presetSelector = presetSection?.querySelector('select');
-  if (!presetSelector || !configuratorSection) {
+  const presetSelector = presetSection?.querySelector('select') ?? {
+    value: editor.dataset.savedPreset,
+    addEventListener: () => {},
+  };
+  if (!configuratorSection) {
     return false;
   }
 
@@ -1057,10 +1060,10 @@ const initializeEditor = (editor) => {
     (section) => Object.prototype.hasOwnProperty.call(CUSTOM_FIELDS, section.dataset.id),
   );
   const presetSlot = editor.querySelector('[data-design-preset-slot]');
-  if (presetSlot) {
+  if (presetSlot && presetSection) {
     presetSlot.append(presetSection);
   }
-  addCompactHelp(presetSection);
+  if (presetSection) addCompactHelp(presetSection);
   const toolbar = editor.querySelector('.mosaic-design-configurator__toolbar');
   const settingsRow = editor.querySelector('[data-layout-header-row="settings"]');
   const previewHeading = editor.querySelector('.mosaic-design-preview__heading');
@@ -1326,6 +1329,24 @@ const initializeEditor = (editor) => {
     }
   };
 
+  const syncCreationCanonicalValues = () => {
+    // On first save canonical inputs and the named-preset document must agree.
+    // Only synchronize rendered, permitted fields; missing fields are filled server-side.
+    if (editor.dataset.freshCreation === 'true' && currentPreset() !== 'custom') {
+      const effective = effectiveDesign(currentBase(), overrides);
+      customSections.forEach((section) => {
+        const mapping = CUSTOM_FIELDS[section.dataset.id];
+        if (!controlPaths.includes(mapping[0])) return;
+        const control = fieldControl(section);
+        const value = valueAtPath(effective, mapping[0]);
+        if (control && value !== undefined) {
+          if (control.type === 'checkbox') control.checked = Boolean(value);
+          else control.value = String(value);
+        }
+      });
+    }
+  };
+
   const updateMode = () => {
     const custom = currentPreset() === 'custom';
     customSections.forEach((section) => {
@@ -1336,11 +1357,13 @@ const initializeEditor = (editor) => {
     if (!custom) {
       applyEffectiveValues(editor, currentBase(), overrides, controlPaths);
     }
+    syncCreationCanonicalValues();
     updateStatus();
     publishState();
   };
 
   const persist = () => {
+    syncCreationCanonicalValues();
     storage.value = JSON.stringify(overrides);
     storage.dispatchEvent(new Event('change', { bubbles: true }));
     updateStatus();
@@ -1607,7 +1630,7 @@ const initializeEditor = (editor) => {
       return;
     }
     if (event.target.closest('[data-design-reset-all]')) {
-      overrides = {};
+      controlPaths.forEach((path) => deletePath(overrides, path));
       applyEffectiveValues(editor, currentBase(), overrides, controlPaths);
       persist();
     }

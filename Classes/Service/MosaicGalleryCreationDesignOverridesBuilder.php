@@ -96,6 +96,64 @@ final class MosaicGalleryCreationDesignOverridesBuilder
         return (string)json_encode($normalized, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
+    /** Shared mapping for the alternate UI; no second design-field map. */
+    public static function keyForPath(string $path): ?string
+    {
+        foreach (self::KEY_PATHS as $key => $segments) {
+            if (implode('.', $segments) === $path) {
+                return $key;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Reconcile the two creation representations before ordinary Core processing.
+     * Explicit canonical values win, then explicit JSON paths, then site defaults.
+     * Custom/empty presets continue to use the direct fields only.
+     */
+    public function applyCreationDefaults(array $flex, array $defaults): array
+    {
+        $values = $defaults;
+        foreach ($this->creationDefaultsDefinition->getAllowedKeys() as $key) {
+            $mapping = MosaicGalleryCreationDefaultsDefinition::fieldDefinition($key);
+            $target = $flex['data'][$mapping['sheet']]['lDEF'][$mapping['field']] ?? [];
+            if (is_array($target) && array_key_exists('vDEF', $target)) {
+                $values[$key] = $target['vDEF'];
+            }
+        }
+        if (!$this->isNamedPresetCreation($values)) {
+            return $flex;
+        }
+        $jsonTarget = $flex['data']['sDESIGN']['lDEF']['settings.designOverrides'] ?? [];
+        $rawJson = $jsonTarget['vDEF'] ?? '';
+        if (!is_string($rawJson)) {
+            return $flex;
+        }
+        $document = $this->designPresetResolver->decodeOverrideDocument($rawJson);
+        foreach (self::KEY_PATHS as $key => $path) {
+            $mapping = MosaicGalleryCreationDefaultsDefinition::fieldDefinition($key);
+            $target = $flex['data'][$mapping['sheet']]['lDEF'][$mapping['field']] ?? [];
+            if (is_array($target) && array_key_exists('vDEF', $target)) {
+                continue;
+            }
+            $value = $document;
+            foreach ($path as $segment) {
+                $value = is_array($value) && array_key_exists($segment, $value) ? $value[$segment] : null;
+            }
+            $normalized = $this->creationDefaultsDefinition->normalizeValue($key, $value);
+            if ($value !== null && $normalized !== null) {
+                $values[$key] = $normalized;
+                $flex['data'][$mapping['sheet']]['lDEF'][$mapping['field']]['vDEF'] = $normalized;
+            }
+        }
+        $json = $this->buildJson($values);
+        if ($json !== null) {
+            $flex['data']['sDESIGN']['lDEF']['settings.designOverrides']['vDEF'] = $json;
+        }
+        return $flex;
+    }
+
     /**
      * @param array<string, scalar> $siteDefaults
      */

@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace Anatolkin\MosaicGallery\Backend\Form\Element;
 
 use Anatolkin\MosaicGallery\Service\DesignPresetResolver;
+use Anatolkin\MosaicGallery\Service\MosaicGalleryCreationDesignOverridesBuilder;
+use Anatolkin\MosaicGallery\Backend\Permission\MosaicGalleryFlexFormPermissionResolver;
 use TYPO3\CMS\Backend\Form\Element\AbstractFormElement;
 use TYPO3\CMS\Core\Page\JavaScriptModuleInstruction;
 use TYPO3\CMS\Core\Service\FlexFormService;
@@ -97,6 +99,9 @@ final class DesignConfiguratorElement extends AbstractFormElement
         if (isset($presetBases[$savedPreset])) {
             foreach (self::CONTROLS as $control) {
                 $path = $control['path'];
+                if (!$this->canEditDesignPath($path)) {
+                    continue;
+                }
                 if ($this->hasPath($overrides, $path)
                     && $this->valueAtPath($overrides, $path) === $this->valueAtPath($base, $path)
                 ) {
@@ -129,11 +134,13 @@ final class DesignConfiguratorElement extends AbstractFormElement
             ENT_QUOTES,
         );
         $controlPathsJson = htmlspecialchars(
-            (string)json_encode(array_column(self::CONTROLS, 'path'), JSON_UNESCAPED_SLASHES),
+            (string)json_encode(array_values(array_filter(array_column(self::CONTROLS, 'path'),
+                fn(string $path): bool => $this->canEditDesignPath($path))), JSON_UNESCAPED_SLASHES),
             ENT_QUOTES,
         );
 
         $html = '<div class="form-control-wrap mosaic-design-configurator" data-mosaic-design-configurator'
+            . ' data-fresh-creation="' . (($this->data['command'] ?? '') === 'new' ? 'true' : 'false') . '"'
             . ' data-saved-preset="' . htmlspecialchars($savedPreset, ENT_QUOTES) . '"'
             . ' data-saved-overrides="' . $hiddenValue . '"'
             . ' data-preset-bases="' . $presetBasesJson . '"'
@@ -259,6 +266,9 @@ final class DesignConfiguratorElement extends AbstractFormElement
                 . '<div class="mosaic-design-configurator__grid" data-design-controls>'
                 . $this->renderDisplayControls($group, $settings);
             foreach ($paths as $path) {
+                if (!$this->canEditDesignPath($path)) {
+                    continue;
+                }
                 $control = $controls[$path];
                 $html .= $this->renderControl(
                     $control,
@@ -313,6 +323,9 @@ final class DesignConfiguratorElement extends AbstractFormElement
     /** @param array<string, mixed> $settings */
     private function renderDisplayProxyField(string $fieldName, string $labelKey, string $controlHtml): string
     {
+        if (!$this->canEditField($fieldName)) {
+            return '';
+        }
         return '<div class="mosaic-design-display-controls__proxy" data-design-proxy-field="'
             . htmlspecialchars($fieldName, ENT_QUOTES) . '">'
             . '<label class="mosaic-design-display-controls__field"><span>'
@@ -324,6 +337,9 @@ final class DesignConfiguratorElement extends AbstractFormElement
     /** @param array<string, mixed> $settings */
     private function renderBooleanProxy(string $fieldName, string $labelKey, array $settings): string
     {
+        if (!$this->canEditField($fieldName)) {
+            return '';
+        }
         return '<div class="mosaic-design-display-controls__proxy" data-design-proxy-field="'
             . htmlspecialchars($fieldName, ENT_QUOTES) . '">'
             . '<label class="mosaic-design-display-controls__field'
@@ -342,6 +358,18 @@ final class DesignConfiguratorElement extends AbstractFormElement
             . ' data-design-proxy-reset data-mosaic-action-tooltip disabled hidden aria-label="'
             . $this->label('design.configurator.reset') . '">'
             . $this->actionIcon('reset') . '</button>';
+    }
+
+    private function canEditField(string $fieldName): bool
+    {
+        return !in_array($fieldName, GeneralUtility::makeInstance(MosaicGalleryFlexFormPermissionResolver::class)
+            ->resolveHiddenFields(), true);
+    }
+
+    private function canEditDesignPath(string $path): bool
+    {
+        $key = MosaicGalleryCreationDesignOverridesBuilder::keyForPath($path);
+        return $key !== null && $this->canEditField('settings.' . $key);
     }
 
     /** @param array<string, mixed> $settings */

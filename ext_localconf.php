@@ -7,6 +7,7 @@ use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
 use Anatolkin\MosaicGallery\Backend\Form\Element\DesignConfiguratorElement;
+use Anatolkin\MosaicGallery\Backend\DataHandling\MosaicGalleryCreationDefaultsDataHandler;
 use Anatolkin\MosaicGallery\Backend\Form\Element\MetadataOverridesElement;
 use Anatolkin\MosaicGallery\Backend\Form\FormDataProvider\MosaicGalleryFlexFormDefaultsProvider;
 use Anatolkin\MosaicGallery\Backend\Form\FormDataProvider\MosaicGalleryFlexFormPermissionProvider;
@@ -57,6 +58,9 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1755129601] = [
 ];
 
 // Site TypoScript creation defaults for new Mosaic Gallery records (Issue #2).
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][]
+    = MosaicGalleryCreationDefaultsDataHandler::class;
+
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['formDataGroup']['tcaDatabaseRecord'][MosaicGalleryFlexFormDefaultsProvider::class] = [
     'depends' => [
         TcaFlexPrepare::class,
@@ -69,9 +73,6 @@ if (!is_array($tcaFlexProcessDepends)) {
 if (!in_array(MosaicGalleryFlexFormDefaultsProvider::class, $tcaFlexProcessDepends, true)) {
     $tcaFlexProcessDepends[] = MosaicGalleryFlexFormDefaultsProvider::class;
 }
-if (!in_array(MosaicGalleryFlexFormPermissionProvider::class, $tcaFlexProcessDepends, true)) {
-    $tcaFlexProcessDepends[] = MosaicGalleryFlexFormPermissionProvider::class;
-}
 unset($tcaFlexProcessDepends);
 
 // Issue #11: TYPO3 14.3 documents customPermOptions registration in ext_localconf.php.
@@ -82,7 +83,9 @@ if ((new Typo3Version())->getMajorVersion() >= 14) {
 
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['formDataGroup']['tcaDatabaseRecord'][MosaicGalleryFlexFormPermissionProvider::class] = [
     'depends' => [
-        MosaicGalleryFlexFormDefaultsProvider::class,
+        // Resolve values first so the Configurator can preview hidden preset/default
+        // values too. Remove their controls before rendering, as before.
+        TcaFlexProcess::class,
     ],
 ];
 

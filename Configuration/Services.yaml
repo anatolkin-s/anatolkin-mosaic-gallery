@@ -36,6 +36,8 @@ services:
 
   Anatolkin\MosaicGallery\Backend\Permission\MosaicGalleryFlexFormPermissionResolver: ~
 
+  Anatolkin\MosaicGallery\Backend\DataHandling\MosaicGalleryCreationDefaultsDataHandler: ~
+
   Anatolkin\MosaicGallery\Backend\Form\Element\MetadataOverridesElement: ~
 
   Anatolkin\MosaicGallery\Upgrades\MosaicGalleryLegacyCTypeMigration: ~
