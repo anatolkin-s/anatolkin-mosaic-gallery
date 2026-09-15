@@ -6,9 +6,43 @@ namespace Anatolkin\MosaicGallery\Service;
 use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\FileReference;
+use TYPO3\CMS\Extbase\Service\ImageService;
 
 final class GalleryImageDimensionsResolver
 {
+    public function __construct(private readonly ImageService $imageService)
+    {
+    }
+
+    /**
+     * Use the same crop/scale instructions as f:uri.image(maxWidth: ...).
+     * Read the derivative itself so Core's rounding and no-upscale behavior apply.
+     * @return array{previewWidth: int, previewHeight: int}|array{}
+     */
+    public function resolvePreviewDimensions(File $file, int $maxWidth, ?FileReference $fileReference = null): array
+    {
+        try {
+            $image = $fileReference ?? $file;
+            $crop = $image->hasProperty('crop') ? (string)($image->getProperty('crop') ?? '') : '';
+            $cropArea = CropVariantCollection::create($crop)->getCropArea('default');
+            $processed = $this->imageService->applyProcessingInstructions($image, [
+                'width' => null,
+                'height' => null,
+                'minWidth' => null,
+                'minHeight' => null,
+                'maxWidth' => $maxWidth,
+                'maxHeight' => null,
+                'crop' => $cropArea->isEmpty() ? null : $cropArea->makeAbsoluteBasedOnFile($image),
+            ]);
+            $width = (int)$processed->getProperty('width');
+            $height = (int)$processed->getProperty('height');
+            return $width > 0 && $height > 0 ? ['previewWidth' => $width, 'previewHeight' => $height] : [];
+        } catch (\Throwable) {
+            // Missing metadata or failed processing must not invent intrinsic geometry.
+            return [];
+        }
+    }
+
     public function resolveAspectRatio(File $file, ?FileReference $fileReference = null): float
     {
         if ($fileReference !== null) {

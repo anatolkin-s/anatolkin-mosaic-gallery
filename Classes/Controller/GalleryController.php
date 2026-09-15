@@ -38,11 +38,6 @@ final class GalleryController extends ActionController
             'EXT:anatolkin_mosaic_gallery/Resources/Public/Css/mosaic.css'
         );
         $assets->addJavaScript(
-            'imagesloaded',
-            'EXT:anatolkin_mosaic_gallery/Resources/Public/Js/imagesloaded.pkgd.min.js',
-            ['defer' => true]
-        );
-        $assets->addJavaScript(
             'masonry',
             'EXT:anatolkin_mosaic_gallery/Resources/Public/Js/masonry.pkgd.min.js',
             ['defer' => true]
@@ -122,6 +117,7 @@ final class GalleryController extends ActionController
                     $layoutMode,
                     $enableLoadMore,
                     $itemsPerPage,
+                    $maxWidth,
                 );
             } catch (\Throwable) {
                 // Fail silently for this content element instead of breaking the whole page.
@@ -137,6 +133,7 @@ final class GalleryController extends ActionController
                     $layoutMode,
                     $enableLoadMore,
                     $itemsPerPage,
+                    $maxWidth,
                 );
             }
         }

@@ -369,10 +369,12 @@
       var list = Array.prototype.slice.call(images || []);
       var finished = false;
       var timeoutId = null;
+      var cleanups = [];
       var finish = function () {
         if (finished) return;
         finished = true;
         if (timeoutId) clearTimeout(timeoutId);
+        cleanups.forEach(function (cleanup) { cleanup(); });
         callback();
       };
 
@@ -383,29 +385,24 @@
 
       timeoutId = setTimeout(finish, timeoutMs || 10000);
 
-      if (typeof window.imagesLoaded === "function") {
-        try {
-          window.imagesLoaded(list, finish);
-          return;
-        } catch (e) {
-          // Fall through to native image events.
-        }
-      }
-
       var remaining = list.length;
       list.forEach(function (img) {
-        var done = function () {
+        var settled = false;
+        var cleanup = function () {
           img.removeEventListener("load", done);
           img.removeEventListener("error", done);
+        };
+        var done = function () {
+          if (settled || finished) return;
+          settled = true;
+          cleanup();
           remaining -= 1;
           if (remaining === 0) finish();
         };
-        if (img.complete) {
-          done();
-        } else {
-          img.addEventListener("load", done);
-          img.addEventListener("error", done);
-        }
+        cleanups.push(cleanup);
+        img.addEventListener("load", done);
+        img.addEventListener("error", done);
+        if (img.complete) done();
       });
     }
 
@@ -497,8 +494,7 @@
         }, 150);
       }
 
-      var visibleImages = grid.querySelectorAll(".mosaic-item:not(.is-hidden) img");
-      waitForImages(visibleImages, function () {
+      function initializeLayout() {
         if (["masonry", "mosaic"].indexOf(layoutMode) !== -1 && typeof window.Masonry === "function") {
           try {
             var sizer = grid.querySelector(".mosaic-sizer") || grid.querySelector(".mosaic-item");
@@ -558,12 +554,15 @@
           }
         }
 
-        if (layoutMode === "patterned") {
-          grid.addEventListener("load", function (event) {
-            var item = event.target && event.target.closest ? event.target.closest(".mosaic-item") : null;
-            if (item && !item.classList.contains("is-hidden")) schedulePatternedRelayout();
-          }, true);
+        // Native image events do not request other lazy images. One animation
+        // frame coalesces completions across every layout, including failed loads.
+        function handleImageCompletion(event) {
+          if (!event.target || event.target.tagName !== "IMG") return;
+          var item = event.target.closest ? event.target.closest(".mosaic-item") : null;
+          if (item && !item.classList.contains("is-hidden")) scheduleRelayout();
         }
+        grid.addEventListener("load", handleImageCompletion, true);
+        grid.addEventListener("error", handleImageCompletion, true);
 
         if (layoutMode === "justified" && typeof window.ResizeObserver === "function") {
           justifiedResizeObserver = new window.ResizeObserver(function () {
@@ -639,7 +638,10 @@
 
         relayout();
         markLayoutReady();
-      }, 10000);
+      }
+      // Intrinsic dimensions and server-provided ratios are available before decode.
+      // Cached images are covered by this initial layout; later events relayout safely.
+      initializeLayout();
     });
   });
 })();

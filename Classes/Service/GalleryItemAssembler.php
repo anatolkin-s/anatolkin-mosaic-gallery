@@ -26,6 +26,7 @@ final class GalleryItemAssembler
         string $layoutMode,
         bool $enableLoadMore,
         int $itemsPerPage,
+        int $maxWidth = 1800,
     ): array {
         $metadataOverrides = is_array($metadataDocument['files'] ?? null) ? $metadataDocument['files'] : [];
         $legacyCaptionsConverted = ($metadataDocument['legacyCaptionsConverted'] ?? false) === true;
@@ -49,6 +50,7 @@ final class GalleryItemAssembler
                 $layoutMode,
                 $enableLoadMore,
                 $itemsPerPage,
+                $maxWidth,
             );
         }
 
@@ -68,6 +70,7 @@ final class GalleryItemAssembler
         string $layoutMode,
         bool $enableLoadMore,
         int $itemsPerPage,
+        int $maxWidth = 1800,
     ): array {
         $metadataOverrides = is_array($metadataDocument['files'] ?? null) ? $metadataDocument['files'] : [];
         $useFalCaptions = (bool)($settings['useFalCaptions'] ?? true);
@@ -99,6 +102,7 @@ final class GalleryItemAssembler
                 $layoutMode,
                 $enableLoadMore,
                 $itemsPerPage,
+                $maxWidth,
             );
         }
 
@@ -121,8 +125,10 @@ final class GalleryItemAssembler
         string $layoutMode,
         bool $enableLoadMore,
         int $itemsPerPage,
+        int $maxWidth,
     ): array {
         $aspectRatio = $this->dimensionsResolver->resolveAspectRatio($file, $fileReference);
+        $previewDimensions = $this->dimensionsResolver->resolvePreviewDimensions($file, $maxWidth, $fileReference);
 
         if ($fileReference !== null) {
             return $this->assembleManualReferenceItem(
@@ -134,7 +140,7 @@ final class GalleryItemAssembler
                 $layoutMode,
                 $enableLoadMore,
                 $itemsPerPage,
-            );
+            ) + $previewDimensions;
         }
 
         try {
@@ -174,7 +180,7 @@ final class GalleryItemAssembler
             'layoutSpan' => $this->dimensionsResolver->resolveLayoutSpan($file, $layoutMode, null),
             'aspectRatio' => $aspectRatio,
             'patternWeight' => $this->resolvePatternWeight($idx, $layoutMode),
-        ];
+        ] + $previewDimensions;
     }
 
     /**

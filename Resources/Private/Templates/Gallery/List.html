@@ -47,10 +47,20 @@
            data-gallery="{galleryGroup}"
            data-title="{it.caption}"
            target="{f:if(condition: settings.enableLightbox, then: '_self', else: '_blank')}">
-          <img src="{f:if(condition: it.hidden, then: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=', else: previewUrl)}"
+          <f:if condition="{it.previewWidth} && {it.previewHeight}">
+            <f:then>
+              <img src="{f:if(condition: it.hidden, then: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=', else: previewUrl)}"
+                   data-src="{f:if(condition: it.hidden, then: previewUrl)}"
+                   width="{it.previewWidth}" height="{it.previewHeight}"
+                   alt="{it.alt}" title="{it.caption}" loading="lazy" />
+            </f:then>
+            <f:else>
+              <img src="{f:if(condition: it.hidden, then: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=', else: previewUrl)}"
                data-src="{f:if(condition: it.hidden, then: previewUrl)}"
                alt="{it.alt}" title="{it.caption}"
-               loading="{f:if(condition: it.hidden, then: 'lazy', else: 'eager')}" />
+               loading="lazy" />
+            </f:else>
+          </f:if>
         </a>
         <f:if condition="{showCaptions}">
           <f:if condition="{it.caption}">
