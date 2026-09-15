@@ -358,6 +358,25 @@ Supported interface locales:
 
 This release intentionally does **not** claim every TYPO3 regional/legacy locale.
 
+## What's new in 0.6.3
+
+### Creation defaults persistence corrective
+
+TypoScript creation defaults under
+`plugin.tx_mosaicgallery_pi1.settings.defaults.*`
+are now persisted for genuinely new Mosaic Gallery content elements
+even when the corresponding backend field is hidden or otherwise
+absent from the submitted editor form.
+
+Explicit editor values remain authoritative. Existing records,
+copied records, localized records, and workspace-derived records
+are not retroactively overwritten by creation defaults.
+
+Backend field restrictions remain visibility controls only and do
+not change stored values.
+
+No database migration is required for 0.6.3.
+
 ## What's new in 0.6.2
 
 ### Expanded interface translations
