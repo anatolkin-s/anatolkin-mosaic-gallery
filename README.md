@@ -358,6 +358,31 @@ Supported interface locales:
 
 This release intentionally does **not** claim every TYPO3 regional/legacy locale.
 
+## What's new in 0.6.4
+
+### Thumbnail dimensions and native lazy loading
+
+Gallery thumbnails now expose intrinsic `width` and `height` values based on
+the actual TYPO3-processed preview image, including FileReference crop handling.
+
+Initial gallery thumbnails now use native browser `loading="lazy"` behavior
+instead of being forced to load eagerly.
+
+Gallery initialization no longer waits for all initial images through
+`imagesLoaded`, preventing extension JavaScript from defeating native lazy
+loading. Layouts initialize immediately from known image geometry and perform
+coalesced relayouts as images finish loading.
+
+Deferred `Load more` images remain unloaded until their batch is activated.
+
+This improves layout stability, reduces unnecessary image requests on long
+pages and pages containing multiple galleries, and preserves existing gallery,
+lightbox, crop, caption, and Load More behavior.
+
+Verified with TYPO3 13.4 and TYPO3 14.3.
+
+No database migration is required for 0.6.4.
+
 ## What's new in 0.6.3
 
 ### Creation defaults persistence corrective
